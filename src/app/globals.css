@@ -2,7 +2,7 @@
 
 :root {
   /* Core surfaces */
-  --background: #08090c;
+  --background: #050505;
   --surface: #0f1116;
   --surface-elevated: #161923;
   --foreground: #f5f6f8;
@@ -10,8 +10,10 @@
   --border: #23262f;
 
   /* Brand */
-  --primary: #6366f1;
-  --primary-foreground: #ffffff;
+  --primary: #aec6ff;
+  --primary-foreground: #002e6b;
+  --primary-container: #0070f3;
+  --on-primary-container: #ffffff;
   --secondary: #1c1f2a;
 
   /* Product accents */
@@ -35,6 +37,8 @@
   --color-border: var(--border);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-container: var(--primary-container);
+  --color-on-primary-container: var(--on-primary-container);
   --color-secondary: var(--secondary);
   --color-accent-exora: var(--accent-exora);
   --color-accent-schoolsync: var(--accent-schoolsync);
@@ -81,3 +85,46 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+@layer utilities {
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .gradient-border {
+    border: 1px solid transparent;
+    background: linear-gradient(var(--background), var(--background)) padding-box,
+                linear-gradient(to bottom right, rgba(255,255,255,0.15), rgba(255,255,255,0.02)) border-box;
+  }
+
+  .glow-blob {
+    background: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+    filter: blur(80px);
+  }
+
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee 40s linear infinite;
+  }
+
+  @keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  .grid-pattern {
+    background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .nav-scrolled {
+    background: rgba(8, 9, 12, 0.8);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+

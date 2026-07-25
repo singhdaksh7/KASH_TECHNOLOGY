@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KASH Technologies | High Performance Engineering</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/geist@1.3.0/dist/fonts/geist.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface": "#131313",
+                    "on-tertiary": "#00382d",
+                    "secondary-fixed": "#efdbff",
+                    "primary": "#aec6ff",
+                    "surface-container": "#201f1f",
+                    "on-error": "#690005",
+                    "on-primary": "#002e6b",
+                    "primary-fixed": "#d8e2ff",
+                    "on-surface-variant": "#c1c6d7",
+                    "on-secondary-fixed-variant": "#6600b7",
+                    "on-secondary-fixed": "#2b0052",
+                    "background": "#131313",
+                    "secondary-fixed-dim": "#dbb8ff",
+                    "primary-container": "#0070f3",
+                    "secondary-container": "#6807ba",
+                    "surface-variant": "#353534",
+                    "tertiary": "#48ddbc",
+                    "surface-container-highest": "#353534",
+                    "error-container": "#93000a",
+                    "tertiary-fixed-dim": "#48ddbc",
+                    "on-secondary": "#470083",
+                    "inverse-on-surface": "#313030",
+                    "surface-container-low": "#1c1b1b",
+                    "on-tertiary-fixed": "#002019",
+                    "on-background": "#e5e2e1",
+                    "secondary": "#dbb8ff",
+                    "outline": "#8b90a0",
+                    "inverse-surface": "#e5e2e1",
+                    "on-primary-fixed": "#001a43",
+                    "surface-tint": "#aec6ff",
+                    "surface-container-high": "#2a2a2a",
+                    "on-primary-fixed-variant": "#004397",
+                    "error": "#ffb4ab",
+                    "surface-dim": "#131313",
+                    "tertiary-container": "#00866f",
+                    "on-secondary-container": "#d0a6ff",
+                    "on-primary-container": "#ffffff",
+                    "inverse-primary": "#0059c5",
+                    "on-surface": "#e5e2e1",
+                    "on-tertiary-container": "#ffffff",
+                    "on-error-container": "#ffdad6",
+                    "outline-variant": "#414754",
+                    "tertiary-fixed": "#6bfad8",
+                    "surface-container-lowest": "#0e0e0e",
+                    "on-tertiary-fixed-variant": "#005142",
+                    "surface-bright": "#3a3939",
+                    "primary-fixed-dim": "#aec6ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "section-gap-mobile": "80px",
+                    "section-gap-desktop": "160px",
+                    "container-max": "1280px",
+                    "stack-sm": "8px",
+                    "stack-lg": "32px",
+                    "stack-xs": "4px",
+                    "stack-md": "16px",
+                    "grid-gutter": "24px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Geist"],
+                    "label-sm": ["Geist"],
+                    "display-lg-mobile": ["Geist"],
+                    "display-lg": ["Geist"],
+                    "headline-lg": ["Geist"],
+                    "headline-xl": ["Geist"],
+                    "body-md": ["Geist"]
+            },
+            "fontSize": {
+                    "body-lg": ["18px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                    "display-lg-mobile": ["40px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "display-lg": ["72px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "800"}],
+                    "headline-lg": ["32px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "headline-xl": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #131313;
+            color: #e5e2e1;
+            font-family: 'Geist', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid transparent;
+            border-image: linear-gradient(to bottom right, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.02)) 1;
+        }
+
+        .grid-pattern {
+            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .glow-blue {
+            background: radial-gradient(circle, rgba(0, 112, 243, 0.15) 0%, transparent 70%);
+        }
+
+        .glow-purple {
+            background: radial-gradient(circle, rgba(104, 7, 186, 0.1) 0%, transparent 70%);
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .timeline-connector {
+            width: 2px;
+            background: linear-gradient(to bottom, #0070f3, transparent);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="selection:bg-primary-container selection:text-white">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-opacity-3 dark:bg-opacity-3 backdrop-blur-xl border-b border-white/10 shadow-2xl">
+<div class="flex justify-between items-center px-8 py-4 max-w-container-max mx-auto">
+<span class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-on-surface tracking-tighter">KASH</span>
+<div class="hidden md:flex gap-8 items-center">
+<a class="font-body-md text-body-md text-primary-container dark:text-primary font-semibold border-b-2 border-primary-container" href="#">Platform</a>
+<a class="font-body-md text-body-md text-on-surface-variant dark:text-on-surface-variant opacity-80 hover:opacity-100 hover:text-primary-container transition-all" href="#">Solutions</a>
+<a class="font-body-md text-body-md text-on-surface-variant dark:text-on-surface-variant opacity-80 hover:opacity-100 hover:text-primary-container transition-all" href="#">Case Studies</a>
+<a class="font-body-md text-body-md text-on-surface-variant dark:text-on-surface-variant opacity-80 hover:opacity-100 hover:text-primary-container transition-all" href="#">Engineering</a>
+<button class="bg-primary-container text-on-primary-container px-6 py-2 rounded-full font-bold scale-95 active:scale-90 transition-transform">Start a Project</button>
+</div>
+<button class="md:hidden text-on-surface">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</nav>
+<main class="relative">
+<!-- Hero Section -->
+<section class="relative pt-32 pb-20 px-5 overflow-hidden grid-pattern">
+<div class="absolute -top-40 -left-40 w-96 h-96 glow-blue opacity-50"></div>
+<div class="absolute top-40 -right-40 w-96 h-96 glow-purple opacity-30"></div>
+<div class="flex flex-col items-start gap-6 max-w-xl mx-auto">
+<span class="font-label-sm text-label-sm uppercase tracking-widest text-primary-container bg-primary-container/10 px-3 py-1 rounded-full">
+                    Product Design · Full-Stack · Cloud · Blockchain
+                </span>
+<h1 class="font-display-lg-mobile text-display-lg-mobile font-extrabold text-on-surface leading-[1.1]">
+                    From an idea to a <span class="text-primary-container">production-ready</span> digital product.
+                </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-md">
+                    We engineer high-performance software solutions for startups and enterprises ready to scale.
+                </p>
+<div class="flex flex-col w-full gap-4 pt-4">
+<button class="bg-primary-container text-on-primary-container py-4 rounded-xl font-bold text-lg hover:shadow-[0_0_20px_rgba(0,112,243,0.4)] transition-all">Start Scaling Now</button>
+<button class="border border-white/20 py-4 rounded-xl font-bold text-lg hover:bg-white/5 transition-all">View Our Work</button>
+</div>
+</div>
+<!-- Miniature interfaces stacked -->
+<div class="mt-20 relative h-[300px] w-full flex justify-center items-center">
+<div class="absolute top-0 transform -rotate-6 translate-x-[-15%] glass-card w-48 h-64 rounded-2xl p-4 shadow-2xl z-10">
+<div class="h-2 w-12 bg-primary/20 rounded-full mb-3"></div>
+<div class="h-4 w-full bg-primary/10 rounded mb-2"></div>
+<div class="h-4 w-2/3 bg-primary/10 rounded"></div>
+<div class="mt-auto h-24 w-full rounded-lg overflow-hidden bg-surface-container-high">
+<img class="w-full h-full object-cover" data-alt="A clean, minimalist mobile dashboard UI mockup with vibrant electric blue data visualization charts, deep obsidian background, and glassmorphic card elements for a high-performance analytics app. The style is professional, modern, and high-tech." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBfhqtgyuvCiUVxHi0G7LuxlkR9GJlNQVrwrJm5jGBOpf7aTGENwBhoaoM7SjrDciDrlONzryhUYyQerTu3ehGd5fjX_f3ICW2K-RCwbbXrBYPZZezIpDr2AicaE75NUg-aeRlP47KSt9QxHiUMy4ReGYtFWq9cihSoU8y0z9OaI6p576xs3F2QglFYNqhyvEVpx4YYtf1_DW89QC3V3ci62au_ofpGKx7FKAXBNUQzKf9sijzbW3q9fqFY8iXQlE5jLVDjGAkwcLq"/>
+</div>
+</div>
+<div class="absolute top-4 transform rotate-2 translate-x-[15%] glass-card w-52 h-64 rounded-2xl p-4 shadow-2xl z-20">
+<div class="flex gap-2 mb-4">
+<div class="w-3 h-3 rounded-full bg-error/50"></div>
+<div class="w-3 h-3 rounded-full bg-tertiary/50"></div>
+</div>
+<div class="h-32 w-full rounded-lg bg-surface-container-lowest border border-white/5 p-2 overflow-hidden">
+<div class="font-mono text-[10px] text-primary/60">
+                            const engine = new KashEngine();<br/>
+                            engine.init({ speed: 'max' });
+                        </div>
+</div>
+<div class="mt-4 h-12 w-full rounded-xl bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-white">rocket_launch</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Capabilities Strip -->
+<section class="py-12 bg-surface-container-low border-y border-white/5 px-5">
+<div class="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-container-max mx-auto">
+<div class="flex flex-col items-center text-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-4xl">terminal</span>
+<h3 class="font-bold text-on-surface">Cloud Native</h3>
+</div>
+<div class="flex flex-col items-center text-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-4xl">security</span>
+<h3 class="font-bold text-on-surface">Safe & Secure</h3>
+</div>
+<div class="flex flex-col items-center text-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-4xl">bolt</span>
+<h3 class="font-bold text-on-surface">Ultra Fast</h3>
+</div>
+<div class="flex flex-col items-center text-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-4xl">layers</span>
+<h3 class="font-bold text-on-surface">Scalable Stack</h3>
+</div>
+</div>
+</section>
+<!-- Featured Work Intro -->
+<section class="pt-24 pb-12 px-5 text-center">
+<span class="font-label-sm text-label-sm text-primary-container uppercase tracking-widest mb-4 block">Case Studies</span>
+<h2 class="font-headline-xl text-headline-xl font-bold mb-6">Built to Outperform</h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-lg mx-auto">
+                Discover how we leverage bleeding-edge technology to solve complex business challenges.
+            </p>
+</section>
+<!-- Exora Section -->
+<section class="py-20 px-5 bg-surface-container-lowest">
+<div class="max-w-xl mx-auto">
+<div class="mb-12">
+<h3 class="font-headline-lg text-headline-lg font-bold mb-4">Exora Mobility</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6">
+                        Revolutionizing urban transit with a decentralized rider-owned network. Custom mobile architecture and real-time mapping systems.
+                    </p>
+<div class="flex flex-wrap gap-2 mb-8">
+<span class="px-3 py-1 bg-primary/10 text-primary font-mono text-xs rounded border border-primary/20">Flutter</span>
+<span class="px-3 py-1 bg-primary/10 text-primary font-mono text-xs rounded border border-primary/20">Rust</span>
+<span class="px-3 py-1 bg-primary/10 text-primary font-mono text-xs rounded border border-primary/20">Solana</span>
+</div>
+</div>
+<!-- Phone Mockup -->
+<div class="relative mx-auto w-[280px] h-[580px] bg-black rounded-[3rem] border-4 border-surface-container-highest shadow-2xl p-3">
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-black rounded-b-2xl z-20"></div>
+<div class="relative w-full h-full bg-surface-container-low rounded-[2.2rem] overflow-hidden">
+<div class="w-full h-full bg-cover bg-center" data-alt="A sophisticated mobile app interface for a futuristic ride-sharing platform. The UI features a dark theme with neon blue accents, a detailed interactive 3D map showing vehicle locations, and clean glassmorphic panels for trip details. The overall aesthetic is premium, high-tech, and user-centric." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAMgYe17leKITXT5K3zxa9JaUvq1NCpeIbS-dPXAi2RKaTRR88brhl2g8H6Xw0H5nd3WdxfN4yz_Qu4_oN4bI_eGNbcMAG7Q3SYdM_86_4FHOEaTd9sTDqJMtJOIQgGFSmDaZ7hiUb6w-hIDs9vChfQJHqG1FhDUXnWBKR-q40FtQqRlOiUyAq6XLyqL09_bMLRgI6Q5uaXbWJLy3et7rINcpO4e9_MAYp-QyAV-xPM70ZMEdSsnOf05kkjAP-RHoRX31nBC8cfoHBj')"></div>
+<!-- 5-state nav -->
+<div class="absolute bottom-0 w-full h-16 bg-surface-container/90 backdrop-blur-lg flex justify-around items-center px-4 border-t border-white/5">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="material-symbols-outlined text-on-surface-variant">search</span>
+<span class="material-symbols-outlined text-on-surface-variant">commute</span>
+<span class="material-symbols-outlined text-on-surface-variant">wallet</span>
+<span class="material-symbols-outlined text-on-surface-variant">person</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- SchoolSync Section -->
+<section class="py-20 px-5 bg-surface relative overflow-hidden">
+<div class="absolute -right-40 top-40 w-80 h-80 glow-blue opacity-20"></div>
+<div class="max-w-xl mx-auto">
+<div class="mb-12">
+<h3 class="font-headline-lg text-headline-lg font-bold mb-4">SchoolSync SaaS</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-8">
+                        The ultimate administrative OS for modern educational institutions. Dynamic scheduling, performance tracking, and automated billing.
+                    </p>
+<!-- Role Selector -->
+<div class="flex p-1 bg-surface-container rounded-lg border border-white/5 mb-10">
+<button class="flex-1 py-2 text-sm font-bold bg-primary-container text-white rounded-md">Admin</button>
+<button class="flex-1 py-2 text-sm font-bold text-on-surface-variant">Teacher</button>
+<button class="flex-1 py-2 text-sm font-bold text-on-surface-variant">Student</button>
+</div>
+</div>
+<!-- Scaled Dashboard Preview -->
+<div class="glass-card rounded-2xl overflow-hidden shadow-2xl border border-white/10 scale-95 origin-center">
+<div class="h-8 bg-surface-container-high flex items-center px-4 gap-1.5 border-b border-white/5">
+<div class="w-2.5 h-2.5 rounded-full bg-error/40"></div>
+<div class="w-2.5 h-2.5 rounded-full bg-tertiary/40"></div>
+<div class="w-2.5 h-2.5 rounded-full bg-primary/40"></div>
+</div>
+<div class="p-4 bg-surface-container-low">
+<div class="w-full h-64 bg-cover bg-center rounded-lg shadow-inner" data-alt="A high-end SaaS dashboard interface for school management. The design features a complex grid of glassmorphic widgets showing student attendance rates, financial analytics with line charts, and upcoming event calendars. The color palette is dark obsidian with soft electric blue and emerald green highlights." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCBgu1iwU5zDZJvHA-GUdpN5qtRTnG8icg2Jsj_8uIAct4aTtuKlC4MhjY25P7A08TctgeneEPpATVjX-NOZJBOU9O5OBeG76haNVBbcmgb5r6waHPGEKGLD24Pypqhgf3gDgeSsPo8EZVCDqDcIxCnfM9WxWwKetKh1OQFEl4t3gCXEV_IiAnzTbf_c0AxsX6S4TASQk6GoZ8MhT4YDgl6v4E1z3-V-p-VOk9OfsbSasIeakoq0JsyhPBT8xgSOXinE7ZfxpR_2KCs')"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Crypto Launchpad Section -->
+<section class="py-20 px-5 bg-surface-container-lowest">
+<div class="max-w-xl mx-auto">
+<div class="mb-12">
+<h3 class="font-headline-lg text-headline-lg font-bold mb-4">Aura Crypto Launchpad</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6">
+                        Secure, multi-chain IDO platform with integrated wallet auditing and instant liquidity deployment.
+                    </p>
+</div>
+<!-- Simplified Browser View -->
+<div class="glass-card rounded-xl overflow-hidden border border-white/5">
+<div class="p-4 border-b border-white/5 flex justify-between items-center">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-primary-container"></div>
+<span class="font-bold text-xs">Aura.finance</span>
+</div>
+<button class="px-3 py-1 bg-primary-container/20 text-primary-container text-[10px] font-bold rounded">Connect Wallet</button>
+</div>
+<div class="p-6">
+<div class="flex flex-col gap-4">
+<div class="flex justify-between items-end">
+<div>
+<p class="text-xs opacity-50 mb-1">Current Pool</p>
+<h4 class="text-xl font-bold">Lumina Protocol</h4>
+</div>
+<span class="text-xs text-tertiary">Live</span>
+</div>
+<div class="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+<div class="h-full w-[72%] bg-primary-container"></div>
+</div>
+<div class="grid grid-cols-2 gap-4 text-xs">
+<div class="p-3 bg-white/5 rounded-lg">
+<p class="opacity-50 mb-1">Raised</p>
+<p class="font-bold">4.2M / 6M</p>
+</div>
+<div class="p-3 bg-white/5 rounded-lg">
+<p class="opacity-50 mb-1">Participants</p>
+<p class="font-bold">12,482</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Engineering Section -->
+<section class="py-24 px-5 bg-surface">
+<div class="max-w-xl mx-auto">
+<h2 class="font-headline-xl text-headline-xl font-bold mb-12">The System Architecture</h2>
+<div class="flex flex-col gap-12 relative">
+<div class="absolute left-6 top-8 bottom-8 timeline-connector"></div>
+<!-- Flow Item 1 -->
+<div class="flex gap-8 relative z-10">
+<div class="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(0,112,243,0.5)]">
+<span class="material-symbols-outlined text-white">draw</span>
+</div>
+<div>
+<h4 class="text-xl font-bold mb-2">User Experience</h4>
+<p class="text-on-surface-variant text-sm">Hi-fi prototyping and motion design that prioritizes cognitive load reduction.</p>
+<div class="mt-4 flex gap-2">
+<span class="text-[10px] px-2 py-0.5 bg-white/5 rounded">Figma</span>
+<span class="text-[10px] px-2 py-0.5 bg-white/5 rounded">Protopie</span>
+</div>
+</div>
+</div>
+<!-- Flow Item 2 -->
+<div class="flex gap-8 relative z-10">
+<div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center shrink-0 border border-white/10">
+<span class="material-symbols-outlined text-primary-container">code</span>
+</div>
+<div>
+<h4 class="text-xl font-bold mb-2">Frontend Engineering</h4>
+<p class="text-on-surface-variant text-sm">Pixel-perfect implementation using React and Next.js with atomic design principles.</p>
+</div>
+</div>
+<!-- Flow Item 3 -->
+<div class="flex gap-8 relative z-10">
+<div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center shrink-0 border border-white/10">
+<span class="material-symbols-outlined text-primary-container">terminal</span>
+</div>
+<div>
+<h4 class="text-xl font-bold mb-2">Backend & APIs</h4>
+<p class="text-on-surface-variant text-sm">Robust Node.js and Go microservices built for horizontal scaling.</p>
+</div>
+</div>
+<!-- Flow Item 4 -->
+<div class="flex gap-8 relative z-10">
+<div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center shrink-0 border border-white/10">
+<span class="material-symbols-outlined text-primary-container">database</span>
+</div>
+<div>
+<h4 class="text-xl font-bold mb-2">Data Persistence</h4>
+<p class="text-on-surface-variant text-sm">Optimized PostgreSQL and Redis architectures for sub-100ms response times.</p>
+</div>
+</div>
+<!-- Flow Item 5 -->
+<div class="flex gap-8 relative z-10">
+<div class="w-12 h-12 rounded-full bg-tertiary-container flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(72,221,188,0.3)]">
+<span class="material-symbols-outlined text-white">cloud_done</span>
+</div>
+<div>
+<h4 class="text-xl font-bold mb-2">Cloud & DevOps</h4>
+<p class="text-on-surface-variant text-sm">Automated CI/CD pipelines deployed across AWS and Vercel edge networks.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Process Section -->
+<section class="py-24 px-5 bg-surface-container-low">
+<div class="max-w-xl mx-auto">
+<h2 class="font-headline-xl text-headline-xl font-bold mb-16 text-center">Development Lifecycle</h2>
+<div class="space-y-12">
+<div class="glass-card p-8 rounded-2xl relative">
+<div class="absolute -left-3 top-8 w-6 h-6 bg-primary-container rounded-full border-4 border-surface shadow-xl"></div>
+<span class="text-primary-container font-mono text-sm mb-2 block">01 / Strategy</span>
+<h4 class="text-xl font-bold mb-3">Discovery & Audit</h4>
+<p class="text-on-surface-variant text-sm">We deep-dive into your business logic, user personas, and technical debt to chart the fastest path to MVP or Scale.</p>
+</div>
+<div class="glass-card p-8 rounded-2xl relative">
+<div class="absolute -left-3 top-8 w-6 h-6 bg-primary-container rounded-full border-4 border-surface shadow-xl"></div>
+<span class="text-primary-container font-mono text-sm mb-2 block">02 / Design</span>
+<h4 class="text-xl font-bold mb-3">Iterative Prototyping</h4>
+<p class="text-on-surface-variant text-sm">Creating high-fidelity systems that are not just beautiful, but built to solve specific friction points.</p>
+</div>
+<div class="glass-card p-8 rounded-2xl relative">
+<div class="absolute -left-3 top-8 w-6 h-6 bg-primary-container rounded-full border-4 border-surface shadow-xl"></div>
+<span class="text-primary-container font-mono text-sm mb-2 block">03 / Build</span>
+<h4 class="text-xl font-bold mb-3">Sprints & Deployments</h4>
+<p class="text-on-surface-variant text-sm">Agile engineering with weekly builds and transparent progress tracking via Jira and GitHub.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Services Section -->
+<section class="py-24 px-5 bg-surface">
+<div class="max-w-xl mx-auto">
+<h2 class="font-headline-xl text-headline-xl font-bold mb-12">Our Specialized Services</h2>
+<div class="flex flex-col gap-6">
+<!-- Service Card -->
+<div class="group bg-surface-container-high p-8 rounded-3xl border border-white/5 hover:border-primary-container/30 transition-all">
+<div class="flex justify-between items-start mb-6">
+<span class="material-symbols-outlined text-4xl text-primary-container">devices</span>
+<span class="material-symbols-outlined opacity-0 group-hover:opacity-100 transition-opacity">arrow_outward</span>
+</div>
+<h4 class="text-2xl font-bold mb-4">Custom Software</h4>
+<p class="text-on-surface-variant text-sm leading-relaxed">End-to-end development of bespoke applications that give your business a competitive edge.</p>
+</div>
+<div class="group bg-surface-container-high p-8 rounded-3xl border border-white/5 hover:border-primary-container/30 transition-all">
+<div class="flex justify-between items-start mb-6">
+<span class="material-symbols-outlined text-4xl text-primary-container">currency_bitcoin</span>
+<span class="material-symbols-outlined opacity-0 group-hover:opacity-100 transition-opacity">arrow_outward</span>
+</div>
+<h4 class="text-2xl font-bold mb-4">Web3 & Fintech</h4>
+<p class="text-on-surface-variant text-sm leading-relaxed">Smart contracts, decentralized finance protocols, and secure digital asset management systems.</p>
+</div>
+<div class="group bg-surface-container-high p-8 rounded-3xl border border-white/5 hover:border-primary-container/30 transition-all">
+<div class="flex justify-between items-start mb-6">
+<span class="material-symbols-outlined text-4xl text-primary-container">psychology</span>
+<span class="material-symbols-outlined opacity-0 group-hover:opacity-100 transition-opacity">arrow_outward</span>
+</div>
+<h4 class="text-2xl font-bold mb-4">AI Integration</h4>
+<p class="text-on-surface-variant text-sm leading-relaxed">Leveraging LLMs and predictive modeling to automate complex workflows and data analysis.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Contact Section -->
+<section class="py-24 px-5 bg-surface-container-lowest relative overflow-hidden">
+<div class="absolute inset-0 grid-pattern opacity-30"></div>
+<div class="max-w-xl mx-auto relative z-10">
+<div class="text-center mb-16">
+<h2 class="font-headline-xl text-headline-xl font-bold mb-6">Let's build something extraordinary.</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Ready to ship your next product? Get in touch with our engineering team today.</p>
+</div>
+<form class="flex flex-col gap-6">
+<div class="flex flex-col gap-2">
+<label class="text-xs uppercase tracking-widest font-bold opacity-50 ml-1">Full Name</label>
+<input class="bg-white/5 border border-white/10 rounded-xl p-4 focus:ring-2 focus:ring-primary-container focus:border-transparent outline-none transition-all" placeholder="John Doe" type="text"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-xs uppercase tracking-widest font-bold opacity-50 ml-1">Email Address</label>
+<input class="bg-white/5 border border-white/10 rounded-xl p-4 focus:ring-2 focus:ring-primary-container focus:border-transparent outline-none transition-all" placeholder="john@company.com" type="email"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-xs uppercase tracking-widest font-bold opacity-50 ml-1">How can we help?</label>
+<textarea class="bg-white/5 border border-white/10 rounded-xl p-4 focus:ring-2 focus:ring-primary-container focus:border-transparent outline-none transition-all" placeholder="Describe your project goals..." rows="4"></textarea>
+</div>
+<button class="bg-primary-container text-white py-5 rounded-xl font-bold text-lg shadow-[0_0_30px_rgba(0,112,243,0.3)] hover:scale-[1.02] active:scale-95 transition-all">
+                        Send Project Inquiry
+                    </button>
+</form>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface border-t border-white/5">
+<div class="grid grid-cols-2 md:grid-cols-4 gap-grid-gutter px-8 py-16 max-w-container-max mx-auto">
+<div class="col-span-2 md:col-span-1 mb-8">
+<span class="font-headline-lg text-headline-lg font-black text-on-surface">KASH</span>
+<p class="mt-4 text-on-surface-variant opacity-60 text-xs leading-relaxed">Building the digital foundations of the next generation of industry-leading companies.</p>
+</div>
+<div>
+<h5 class="font-label-sm text-label-sm uppercase tracking-widest text-primary mb-6">Explore</h5>
+<ul class="space-y-4">
+<li><a class="text-on-surface-variant opacity-60 hover:opacity-100 transition-colors text-xs uppercase tracking-widest" href="#">Documentation</a></li>
+<li><a class="text-on-surface-variant opacity-60 hover:opacity-100 transition-colors text-xs uppercase tracking-widest" href="#">System Status</a></li>
+<li><a class="text-on-surface-variant opacity-60 hover:opacity-100 transition-colors text-xs uppercase tracking-widest" href="#">Security</a></li>
+</ul>
+</div>
+<div>
+<h5 class="font-label-sm text-label-sm uppercase tracking-widest text-primary mb-6">Resources</h5>
+<ul class="space-y-4">
+<li><a class="text-on-surface-variant opacity-60 hover:opacity-100 transition-colors text-xs uppercase tracking-widest" href="#">API Reference</a></li>
+<li><a class="text-on-surface-variant opacity-60 hover:opacity-100 transition-colors text-xs uppercase tracking-widest" href="#">Open Source</a></li>
+<li><a class="text-on-surface-variant opacity-60 hover:opacity-100 transition-colors text-xs uppercase tracking-widest" href="#">Privacy</a></li>
+</ul>
+</div>
+</div>
+<div class="border-t border-white/5 py-8 text-center">
+<p class="font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant opacity-40">© 2024 KASH Technologies. Built for High Performance.</p>
+</div>
+</footer>
+<script>
+        // Simple scroll reveal interaction for glass cards
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('opacity-100', 'translate-y-0');
+                    entry.target.classList.remove('opacity-0', 'translate-y-10');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.glass-card').forEach(card => {
+            card.classList.add('transition-all', 'duration-700', 'opacity-0', 'translate-y-10');
+            observer.observe(card);
+        });
+    </script>
+</body></html>

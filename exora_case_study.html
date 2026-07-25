@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Case Study: Exora Exchange | KASH Technologies</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/geist@1.3.0/dist/fonts/geist-sans/geist-sans.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<!-- Shared Tailwind Config -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface": "#131313",
+                    "on-tertiary": "#00382d",
+                    "secondary-fixed": "#efdbff",
+                    "primary": "#aec6ff",
+                    "surface-container": "#201f1f",
+                    "on-error": "#690005",
+                    "on-primary": "#002e6b",
+                    "primary-fixed": "#d8e2ff",
+                    "on-surface-variant": "#c1c6d7",
+                    "on-secondary-fixed-variant": "#6600b7",
+                    "on-secondary-fixed": "#2b0052",
+                    "background": "#131313",
+                    "secondary-fixed-dim": "#dbb8ff",
+                    "primary-container": "#0070f3",
+                    "secondary-container": "#6807ba",
+                    "surface-variant": "#353534",
+                    "tertiary": "#48ddbc",
+                    "surface-container-highest": "#353534",
+                    "error-container": "#93000a",
+                    "tertiary-fixed-dim": "#48ddbc",
+                    "on-secondary": "#470083",
+                    "inverse-on-surface": "#313030",
+                    "surface-container-low": "#1c1b1b",
+                    "on-tertiary-fixed": "#002019",
+                    "on-background": "#e5e2e1",
+                    "secondary": "#dbb8ff",
+                    "outline": "#8b90a0",
+                    "inverse-surface": "#e5e2e1",
+                    "on-primary-fixed": "#001a43",
+                    "surface-tint": "#aec6ff",
+                    "surface-container-high": "#2a2a2a",
+                    "on-primary-fixed-variant": "#004397",
+                    "error": "#ffb4ab",
+                    "surface-dim": "#131313",
+                    "tertiary-container": "#00866f",
+                    "on-secondary-container": "#d0a6ff",
+                    "on-primary-container": "#ffffff",
+                    "inverse-primary": "#0059c5",
+                    "on-surface": "#e5e2e1",
+                    "on-tertiary-container": "#ffffff",
+                    "on-error-container": "#ffdad6",
+                    "outline-variant": "#414754",
+                    "tertiary-fixed": "#6bfad8",
+                    "surface-container-lowest": "#0e0e0e",
+                    "on-tertiary-fixed-variant": "#005142",
+                    "surface-bright": "#3a3939",
+                    "primary-fixed-dim": "#aec6ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "section-gap-mobile": "80px",
+                    "section-gap-desktop": "160px",
+                    "container-max": "1280px",
+                    "stack-sm": "8px",
+                    "stack-lg": "32px",
+                    "stack-xs": "4px",
+                    "stack-md": "16px",
+                    "grid-gutter": "24px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Geist"],
+                    "label-sm": ["Geist"],
+                    "display-lg-mobile": ["Geist"],
+                    "display-lg": ["Geist"],
+                    "headline-lg": ["Geist"],
+                    "headline-xl": ["Geist"],
+                    "body-md": ["Geist"]
+            },
+            "fontSize": {
+                    "body-lg": ["18px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                    "display-lg-mobile": ["40px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "display-lg": ["72px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "800"}],
+                    "headline-lg": ["32px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "headline-xl": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #131313;
+            color: #e5e2e1;
+            font-family: 'Geist', sans-serif;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid transparent;
+            border-image: linear-gradient(to bottom right, rgba(255,255,255, 0.15), rgba(255,255,255, 0.02)) 1;
+        }
+        .grid-pattern {
+            background-image: linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        .glow-blue {
+            background: radial-gradient(circle at center, rgba(0, 112, 243, 0.15) 0%, transparent 70%);
+        }
+        .glow-purple {
+            background: radial-gradient(circle at center, rgba(104, 7, 186, 0.15) 0%, transparent 70%);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Mobile Scrollbar Hide */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="overflow-x-hidden">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-opacity-3 dark:bg-opacity-3 backdrop-blur-xl border-b border-white/10 shadow-2xl">
+<div class="flex justify-between items-center px-8 py-4 max-w-container-max mx-auto">
+<div class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-on-surface tracking-tighter">
+                KASH Technologies
+            </div>
+<div class="hidden md:flex gap-8">
+<a class="text-on-surface-variant dark:text-on-surface-variant opacity-80 hover:opacity-100 hover:text-primary-container transition-all font-body-md text-body-md" href="#">Platform</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant opacity-80 hover:opacity-100 hover:text-primary-container transition-all font-body-md text-body-md" href="#">Solutions</a>
+<a class="text-primary-container dark:text-primary font-semibold border-b-2 border-primary-container font-body-md text-body-md" href="#">Case Studies</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant opacity-80 hover:opacity-100 hover:text-primary-container transition-all font-body-md text-body-md" href="#">Engineering</a>
+</div>
+<button class="bg-primary-container text-on-primary-container px-6 py-2 rounded-lg font-semibold scale-95 active:scale-90 transition-transform">
+                Start a Project
+            </button>
+</div>
+</nav>
+<!-- Hero Section -->
+<section class="relative min-h-screen pt-32 flex flex-col items-center justify-center grid-pattern overflow-hidden">
+
+<div class="glow-blue absolute -top-40 -left-40 w-[600px] h-[600px] blur-[120px]"></div>
+<div class="glow-purple absolute -bottom-40 -right-40 w-[600px] h-[600px] blur-[120px]"></div>
+<div class="max-w-container-max px-8 z-10 text-center">
+<div class="mb-6 inline-flex items-center gap-2 px-4 py-1 rounded-full border border-primary/20 bg-primary/5 text-primary">
+<span class="material-symbols-outlined text-[18px]">currency_bitcoin</span>
+<span class="font-label-sm text-label-sm uppercase tracking-widest">Fintech • Case Study</span>
+</div>
+<h1 class="font-display-lg text-display-lg-mobile md:text-display-lg mb-8 text-on-surface">
+                Exora: The Future of <br/> <span class="text-primary">Digital Assets</span>
+</h1>
+<p class="font-body-lg text-body-lg max-w-2xl mx-auto text-on-surface-variant mb-12">
+                Building a high-performance, institutional-grade cryptocurrency exchange from the ground up with focus on sub-millisecond execution and ironclad security.
+            </p>
+</div>
+<!-- Phone Frame Container -->
+<div class="relative w-[320px] h-[640px] md:w-[380px] md:h-[760px] bg-black rounded-[60px] border-[12px] border-[#1a1a1a] shadow-[0_0_100px_rgba(0,0,0,0.8)] overflow-hidden mt-12 transition-transform duration-700 hover:scale-[1.02]">
+<div class="absolute top-0 w-full h-8 flex justify-center items-center">
+<div class="w-24 h-6 bg-[#1a1a1a] rounded-b-3xl"></div>
+</div>
+<div class="w-full h-full bg-surface-container-lowest relative">
+<!-- Mockup Content -->
+<div class="p-6 pt-12">
+<div class="flex justify-between items-center mb-8">
+<div>
+<p class="text-[10px] uppercase text-outline tracking-widest">Total Balance</p>
+<h3 class="text-2xl font-bold text-on-surface">$42,892.40</h3>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">notifications</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-3 mb-8">
+<div class="p-4 bg-primary-container rounded-2xl">
+<span class="material-symbols-outlined text-white mb-2">trending_up</span>
+<p class="text-xs text-white/80">Trade</p>
+</div>
+<div class="p-4 bg-surface-variant rounded-2xl">
+<span class="material-symbols-outlined text-primary mb-2">account_balance_wallet</span>
+<p class="text-xs text-on-surface-variant">Wallet</p>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex items-center justify-between p-3 glass-card rounded-xl">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-[#F7931A] rounded-full flex items-center justify-center">B</div>
+<div>
+<p class="font-bold text-sm">Bitcoin</p>
+<p class="text-xs text-outline">BTC</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-bold text-sm">$64,231.00</p>
+<p class="text-xs text-tertiary">+2.45%</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Overview Section -->
+<section class="py-section-gap-desktop max-w-container-max mx-auto px-8">
+<div class="grid md:grid-cols-3 gap-12">
+<div class="space-y-6">
+<div class="w-12 h-12 bg-error-container/20 rounded-xl flex items-center justify-center">
+<span class="material-symbols-outlined text-error">warning</span>
+</div>
+<h3 class="font-headline-lg text-headline-lg">The Problem</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                    Existing retail exchanges faced massive latency during market volatility, leading to failed trades and liquidated positions. Users lacked professional-grade charting tools in a mobile-first environment.
+                </p>
+</div>
+<div class="space-y-6">
+<div class="w-12 h-12 bg-tertiary-container/20 rounded-xl flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary">bolt</span>
+</div>
+<h3 class="font-headline-lg text-headline-lg">The Solution</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                    A proprietary order-matching engine built with high-throughput architecture, combined with a sleek Glassmorphic UI that provides institutional clarity for retail investors.
+                </p>
+</div>
+<div class="space-y-6">
+<div class="w-12 h-12 bg-primary-container/20 rounded-xl flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">auto_awesome</span>
+</div>
+<h3 class="font-headline-lg text-headline-lg">Key Features</h3>
+<ul class="font-body-md text-body-md text-on-surface-variant space-y-2">
+<li class="flex items-center gap-2"><span class="w-1.5 h-1.5 bg-primary rounded-full"></span> Sub-50ms Execution</li>
+<li class="flex items-center gap-2"><span class="w-1.5 h-1.5 bg-primary rounded-full"></span> Multi-Chain Wallet Support</li>
+<li class="flex items-center gap-2"><span class="w-1.5 h-1.5 bg-primary rounded-full"></span> Real-time WebSocket Data</li>
+</ul>
+</div>
+</div>
+</section>
+<!-- Interactive Prototype -->
+<section class="bg-surface-container-low py-section-gap-desktop overflow-hidden">
+<div class="max-w-container-max mx-auto px-8 grid md:grid-cols-2 gap-16 items-center">
+<div class="order-2 md:order-1 flex justify-center">
+<div class="relative w-[280px] h-[580px] bg-black rounded-[50px] border-[8px] border-[#1a1a1a] shadow-2xl overflow-hidden" id="phone-screen">
+<div class="w-full h-full bg-surface relative transition-all duration-500" id="screen-content">
+<!-- Dynamic content injected by JS -->
+<div class="p-6 flex flex-col h-full">
+<div class="text-xl font-bold mb-6" id="dynamic-title">Home</div>
+<div class="flex-grow space-y-4" id="dynamic-body">
+<div class="h-32 bg-surface-variant rounded-xl animate-pulse"></div>
+<div class="h-12 bg-surface-variant rounded-xl"></div>
+<div class="h-12 bg-surface-variant rounded-xl"></div>
+</div>
+<!-- App Nav -->
+<div class="mt-auto pt-4 flex justify-between border-t border-white/10">
+<span class="material-symbols-outlined text-primary">home</span>
+<span class="material-symbols-outlined text-outline">trending_up</span>
+<span class="material-symbols-outlined text-outline">swap_horiz</span>
+<span class="material-symbols-outlined text-outline">account_balance_wallet</span>
+<span class="material-symbols-outlined text-outline">person</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="order-1 md:order-2 space-y-8">
+<h2 class="font-headline-xl text-headline-xl">Experience the <br/> <span class="text-primary">Interface Flow</span></h2>
+<div class="grid grid-cols-1 gap-4" id="proto-nav">
+<button class="p-4 rounded-xl glass-card flex items-center gap-4 transition-all hover:bg-white/5 border-l-4 border-primary" onclick="updateScreen('home')">
+<span class="material-symbols-outlined text-primary">home</span>
+<div class="text-left">
+<p class="font-bold">Home Dashboard</p>
+<p class="text-xs text-outline">Portfolio overview and market alerts</p>
+</div>
+</button>
+<button class="p-4 rounded-xl glass-card flex items-center gap-4 transition-all hover:bg-white/5 opacity-50" onclick="updateScreen('markets')">
+<span class="material-symbols-outlined">trending_up</span>
+<div class="text-left">
+<p class="font-bold">Global Markets</p>
+<p class="text-xs text-outline">Real-time price discovery</p>
+</div>
+</button>
+<button class="p-4 rounded-xl glass-card flex items-center gap-4 transition-all hover:bg-white/5 opacity-50" onclick="updateScreen('trade')">
+<span class="material-symbols-outlined">swap_horiz</span>
+<div class="text-left">
+<p class="font-bold">Pro Trading</p>
+<p class="text-xs text-outline">Advanced order types &amp; charts</p>
+</div>
+</button>
+<button class="p-4 rounded-xl glass-card flex items-center gap-4 transition-all hover:bg-white/5 opacity-50" onclick="updateScreen('wallet')">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<div class="text-left">
+<p class="font-bold">Secure Wallet</p>
+<p class="text-xs text-outline">Asset management and custody</p>
+</div>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Technical Section -->
+<section class="py-section-gap-desktop max-w-container-max mx-auto px-8">
+<div class="text-center mb-16">
+<h2 class="font-headline-xl text-headline-xl mb-4">Engineering Excellence</h2>
+<p class="text-on-surface-variant max-w-2xl mx-auto">Our security-first approach combines traditional finance principles with cutting-edge distributed systems.</p>
+</div>
+<div class="grid md:grid-cols-2 gap-12">
+<!-- Architecture Card -->
+<div class="glass-card p-10 rounded-3xl relative overflow-hidden group">
+<div class="absolute -right-10 -top-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl transition-all group-hover:bg-primary/20"></div>
+<h3 class="font-headline-lg text-headline-lg mb-8 flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">account_tree</span> Architecture
+                </h3>
+<div class="space-y-6">
+<div class="flex items-start gap-4">
+<div class="w-8 h-8 rounded-lg bg-surface-variant flex items-center justify-center shrink-0">1</div>
+<div>
+<p class="font-bold text-on-surface">Double-Entry Ledger</p>
+<p class="text-sm text-on-surface-variant">Immutable accounting system ensuring zero-sum balance at all times.</p>
+</div>
+</div>
+<div class="flex items-start gap-4">
+<div class="w-8 h-8 rounded-lg bg-surface-variant flex items-center justify-center shrink-0">2</div>
+<div>
+<p class="font-bold text-on-surface">Maker-Checker Protocol</p>
+<p class="text-sm text-on-surface-variant">Mandatory dual-authorization for large institutional withdrawals.</p>
+</div>
+</div>
+<div class="flex items-start gap-4">
+<div class="w-8 h-8 rounded-lg bg-surface-variant flex items-center justify-center shrink-0">3</div>
+<div>
+<p class="font-bold text-on-surface">Hot/Cold Storage Separation</p>
+<p class="text-sm text-on-surface-variant">95% of assets kept in air-gapped multisig vaults.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Tech Stack -->
+<div class="glass-card p-10 rounded-3xl">
+<h3 class="font-headline-lg text-headline-lg mb-8 flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary">code</span> Tech Stack
+                </h3>
+<div class="flex flex-wrap gap-3">
+<span class="px-4 py-2 rounded-lg bg-primary/5 border border-primary/20 text-primary font-label-sm">Next.js</span>
+<span class="px-4 py-2 rounded-lg bg-primary/5 border border-primary/20 text-primary font-label-sm">Node.js</span>
+<span class="px-4 py-2 rounded-lg bg-primary/5 border border-primary/20 text-primary font-label-sm">TypeScript</span>
+<span class="px-4 py-2 rounded-lg bg-primary/5 border border-primary/20 text-primary font-label-sm">PostgreSQL</span>
+<span class="px-4 py-2 rounded-lg bg-primary/5 border border-primary/20 text-primary font-label-sm">Prisma</span>
+<span class="px-4 py-2 rounded-lg bg-primary/5 border border-primary/20 text-primary font-label-sm">Redis</span>
+<span class="px-4 py-2 rounded-lg bg-primary/5 border border-primary/20 text-primary font-label-sm">Docker</span>
+<span class="px-4 py-2 rounded-lg bg-primary/5 border border-primary/20 text-primary font-label-sm">AWS EKS</span>
+<span class="px-4 py-2 rounded-lg bg-primary/5 border border-primary/20 text-primary font-label-sm">Terraform</span>
+</div>
+<div class="mt-8 p-6 bg-surface-container rounded-2xl border border-white/5">
+<div class="flex items-center gap-4 text-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-tertiary">verified_user</span>
+<span>SOC2 Compliance Ready Infrastructure</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Process Section -->
+<section class="py-section-gap-desktop bg-surface-container-lowest">
+<div class="max-w-container-max mx-auto px-8">
+<h2 class="font-headline-xl text-headline-xl mb-16 text-center">Development Journey</h2>
+<div class="relative">
+<!-- Line -->
+<div class="absolute left-1/2 top-0 bottom-0 w-px bg-white/10 hidden md:block"></div>
+<div class="space-y-24">
+<!-- Step 1 -->
+<div class="flex flex-col md:flex-row items-center gap-12 relative">
+<div class="md:w-1/2 md:text-right">
+<h4 class="font-headline-lg text-headline-lg text-primary mb-2">01 Discover</h4>
+<p class="text-on-surface-variant">Stakeholder interviews, market competitive analysis, and definition of institutional-grade requirements.</p>
+</div>
+<div class="w-4 h-4 rounded-full bg-primary z-10 shadow-[0_0_20px_rgba(174,198,255,0.8)]"></div>
+<div class="md:w-1/2">
+<div class="p-6 glass-card rounded-2xl">
+<p class="text-xs text-outline uppercase mb-2">Outcome</p>
+<p class="text-sm">Comprehensive Product Requirement Document (PRD) &amp; Security Charter.</p>
+</div>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="flex flex-col md:flex-row-reverse items-center gap-12 relative">
+<div class="md:w-1/2 md:text-left">
+<h4 class="font-headline-lg text-headline-lg text-tertiary mb-2">02 Architect</h4>
+<p class="text-on-surface-variant">System design for the matching engine, database schema modeling, and DevOps pipeline setup.</p>
+</div>
+<div class="w-4 h-4 rounded-full bg-tertiary z-10 shadow-[0_0_20px_rgba(72,221,188,0.8)]"></div>
+<div class="md:w-1/2">
+<div class="p-6 glass-card rounded-2xl">
+<p class="text-xs text-outline uppercase mb-2">Outcome</p>
+<p class="text-sm">High-fidelity wireframes and cloud infrastructure blueprint.</p>
+</div>
+</div>
+</div>
+<!-- Step 3 -->
+<div class="flex flex-col md:flex-row items-center gap-12 relative">
+<div class="md:w-1/2 md:text-right">
+<h4 class="font-headline-lg text-headline-lg text-secondary mb-2">03 Build</h4>
+<p class="text-on-surface-variant">Iterative development cycles using Agile methodology with continuous integration and security audits.</p>
+</div>
+<div class="w-4 h-4 rounded-full bg-secondary z-10 shadow-[0_0_20px_rgba(219,184,255,0.8)]"></div>
+<div class="md:w-1/2">
+<div class="p-6 glass-card rounded-2xl">
+<p class="text-xs text-outline uppercase mb-2">Outcome</p>
+<p class="text-sm">Beta application deployed to staging environment for load testing.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- CTA Section -->
+<section class="py-section-gap-desktop px-8 relative overflow-hidden">
+<div class="glow-blue absolute -bottom-40 left-1/2 -translate-x-1/2 w-[800px] h-[400px] blur-[150px] opacity-30"></div>
+<div class="max-w-4xl mx-auto glass-card p-12 md:p-20 rounded-[40px] text-center relative z-10">
+<h2 class="font-display-lg text-display-lg-mobile md:text-headline-xl mb-8">Ready to build your <br/> <span class="text-primary">next breakthrough?</span></h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-12">
+                We specialize in high-load financial systems and premium user experiences. Let's discuss your project vision.
+            </p>
+<div class="flex flex-col md:flex-row gap-6 justify-center">
+<button class="px-10 py-5 bg-primary-container text-on-primary-container rounded-2xl font-bold text-lg hover:shadow-[0_0_30px_rgba(0,112,243,0.4)] transition-all">
+                    Start a Project
+                </button>
+<button class="px-10 py-5 bg-white/5 border border-white/10 rounded-2xl font-bold text-lg hover:bg-white/10 transition-all">
+                    View Other Case Studies
+                </button>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="bg-surface dark:bg-surface border-t border-white/5">
+<div class="grid grid-cols-2 md:grid-cols-4 gap-grid-gutter px-8 py-stack-lg max-w-container-max mx-auto">
+<div class="col-span-2">
+<div class="font-headline-lg text-headline-lg font-black text-on-surface mb-4">KASH</div>
+<p class="font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant opacity-60">
+                    © 2024 KASH Technologies. Built for High Performance.
+                </p>
+</div>
+<div class="space-y-4">
+<h5 class="font-label-sm text-label-sm uppercase tracking-widest text-primary">Resources</h5>
+<nav class="flex flex-col gap-2">
+<a class="text-on-surface-variant opacity-60 hover:text-primary transition-colors font-label-sm text-label-sm uppercase tracking-widest" href="#">Documentation</a>
+<a class="text-on-surface-variant opacity-60 hover:text-primary transition-colors font-label-sm text-label-sm uppercase tracking-widest" href="#">System Status</a>
+<a class="text-on-surface-variant opacity-60 hover:text-primary transition-colors font-label-sm text-label-sm uppercase tracking-widest" href="#">Security</a>
+</nav>
+</div>
+<div class="space-y-4">
+<h5 class="font-label-sm text-label-sm uppercase tracking-widest text-primary">Legal</h5>
+<nav class="flex flex-col gap-2">
+<a class="text-on-surface-variant opacity-60 hover:text-primary transition-colors font-label-sm text-label-sm uppercase tracking-widest" href="#">Privacy</a>
+<a class="text-on-surface-variant opacity-60 hover:text-primary transition-colors font-label-sm text-label-sm uppercase tracking-widest" href="#">Terms</a>
+<a class="text-on-surface-variant opacity-60 hover:text-primary transition-colors font-label-sm text-label-sm uppercase tracking-widest" href="#">Open Source</a>
+</nav>
+</div>
+</div>
+</footer>
+<script>
+        function updateScreen(state) {
+            const content = document.getElementById('screen-content');
+            const title = document.getElementById('dynamic-title');
+            const body = document.getElementById('dynamic-body');
+            const navButtons = document.querySelectorAll('#proto-nav button');
+
+            // Reset buttons
+            navButtons.forEach(btn => {
+                btn.classList.add('opacity-50');
+                btn.classList.remove('border-l-4', 'border-primary');
+            });
+
+            // Set Active
+            event.currentTarget.classList.remove('opacity-50');
+            event.currentTarget.classList.add('border-l-4', 'border-primary');
+
+            // Transitions
+            content.classList.add('opacity-0', 'scale-95');
+            
+            setTimeout(() => {
+                title.innerText = state.charAt(0).toUpperCase() + state.slice(1);
+                
+                if (state === 'home') {
+                    body.innerHTML = `
+                        <div class="h-32 bg-primary-container/20 rounded-xl flex items-center justify-center border border-primary/20">
+                            <span class="material-symbols-outlined text-primary text-4xl">analytics</span>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="h-10 bg-surface-variant rounded-lg flex items-center px-4 justify-between">
+                                <span class="text-xs">ETH/USDT</span>
+                                <span class="text-xs text-tertiary">+4.2%</span>
+                            </div>
+                            <div class="h-10 bg-surface-variant rounded-lg flex items-center px-4 justify-between">
+                                <span class="text-xs">SOL/USDT</span>
+                                <span class="text-xs text-error">-1.8%</span>
+                            </div>
+                        </div>
+                    `;
+                } else if (state === 'markets') {
+                    body.innerHTML = `
+                        <div class="space-y-3">
+                            ${[1,2,3,4,5].map(() => `
+                                <div class="flex justify-between items-center p-3 border-b border-white/5">
+                                    <div class="w-8 h-8 bg-surface-variant rounded-full"></div>
+                                    <div class="flex-grow ml-3 h-2 bg-surface-variant rounded w-1/2"></div>
+                                    <div class="h-2 bg-tertiary/20 rounded w-8"></div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                } else if (state === 'trade') {
+                    body.innerHTML = `
+                        <div class="h-48 bg-black rounded-xl border border-white/10 p-2 flex items-end gap-1">
+                            ${[40, 60, 30, 80, 50, 90, 70].map(h => `<div class="flex-grow bg-primary" style="height: ${h}%"></div>`).join('')}
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 mt-4">
+                            <div class="h-10 bg-tertiary/20 text-tertiary flex items-center justify-center rounded font-bold text-xs">BUY</div>
+                            <div class="h-10 bg-error/20 text-error flex items-center justify-center rounded font-bold text-xs">SELL</div>
+                        </div>
+                    `;
+                } else if (state === 'wallet') {
+                    body.innerHTML = `
+                        <div class="p-4 bg-surface-variant rounded-2xl">
+                            <p class="text-xs text-outline mb-1">Available Assets</p>
+                            <p class="text-xl font-bold">$24,103.00</p>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="flex-1 h-12 bg-surface-variant rounded-xl flex items-center justify-center"><span class="material-symbols-outlined text-sm">north_east</span></div>
+                            <div class="flex-1 h-12 bg-surface-variant rounded-xl flex items-center justify-center"><span class="material-symbols-outlined text-sm">south_west</span></div>
+                        </div>
+                    `;
+                }
+                
+                content.classList.remove('opacity-0', 'scale-95');
+            }, 300);
+        }
+    </script>
+</body></html>

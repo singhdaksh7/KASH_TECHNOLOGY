@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KASH Technologies | Precision Engineering</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        @import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap');
+        
+        body {
+            font-family: 'Geist', sans-serif;
+            background-color: #050505;
+            color: #e5e2e1;
+            overflow-x: hidden;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .gradient-border {
+            border: 1px solid transparent;
+            background: linear-gradient(#050505, #050505) padding-box,
+                        linear-gradient(to bottom right, rgba(255,255,255,0.15), rgba(255,255,255,0.02)) border-box;
+        }
+
+        .glow-blob {
+            background: radial-gradient(circle at 50% 50%, rgba(0, 112, 243, 0.15) 0%, transparent 70%);
+            filter: blur(80px);
+        }
+
+        .marquee-track {
+            display: flex;
+            width: max-content;
+            animation: marquee 40s linear infinite;
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .grid-pattern {
+            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+
+        .phone-mockup {
+            border: 12px solid #1a1a1a;
+            border-radius: 3rem;
+            box-shadow: 0 0 0 2px #333, 0 50px 100px -20px rgba(0,0,0,0.5);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .phone-mockup::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .phone-nav-item.active {
+            color: #aec6ff;
+        }
+
+        .nav-scrolled {
+            background: rgba(5, 5, 5, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .reveal-on-scroll {
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#aec6ff",
+                        "on-primary": "#002e6b",
+                        "primary-container": "#0070f3",
+                        "on-primary-container": "#ffffff",
+                        "surface": "#050505",
+                        "on-surface": "#e5e2e1",
+                        "on-surface-variant": "#c1c6d7",
+                        "background": "#050505"
+                    },
+                    "spacing": {
+                        "container-max": "1280px",
+                        "section-gap": "96px"
+                    },
+                    "fontFamily": {
+                        "display": ["Geist", "Inter", "sans-serif"],
+                        "body": ["Geist", "Inter", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface">
+<nav class="fixed top-0 w-full z-50 transition-all duration-300" id="top-nav">
+<div class="flex justify-between items-center px-8 py-5 max-w-container-max mx-auto">
+<div class="text-2xl font-black tracking-tighter text-on-surface">KASH Technologies</div>
+<div class="hidden md:flex gap-10">
+<a class="text-sm font-medium text-primary" href="#">Home</a>
+<a class="text-sm font-medium text-on-surface/60 hover:text-on-surface transition-colors" href="#">Work</a>
+<a class="text-sm font-medium text-on-surface/60 hover:text-on-surface transition-colors" href="#">Services</a>
+<a class="text-sm font-medium text-on-surface/60 hover:text-on-surface transition-colors" href="#">Engineering</a>
+<a class="text-sm font-medium text-on-surface/60 hover:text-on-surface transition-colors" href="#">About</a>
+</div>
+<button class="bg-primary-container text-on-primary-container px-6 py-2.5 rounded-full text-sm font-bold hover:brightness-110 transition-all">
+            Start a Project
+        </button>
+</div>
+</nav>
+<main>
+<!-- Hero Section -->
+<section class="min-h-screen pt-32 pb-24 flex flex-col items-center justify-center relative px-8 overflow-hidden reveal-on-scroll">
+<div class="absolute inset-0 grid-pattern opacity-20 pointer-events-none"></div>
+<div class="max-w-4xl text-center z-10">
+<h1 class="text-5xl md:text-7xl font-black tracking-tight text-on-surface mb-8 leading-[1.1]">
+                From an idea to a production-ready digital product.
+            </h1>
+<p class="text-xl text-on-surface-variant max-w-2xl mx-auto mb-12 leading-relaxed">
+                KASH Technologies builds secure SaaS platforms, business automation systems, fintech products, ERP solutions and blockchain applications.
+            </p>
+<div class="flex flex-col md:flex-row gap-5 justify-center">
+<button class="bg-primary-container text-on-primary-container px-10 py-4 rounded-full font-bold hover:scale-105 transition-transform shadow-lg shadow-primary-container/20">
+                    Explore Our Work
+                </button>
+<button class="border border-white/10 bg-white/5 backdrop-blur-md text-on-surface px-10 py-4 rounded-full font-bold hover:bg-white/10 transition-all">
+                    Start a Project
+                </button>
+</div>
+</div>
+<!-- Hero Visual -->
+<div class="relative mt-24 w-full max-w-container-max flex justify-center perspective-1000">
+<div class="relative w-full max-w-4xl aspect-video glass-panel rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
+<div class="absolute inset-0 bg-cover bg-center opacity-40 blur-sm" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCtCiqth7r0w1a7FrheJWQGFAju9748wZ_ENDPJyuvCiS-BQGfvBoHtSgc374xweg13WY0F4G_KhhtvCaQ5dckgXk8WvbfYBkPZbMtpzaIdHslBB4ofkqSlZqbboZQBhEqoRfu3e5PMdyyi1BIjW8LVjKHJFH45v1a-l_GuYfjrr93mHK_kALJMLosJlT6koW8zL08v9uFimA7ZMpGdnHsJL-EkPVaTdC4lQvHDsTvUbUJ8hy1K08Fo0G5hKb96CPoODbLT474PJ1tc')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface to-transparent"></div>
+</div>
+</div>
+</section>
+<!-- Capability Strip -->
+<section class="py-16 border-y border-white/5 bg-white/[0.02] backdrop-blur-sm overflow-hidden reveal-on-scroll">
+<div class="marquee-track">
+<div class="flex gap-24 px-12 items-center">
+<span class="text-on-surface-variant font-bold text-lg flex items-center gap-3"><span class="material-symbols-outlined text-primary">terminal</span> Web Apps</span>
+<span class="text-on-surface-variant font-bold text-lg flex items-center gap-3"><span class="material-symbols-outlined text-primary">smartphone</span> Mobile</span>
+<span class="text-on-surface-variant font-bold text-lg flex items-center gap-3"><span class="material-symbols-outlined text-primary">cloud</span> SaaS</span>
+<span class="text-on-surface-variant font-bold text-lg flex items-center gap-3"><span class="material-symbols-outlined text-primary">corporate_fare</span> ERP</span>
+<span class="text-on-surface-variant font-bold text-lg flex items-center gap-3"><span class="material-symbols-outlined text-primary">account_balance</span> Fintech</span>
+<span class="text-on-surface-variant font-bold text-lg flex items-center gap-3"><span class="material-symbols-outlined text-primary">currency_bitcoin</span> Blockchain</span>
+</div>
+<!-- Duplicated for seamless loop -->
+<div class="flex gap-24 px-12 items-center">
+<span class="text-on-surface-variant font-bold text-lg flex items-center gap-3"><span class="material-symbols-outlined text-primary">terminal</span> Web Apps</span>
+<span class="text-on-surface-variant font-bold text-lg flex items-center gap-3"><span class="material-symbols-outlined text-primary">smartphone</span> Mobile</span>
+<span class="text-on-surface-variant font-bold text-lg flex items-center gap-3"><span class="material-symbols-outlined text-primary">cloud</span> SaaS</span>
+<span class="text-on-surface-variant font-bold text-lg flex items-center gap-3"><span class="material-symbols-outlined text-primary">corporate_fare</span> ERP</span>
+<span class="text-on-surface-variant font-bold text-lg flex items-center gap-3"><span class="material-symbols-outlined text-primary">account_balance</span> Fintech</span>
+<span class="text-on-surface-variant font-bold text-lg flex items-center gap-3"><span class="material-symbols-outlined text-primary">currency_bitcoin</span> Blockchain</span>
+</div>
+</div>
+</section>
+<!-- Exora Section -->
+<section class="project-showcase-container py-24 max-w-container-max mx-auto px-8 grid grid-cols-1 md:grid-cols-2 gap-20 relative reveal-on-scroll">
+<div class="space-y-10 py-12">
+<div class="inline-flex px-4 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-widest">Fintech Engineering</div>
+<h2 class="text-5xl font-black leading-tight">Exora: Next-Gen Asset Management</h2>
+<p class="text-lg text-on-surface-variant leading-relaxed">A robust, high-frequency trading and wallet management platform. We built a real-time reactive engine that handles millions of transactions with sub-millisecond latency.</p>
+<div class="space-y-6">
+<div class="p-6 rounded-2xl glass-panel border border-white/5 hover:border-primary/30 transition-all group">
+<h4 class="font-bold text-xl mb-3 flex items-center gap-3">
+<span class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm">1</span>
+                        Real-time Markets
+                    </h4>
+<p class="text-on-surface-variant pl-11">Live WebSocket streams for instantaneous price updates and order book depth.</p>
+</div>
+<div class="p-6 rounded-2xl glass-panel border border-white/5 hover:border-primary/30 transition-all group">
+<h4 class="font-bold text-xl mb-3 flex items-center gap-3">
+<span class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm">2</span>
+                        Biometric Security
+                    </h4>
+<p class="text-on-surface-variant pl-11">Military-grade encryption with multi-sig wallet architectures and biometric auth.</p>
+</div>
+</div>
+</div>
+<div class="relative flex justify-center items-start pt-12">
+<div class="absolute w-[400px] h-[400px] glow-blob -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-40"></div>
+<div class="sticky-phone sticky top-32 w-full max-w-[320px]">
+<div class="phone-mockup aspect-[9/19.5] bg-black">
+<!-- Screen Container -->
+<div class="w-full h-full relative">
+<img alt="Exora Home" class="phone-screen-img w-full h-full object-cover transition-opacity duration-300" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYmRElVQyi5YaLItsbAGbek4jYxCd10pvyWgAccpkxODuhqL9Bu6Z_KCOiD9wRc-ikURWQmoR4OkSdeaZ4vQy5oD4MbfpsRc2NLYNrnrxWiEQOu71oIZc83JF4q0Wjv6lVQwVhJ0125c5EeaAdZ1lMjoIELPRD3KurCOc4XpHhvmOFB6gQ3FtpDZrkoMYTl1oQgvOJYQgk-EvKv3q8HNeH6YjJZCJh-i7qPjjTbGLvl72QyRYoBx2MNKWF9cujbnRJnCeT7zHJb84a"/>
+<!-- Dynamic Notch -->
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-7 bg-black rounded-b-2xl z-20"></div>
+<!-- Inside Phone Navigation -->
+<div class="absolute bottom-0 w-full p-4 bg-black/80 backdrop-blur-lg border-t border-white/10 grid grid-cols-5 gap-1 z-10">
+<button class="phone-nav-item active flex flex-col items-center gap-1" data-screen="home">
+<span class="material-symbols-outlined text-sm">home</span>
+<span class="text-[8px] uppercase font-bold">Home</span>
+</button>
+<button class="phone-nav-item flex flex-col items-center gap-1" data-screen="markets">
+<span class="material-symbols-outlined text-sm">show_chart</span>
+<span class="text-[8px] uppercase font-bold">Markets</span>
+</button>
+<button class="phone-nav-item flex flex-col items-center gap-1" data-screen="trade">
+<span class="material-symbols-outlined text-sm">swap_horiz</span>
+<span class="text-[8px] uppercase font-bold">Trade</span>
+</button>
+<button class="phone-nav-item flex flex-col items-center gap-1" data-screen="wallet">
+<span class="material-symbols-outlined text-sm">account_balance_wallet</span>
+<span class="text-[8px] uppercase font-bold">Wallet</span>
+</button>
+<button class="phone-nav-item flex flex-col items-center gap-1" data-screen="profile">
+<span class="material-symbols-outlined text-sm">person</span>
+<span class="text-[8px] uppercase font-bold">User</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- SchoolSync Section -->
+<section class="py-24 bg-white/[0.02] relative overflow-hidden reveal-on-scroll">
+<div class="absolute w-[600px] h-[600px] glow-blob -z-10 bottom-0 right-0 opacity-20"></div>
+<div class="max-w-container-max mx-auto px-8">
+<div class="text-center mb-16">
+<div class="inline-flex px-4 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-widest mb-6">SaaS &amp; ERP</div>
+<h2 class="text-5xl font-black mb-6">SchoolSync Ecosystem</h2>
+<p class="text-lg text-on-surface-variant max-w-2xl mx-auto">Bridging the gap between administrators, teachers, and parents with a unified data-driven platform.</p>
+</div>
+<!-- Role Tabs -->
+<div class="flex justify-center mb-12 bg-white/5 p-1.5 rounded-2xl w-fit mx-auto border border-white/10">
+<button class="role-tab px-10 py-3 rounded-xl bg-primary text-on-primary font-bold transition-all" data-role="admin">Administrator</button>
+<button class="role-tab px-10 py-3 rounded-xl hover:bg-white/5 transition-all font-bold" data-role="teacher">Teacher</button>
+<button class="role-tab px-10 py-3 rounded-xl hover:bg-white/5 transition-all font-bold" data-role="parent">Parent</button>
+</div>
+<div class="max-w-5xl mx-auto">
+<div class="relative group">
+<!-- Realistic Laptop Frame -->
+<div class="rounded-t-2xl border-[14px] border-[#222] bg-[#000] aspect-[16/10] overflow-hidden relative shadow-2xl">
+<div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none z-10"></div>
+<img alt="Admin Dashboard" class="laptop-screen-img w-full h-full object-cover transition-all duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYQJ7ScrPG_mnlA7_afN42WU4CjrDuOEmnwcsG2BmOi2FBq9Ws5ZwohPvRqHWykQv185HAF6FoNaV-FUZuosdLOT9uQzrtQVmDJ45g72oQZ1mFZwt-WhlxiVAAFIk7iwKFz5GY3vGXqAa39IdibZIU0bH51a5lYbCaLstyQMIGZXOjLtQYM3NLjlw-cgK-28Z2E5y7l8jOGeDVR1_K6_TRLAFxo_UZUHRVKUX1uIu1YYIuyy-BkCgNJLMJ1dfJBD_ar_RAogguow-J"/>
+</div>
+<div class="h-4 bg-[#1a1a1a] rounded-b-xl w-[104%] -ml-[2%] relative z-10 shadow-lg border-t border-white/10"></div>
+<div class="h-2 bg-[#000] rounded-b-3xl w-[35%] mx-auto opacity-50"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- BSC Crypto Launchpad Section -->
+<section class="py-24 max-w-container-max mx-auto px-8 reveal-on-scroll">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
+<div class="lg:col-span-4 space-y-8">
+<div class="inline-flex px-4 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-widest">Blockchain Engineering</div>
+<h2 class="text-5xl font-black leading-tight">Decentralized Launchpad</h2>
+<p class="text-lg text-on-surface-variant">Automated smart contract deployment and liquidity locking for BSC-based projects with enterprise-grade security audits.</p>
+<div class="space-y-4">
+<button class="launch-step w-full p-5 border-l-4 border-primary bg-white/5 flex gap-5 items-center transition-all text-left" data-step="connect">
+<span class="material-symbols-outlined text-primary text-3xl">account_balance_wallet</span>
+<div>
+<p class="font-black text-sm uppercase tracking-wider text-primary">Step 01</p>
+<h4 class="font-bold">Connect Wallet</h4>
+</div>
+</button>
+<button class="launch-step w-full p-5 border-l-4 border-transparent hover:bg-white/5 flex gap-5 items-center transition-all text-left" data-step="create">
+<span class="material-symbols-outlined text-on-surface-variant text-3xl">generating_tokens</span>
+<div>
+<p class="font-black text-sm uppercase tracking-wider opacity-50">Step 02</p>
+<h4 class="font-bold">Token Creation</h4>
+</div>
+</button>
+<button class="launch-step w-full p-5 border-l-4 border-transparent hover:bg-white/5 flex gap-5 items-center transition-all text-left" data-step="config">
+<span class="material-symbols-outlined text-on-surface-variant text-3xl">settings_input_component</span>
+<div>
+<p class="font-black text-sm uppercase tracking-wider opacity-50">Step 03</p>
+<h4 class="font-bold">Configure Presale</h4>
+</div>
+</button>
+<button class="launch-step w-full p-5 border-l-4 border-transparent hover:bg-white/5 flex gap-5 items-center transition-all text-left" data-step="publish">
+<span class="material-symbols-outlined text-on-surface-variant text-3xl">rocket_launch</span>
+<div>
+<p class="font-black text-sm uppercase tracking-wider opacity-50">Step 04</p>
+<h4 class="font-bold">Launch to Mainnet</h4>
+</div>
+</button>
+</div>
+</div>
+<div class="lg:col-span-8">
+<div class="relative">
+<div class="absolute w-[500px] h-[500px] glow-blob -z-10 top-0 right-0 opacity-30"></div>
+<div class="glass-panel rounded-3xl p-1 overflow-hidden border border-white/10 shadow-2xl">
+<!-- Browser Chrome -->
+<div class="bg-[#111] px-6 py-4 flex items-center gap-4 border-b border-white/10">
+<div class="flex gap-2">
+<div class="w-3 h-3 rounded-full bg-red-500/40"></div>
+<div class="w-3 h-3 rounded-full bg-yellow-500/40"></div>
+<div class="w-3 h-3 rounded-full bg-green-500/40"></div>
+</div>
+<div class="bg-white/5 px-6 py-1.5 rounded-full text-xs text-on-surface-variant/70 flex-grow text-center font-medium border border-white/5">
+                                launchpad.kash.tech/v2/deployment
+                            </div>
+</div>
+<!-- Browser Content -->
+<div class="bg-[#0a0a0a] aspect-[16/10]">
+<img alt="Launchpad Connect" class="browser-screen-img w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQoSv2eTkd5n3i6lNKVKJXLCQgYCCGDNeYoG6cCVHlSeBUafUNpQjw8zSpPv4g6qIXlkTCeyCl23scdItUSdFlUwObk6SF9Hy2xGUeCmouvhbXLHTLlxJZpO71h5Gy836_v_g0TVuQM2EMt_Rul85MzjH5lvJa_v9ScyQrZbWHtsalKov9LuxlD6-NwJ0rHzOtvRwobK3Ki51Fzo5x4FqL887zGXNyg-huDQI4fopM0rx5gYvFT8Q7wNhV-0CQUrPKiGO9-6nHcFZ1"/>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Engineering Section -->
+<section class="py-24 bg-[#080808] reveal-on-scroll">
+<div class="max-w-container-max mx-auto px-8">
+<div class="absolute inset-0 grid-pattern opacity-10 pointer-events-none"></div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-24 items-center">
+<div>
+<h2 class="text-5xl font-black mb-8 leading-tight">Engineering beyond the interface.</h2>
+<p class="text-xl text-on-surface-variant mb-12 leading-relaxed">We don't just paint screens; we architect resilient, scalable systems that serve as the backbone for global enterprises.</p>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+<div class="p-8 rounded-3xl glass-panel gradient-border group hover:bg-white/[0.05] transition-all">
+<span class="material-symbols-outlined text-primary text-4xl mb-6">architecture</span>
+<h4 class="font-black text-xl mb-3">Microservices</h4>
+<p class="text-on-surface-variant leading-relaxed">Decoupled architectures for horizontal scalability and fault tolerance.</p>
+</div>
+<div class="p-8 rounded-3xl glass-panel gradient-border group hover:bg-white/[0.05] transition-all">
+<span class="material-symbols-outlined text-primary text-4xl mb-6">security</span>
+<h4 class="font-black text-xl mb-3">Zero Trust</h4>
+<p class="text-on-surface-variant leading-relaxed">Security-first development lifecycle with automated vulnerability scanning.</p>
+</div>
+</div>
+</div>
+<div class="relative aspect-square flex items-center justify-center">
+<div class="absolute w-full h-full glow-blob opacity-20"></div>
+<div class="relative z-10 w-full max-w-sm flex flex-col items-center gap-12">
+<div class="w-24 h-24 glass-panel rounded-3xl flex items-center justify-center border-primary/30 shadow-xl shadow-primary/10">
+<span class="material-symbols-outlined text-primary text-4xl">cloud</span>
+</div>
+<div class="flex justify-between w-full">
+<div class="w-20 h-20 glass-panel rounded-2xl flex items-center justify-center border-white/10 opacity-60">
+<span class="material-symbols-outlined text-3xl">database</span>
+</div>
+<div class="w-20 h-20 glass-panel rounded-2xl flex items-center justify-center border-white/10 opacity-60">
+<span class="material-symbols-outlined text-3xl">api</span>
+</div>
+</div>
+<div class="w-40 h-40 glass-panel rounded-[2rem] flex flex-col items-center justify-center border-white/20 shadow-2xl shadow-white/5">
+<span class="material-symbols-outlined text-5xl text-primary mb-4">terminal</span>
+<span class="text-xs font-black tracking-widest opacity-50 font-mono">CORE_ENGINE_v4</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Contact Section -->
+<section class="py-24 max-w-container-max mx-auto px-8 reveal-on-scroll">
+<div class="relative overflow-hidden glass-panel rounded-[3rem] border border-white/10 p-12 md:p-20 shadow-3xl">
+<div class="absolute top-0 right-0 w-[600px] h-[600px] glow-blob -z-10 opacity-30 translate-x-1/2 -translate-y-1/2"></div>
+<div class="max-w-3xl mx-auto text-center mb-16">
+<h2 class="text-5xl font-black mb-6">Have a product idea? Let's build it.</h2>
+<p class="text-xl text-on-surface-variant">Schedule a technical consultation with our engineering team to map out your architecture.</p>
+</div>
+<form class="max-w-3xl mx-auto space-y-8">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="space-y-3">
+<label class="text-sm font-black uppercase tracking-widest opacity-40 ml-1">Full Name</label>
+<input class="w-full bg-white/[0.03] border-white/10 rounded-2xl px-6 py-4 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-white/20" placeholder="e.g. John Wick" type="text"/>
+</div>
+<div class="space-y-3">
+<label class="text-sm font-black uppercase tracking-widest opacity-40 ml-1">Work Email</label>
+<input class="w-full bg-white/[0.03] border-white/10 rounded-2xl px-6 py-4 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-white/20" placeholder="wick@continental.com" type="email"/>
+</div>
+</div>
+<div class="space-y-3">
+<label class="text-sm font-black uppercase tracking-widest opacity-40 ml-1">Product Category</label>
+<select class="w-full bg-white/[0.03] border-white/10 rounded-2xl px-6 py-4 focus:border-primary outline-none appearance-none cursor-pointer">
+<option class="bg-black">Fintech Platform</option>
+<option class="bg-black">SaaS / Enterprise ERP</option>
+<option class="bg-black">Web3 / Blockchain</option>
+<option class="bg-black">Process Automation</option>
+</select>
+</div>
+<div class="space-y-3">
+<label class="text-sm font-black uppercase tracking-widest opacity-40 ml-1">Brief Vision</label>
+<textarea class="w-full bg-white/[0.03] border-white/10 rounded-2xl px-6 py-4 focus:border-primary outline-none transition-all placeholder:text-white/20" placeholder="Describe the problem you're solving..." rows="4"></textarea>
+</div>
+<button class="w-full bg-primary text-on-primary py-5 rounded-2xl font-black text-xl hover:scale-[0.99] transition-transform shadow-xl shadow-primary/20" type="submit">
+                    Initiate Consultation
+                </button>
+</form>
+</div>
+</section>
+</main>
+<footer class="py-16 border-t border-white/5 bg-black">
+<div class="max-w-container-max mx-auto px-8 grid grid-cols-1 md:grid-cols-12 gap-12">
+<div class="md:col-span-5 space-y-6">
+<div class="text-3xl font-black tracking-tighter">KASH Technologies</div>
+<p class="text-on-surface-variant max-w-sm text-lg">Precision Engineering for Modern Product Teams. We build the future of digital assets and enterprise software.</p>
+</div>
+<div class="md:col-span-7 grid grid-cols-2 md:grid-cols-3 gap-8">
+<div class="space-y-6">
+<h5 class="text-primary font-black uppercase tracking-widest text-sm">Capabilities</h5>
+<ul class="space-y-4 text-on-surface-variant font-medium">
+<li class="hover:text-primary cursor-pointer transition-colors">Architecture</li>
+<li class="hover:text-primary cursor-pointer transition-colors">Blockchain</li>
+<li class="hover:text-primary cursor-pointer transition-colors">SaaS ERP</li>
+</ul>
+</div>
+<div class="space-y-6">
+<h5 class="text-primary font-black uppercase tracking-widest text-sm">Connect</h5>
+<ul class="space-y-4 text-on-surface-variant font-medium">
+<li class="hover:text-primary cursor-pointer transition-colors">GitHub</li>
+<li class="hover:text-primary cursor-pointer transition-colors">LinkedIn</li>
+<li class="hover:text-primary cursor-pointer transition-colors">Twitter</li>
+</ul>
+</div>
+<div class="space-y-6">
+<h5 class="text-primary font-black uppercase tracking-widest text-sm">Legal</h5>
+<ul class="space-y-4 text-on-surface-variant font-medium">
+<li class="hover:text-primary cursor-pointer transition-colors">Privacy</li>
+<li class="hover:text-primary cursor-pointer transition-colors">Terms</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="max-w-container-max mx-auto px-8 pt-16 text-on-surface-variant/40 text-sm font-medium">
+        © 2024 KASH Technologies. All Rights Reserved.
+    </div>
+</footer>
+<script>
+    // Navigation Polish
+    window.addEventListener('scroll', () => {
+        const nav = document.getElementById('top-nav');
+        if (window.scrollY > 50) {
+            nav.classList.add('nav-scrolled');
+            nav.querySelector('div').classList.remove('py-5');
+            nav.querySelector('div').classList.add('py-3');
+        } else {
+            nav.classList.remove('nav-scrolled');
+            nav.querySelector('div').classList.remove('py-3');
+            nav.querySelector('div').classList.add('py-5');
+        }
+    });
+
+    // Integration of ANIMATION_52 and required logic
+    document.addEventListener('DOMContentLoaded', () => {
+        // Scroll reveals
+        const observerOptions = { threshold: 0.1 };
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('opacity-100', 'translate-y-0');
+              entry.target.classList.remove('opacity-0', 'translate-y-10');
+            }
+          });
+        }, observerOptions);
+
+        document.querySelectorAll('.reveal-on-scroll').forEach(el => {
+          el.classList.add('opacity-0', 'translate-y-10');
+          observer.observe(el);
+        });
+
+        // Phone Interactions (Exora)
+        const navigationItems = document.querySelectorAll('.phone-nav-item');
+        const screenImg = document.querySelector('.phone-screen-img');
+        const phoneScreens = {
+          home: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCYmRElVQyi5YaLItsbAGbek4jYxCd10pvyWgAccpkxODuhqL9Bu6Z_KCOiD9wRc-ikURWQmoR4OkSdeaZ4vQy5oD4MbfpsRc2NLYNrnrxWiEQOu71oIZc83JF4q0Wjv6lVQwVhJ0125c5EeaAdZ1lMjoIELPRD3KurCOc4XpHhvmOFB6gQ3FtpDZrkoMYTl1oQgvOJYQgk-EvKv3q8HNeH6YjJZCJh-i7qPjjTbGLvl72QyRYoBx2MNKWF9cujbnRJnCeT7zHJb84a',
+          markets: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCtCiqth7r0w1a7FrheJWQGFAju9748wZ_ENDPJyuvCiS-BQGfvBoHtSgc374xweg13WY0F4G_KhhtvCaQ5dckgXk8WvbfYBkPZbMtpzaIdHslBB4ofkqSlZqbboZQBhEqoRfu3e5PMdyyi1BIjW8LVjKHJFH45v1a-l_GuYfjrr93mHK_kALJMLosJlT6koW8zL08v9uFimA7ZMpGdnHsJL-EkPVaTdC4lQvHDsTvUbUJ8hy1K08Fo0G5hKb96CPoODbLT474PJ1tc',
+          trade: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAQoSv2eTkd5n3i6lNKVKJXLCQgYCCGDNeYoG6cCVHlSeBUafUNpQjw8zSpPv4g6qIXlkTCeyCl23scdItUSdFlUwObk6SF9Hy2xGUeCmouvhbXLHTLlxJZpO71h5Gy836_v_g0TVuQM2EMt_Rul85MzjH5lvJa_v9ScyQrZbWHtsalKov9LuxlD6-NwJ0rHzOtvRwobK3Ki51Fzo5x4FqL887zGXNyg-huDQI4fopM0rx5gYvFT8Q7wNhV-0CQUrPKiGO9-6nHcFZ1',
+          wallet: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCzua1Es1thRvlC35I8YwHlSmDTvqkCd6NiO1gBQhdR12-yc3ziI5Pj8ZR4E-ZPD9awyHCsEV3rAg6PVPFFe1h65EnUjCoww76j-XI07PWVQ9-bmxMgOkOAGEQiV5gNC7gyTngTCET9io_d3GgIaiMKD2mZJITtbCIavfJcDM0_hVLamXm8TaL0R7K0OcywSSg8UZiEBO4H4F13DZkwETIlgTYTvFplkKmVaj4o25sRF1A8uh9-6FPg16_r6ACbYwchMsOS0dycMaom',
+          profile: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCtCiqth7r0w1a7FrheJWQGFAju9748wZ_ENDPJyuvCiS-BQGfvBoHtSgc374xweg13WY0F4G_KhhtvCaQ5dckgXk8WvbfYBkPZbMtpzaIdHslBB4ofkqSlZqbboZQBhEqoRfu3e5PMdyyi1BIjW8LVjKHJFH45v1a-l_GuYfjrr93mHK_kALJMLosJlT6koW8zL08v9uFimA7ZMpGdnHsJL-EkPVaTdC4lQvHDsTvUbUJ8hy1K08Fo0G5hKb96CPoODbLT474PJ1tc'
+        };
+
+        navigationItems.forEach(item => {
+          item.addEventListener('click', (e) => {
+            const screenKey = e.currentTarget.dataset.screen;
+            if (phoneScreens[screenKey]) {
+              screenImg.style.opacity = '0';
+              setTimeout(() => {
+                screenImg.src = phoneScreens[screenKey];
+                screenImg.style.opacity = '1';
+              }, 200);
+              navigationItems.forEach(nav => nav.classList.remove('active'));
+              item.classList.add('active');
+            }
+          });
+        });
+
+        // Laptop Role Switch (SchoolSync)
+        const roleTabs = document.querySelectorAll('.role-tab');
+        const laptopScreen = document.querySelector('.laptop-screen-img');
+        const roles = {
+          admin: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDYQJ7ScrPG_mnlA7_afN42WU4CjrDuOEmnwcsG2BmOi2FBq9Ws5ZwohPvRqHWykQv185HAF6FoNaV-FUZuosdLOT9uQzrtQVmDJ45g72oQZ1mFZwt-WhlxiVAAFIk7iwKFz5GY3vGXqAa39IdibZIU0bH51a5lYbCaLstyQMIGZXOjLtQYM3NLjlw-cgK-28Z2E5y7l8jOGeDVR1_K6_TRLAFxo_UZUHRVKUX1uIu1YYIuyy-BkCgNJLMJ1dfJBD_ar_RAogguow-J',
+          teacher: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCtCiqth7r0w1a7FrheJWQGFAju9748wZ_ENDPJyuvCiS-BQGfvBoHtSgc374xweg13WY0F4G_KhhtvCaQ5dckgXk8WvbfYBkPZbMtpzaIdHslBB4ofkqSlZqbboZQBhEqoRfu3e5PMdyyi1BIjW8LVjKHJFH45v1a-l_GuYfjrr93mHK_kALJMLosJlT6koW8zL08v9uFimA7ZMpGdnHsJL-EkPVaTdC4lQvHDsTvUbUJ8hy1K08Fo0G5hKb96CPoODbLT474PJ1tc',
+          parent: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCzua1Es1thRvlC35I8YwHlSmDTvqkCd6NiO1gBQhdR12-yc3ziI5Pj8ZR4E-ZPD9awyHCsEV3rAg6PVPFFe1h65EnUjCoww76j-XI07PWVQ9-bmxMgOkOAGEQiV5gNC7gyTngTCET9io_d3GgIaiMKD2mZJITtbCIavfJcDM0_hVLamXm8TaL0R7K0OcywSSg8UZiEBO4H4F13DZkwETIlgTYTvFplkKmVaj4o25sRF1A8uh9-6FPg16_r6ACbYwchMsOS0dycMaom'
+        };
+
+        roleTabs.forEach(tab => {
+          tab.addEventListener('click', () => {
+            const role = tab.dataset.role;
+            laptopScreen.src = roles[role];
+            roleTabs.forEach(t => {
+                t.classList.remove('bg-primary', 'text-on-primary');
+                t.classList.add('hover:bg-white/5');
+            });
+            tab.classList.remove('hover:bg-white/5');
+            tab.classList.add('bg-primary', 'text-on-primary');
+          });
+        });
+
+        // Browser Steps (Launchpad)
+        const launchSteps = document.querySelectorAll('.launch-step');
+        const browserScreen = document.querySelector('.browser-screen-img');
+        const steps = {
+          connect: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAQoSv2eTkd5n3i6lNKVKJXLCQgYCCGDNeYoG6cCVHlSeBUafUNpQjw8zSpPv4g6qIXlkTCeyCl23scdItUSdFlUwObk6SF9Hy2xGUeCmouvhbXLHTLlxJZpO71h5Gy836_v_g0TVuQM2EMt_Rul85MzjH5lvJa_v9ScyQrZbWHtsalKov9LuxlD6-NwJ0rHzOtvRwobK3Ki51Fzo5x4FqL887zGXNyg-huDQI4fopM0rx5gYvFT8Q7wNhV-0CQUrPKiGO9-6nHcFZ1',
+          create: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCYmRElVQyi5YaLItsbAGbek4jYxCd10pvyWgAccpkxODuhqL9Bu6Z_KCOiD9wRc-ikURWQmoR4OkSdeaZ4vQy5oD4MbfpsRc2NLYNrnrxWiEQOu71oIZc83JF4q0Wjv6lVQwVhJ0125c5EeaAdZ1lMjoIELPRD3KurCOc4XpHhvmOFB6gQ3FtpDZrkoMYTl1oQgvOJYQgk-EvKv3q8HNeH6YjJZCJh-i7qPjjTbGLvl72QyRYoBx2MNKWF9cujbnRJnCeT7zHJb84a',
+          config: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCzua1Es1thRvlC35I8YwHlSmDTvqkCd6NiO1gBQhdR12-yc3ziI5Pj8ZR4E-ZPD9awyHCsEV3rAg6PVPFFe1h65EnUjCoww76j-XI07PWVQ9-bmxMgOkOAGEQiV5gNC7gyTngTCET9io_d3GgIaiMKD2mZJITtbCIavfJcDM0_hVLamXm8TaL0R7K0OcywSSg8UZiEBO4H4F13DZkwETIlgTYTvFplkKmVaj4o25sRF1A8uh9-6FPg16_r6ACbYwchMsOS0dycMaom',
+          publish: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDYQJ7ScrPG_mnlA7_afN42WU4CjrDuOEmnwcsG2BmOi2FBq9Ws5ZwohPvRqHWykQv185HAF6FoNaV-FUZuosdLOT9uQzrtQVmDJ45g72oQZ1mFZwt-WhlxiVAAFIk7iwKFz5GY3vGXqAa39IdibZIU0bH51a5lYbCaLstyQMIGZXOjLtQYM3NLjlw-cgK-28Z2E5y7l8jOGeDVR1_K6_TRLAFxo_UZUHRVKUX1uIu1YYIuyy-BkCgNJLMJ1dfJBD_ar_RAogguow-J'
+        };
+
+        launchSteps.forEach(step => {
+          step.addEventListener('click', () => {
+            const stepKey = step.dataset.step;
+            browserScreen.src = steps[stepKey];
+            launchSteps.forEach(s => {
+                s.classList.remove('border-primary', 'bg-white/5');
+                s.classList.add('border-transparent');
+                s.querySelector('p').classList.add('opacity-50');
+                s.querySelector('p').classList.remove('text-primary');
+                s.querySelector('.material-symbols-outlined').classList.remove('text-primary');
+                s.querySelector('.material-symbols-outlined').classList.add('text-on-surface-variant');
+            });
+            step.classList.remove('border-transparent');
+            step.classList.add('border-primary', 'bg-white/5');
+            step.querySelector('p').classList.remove('opacity-50');
+            step.querySelector('p').classList.add('text-primary');
+            step.querySelector('.material-symbols-outlined').classList.add('text-primary');
+            step.querySelector('.material-symbols-outlined').classList.remove('text-on-surface-variant');
+          });
+        });
+    });
+</script>
+</body></html>

@@ -1,27 +1,47 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Menu } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { LinkButton } from "@/components/ui/Button";
 import { MobileNavigation } from "@/components/layout/MobileNavigation";
 import { SITE_CONFIG } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-md">
-      <Container className="flex h-18 items-center justify-between">
+    <header
+      className={cn(
+        "fixed top-0 w-full z-50 transition-all duration-300",
+        scrolled ? "nav-scrolled" : "bg-transparent"
+      )}
+    >
+      <Container
+        className={cn(
+          "flex items-center justify-between transition-all duration-300",
+          scrolled ? "py-3 h-16" : "py-5 h-20"
+        )}
+      >
         <Link
           href="/"
-          className="text-lg font-semibold tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-[var(--radius-sm)]"
+          className="text-2xl font-black tracking-tighter text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-[var(--radius-sm)]"
         >
           {SITE_CONFIG.companyName}
         </Link>
 
-        <nav className="hidden md:flex md:items-center md:gap-8" aria-label="Primary">
+        <nav className="hidden md:flex md:items-center md:gap-10" aria-label="Primary">
           {SITE_CONFIG.navLinks.map((link) => (
             <Link
               key={link.href}
@@ -34,8 +54,11 @@ export function Navbar() {
         </nav>
 
         <div className="hidden md:block">
-          <LinkButton href="/#contact" size="sm">
-            Start a project
+          <LinkButton 
+            href="/#contact" 
+            className="bg-primary text-primary-foreground px-6 py-2.5 rounded-full text-sm font-bold hover:brightness-110 transition-all"
+          >
+            Start a Project
           </LinkButton>
         </div>
 

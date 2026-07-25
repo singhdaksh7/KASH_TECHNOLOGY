@@ -6,24 +6,24 @@ export function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-border">
-      <Container className="flex flex-col gap-8 py-12 md:flex-row md:items-start md:justify-between">
-        <div className="max-w-sm">
-          <p className="text-lg font-semibold tracking-tight">{SITE_CONFIG.companyName}</p>
-          <p className="mt-2 text-sm text-muted">
-            Engineering-led product studio building fintech, education and web3 platforms.
+    <footer className="py-16 border-t border-border bg-black">
+      <Container className="grid grid-cols-1 md:grid-cols-12 gap-12">
+        <div className="md:col-span-5 space-y-6">
+          <div className="text-3xl font-black tracking-tighter">{SITE_CONFIG.companyName}</div>
+          <p className="text-muted max-w-sm text-lg">
+            Precision Engineering for Modern Product Teams. We build the future of digital assets and enterprise software.
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
-          <div>
-            <p className="text-sm font-medium text-foreground">Navigate</p>
-            <ul className="mt-3 space-y-2">
+        <div className="md:col-span-7 grid grid-cols-2 md:grid-cols-3 gap-8">
+          <div className="space-y-6">
+            <h2 className="text-primary font-black uppercase tracking-widest text-sm">Navigate</h2>
+            <ul className="space-y-4 font-medium">
               {SITE_CONFIG.navLinks.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-muted transition-colors hover:text-foreground"
+                    className="text-muted transition-colors hover:text-primary"
                   >
                     {link.label}
                   </Link>
@@ -32,14 +32,14 @@ export function Footer() {
             </ul>
           </div>
 
-          <div>
-            <p className="text-sm font-medium text-foreground">Work</p>
-            <ul className="mt-3 space-y-2">
+          <div className="space-y-6">
+            <h2 className="text-primary font-black uppercase tracking-widest text-sm">Work</h2>
+            <ul className="space-y-4 font-medium">
               {Object.values(SITE_CONFIG.products).map((product) => (
                 <li key={product.caseStudyPath}>
                   <Link
                     href={product.caseStudyPath}
-                    className="text-sm text-muted transition-colors hover:text-foreground"
+                    className="text-muted transition-colors hover:text-primary"
                   >
                     {product.name}
                   </Link>
@@ -48,15 +48,36 @@ export function Footer() {
             </ul>
           </div>
 
-          <div>
-            <p className="text-sm font-medium text-foreground">Contact</p>
-            <ul className="mt-3 space-y-2">
+          <div className="space-y-6">
+            <h2 className="text-primary font-black uppercase tracking-widest text-sm">Contact</h2>
+            <ul className="space-y-4 font-medium">
               <li>
                 <a
                   href={`mailto:${SITE_CONFIG.contactEmail}`}
-                  className="text-sm text-muted transition-colors hover:text-foreground"
+                  className="text-muted transition-colors hover:text-primary"
                 >
-                  {SITE_CONFIG.contactEmail}
+                  Email Us
+                </a>
+              </li>
+              <li>
+                <a
+                  href={`tel:${SITE_CONFIG.contactPhonePrimary?.replace(/\s+/g, '')}`}
+                  className="text-muted transition-colors hover:text-primary"
+                >
+                  +91 97609 42003
+                </a>
+              </li>
+              <li>
+                <a
+                  href={`tel:${SITE_CONFIG.contactPhoneAlternate?.replace(/\s+/g, '')}`}
+                  className="text-muted transition-colors hover:text-primary"
+                >
+                  +91 97606 58804 (Alternate contact)
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-muted transition-colors hover:text-primary">
+                  LinkedIn
                 </a>
               </li>
             </ul>
@@ -64,11 +85,11 @@ export function Footer() {
         </div>
       </Container>
 
-      <Container className="flex flex-col gap-2 border-t border-border py-6 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
+      <Container className="pt-16 text-muted/40 text-sm font-medium">
         <p>
-          © {year} {SITE_CONFIG.companyName}. All rights reserved.
+          © {year} {SITE_CONFIG.companyName}. All Rights Reserved.
         </p>
-        <p>Product demonstrations use local dummy data only.</p>
+        <p className="mt-2">Product demonstrations use local dummy data only.</p>
       </Container>
     </footer>
   );
