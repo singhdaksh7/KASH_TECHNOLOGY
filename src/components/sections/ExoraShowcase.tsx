@@ -1,8 +1,11 @@
+"use client";
+
 import { Reveal } from "@/components/motion/Reveal";
 import { LinkButton } from "@/components/ui/Button";
 import { Activity, Fingerprint } from "lucide-react";
 import { SITE_CONFIG } from "@/lib/constants";
 import { ExoraDemo } from "@/components/product-demos/exora/ExoraDemo";
+import { trackEvent } from "@/lib/analytics";
 
 export function ExoraShowcase() {
   const product = SITE_CONFIG.products.exora;
@@ -38,7 +41,11 @@ export function ExoraShowcase() {
           </div>
         </div>
         <div className="pt-4">
-          <LinkButton href={product.caseStudyPath} variant="primary">
+          <LinkButton 
+            href={product.caseStudyPath} 
+            variant="primary"
+            onClick={() => trackEvent("case_study_click", { project: "exora", location: "homepage_showcase" })}
+          >
             View Case Study
           </LinkButton>
         </div>

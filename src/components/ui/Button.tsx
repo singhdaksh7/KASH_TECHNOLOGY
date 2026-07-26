@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import type { ButtonHTMLAttributes, AnchorHTMLAttributes, ReactNode } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -49,11 +49,9 @@ export function Button({
   );
 }
 
-interface LinkButtonProps extends ButtonBaseProps {
+interface LinkButtonProps extends ButtonBaseProps, AnchorHTMLAttributes<HTMLAnchorElement> {
   href: string;
   children: ReactNode;
-  target?: string;
-  rel?: string;
 }
 
 export function LinkButton({

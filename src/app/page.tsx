@@ -3,6 +3,7 @@ import { Capabilities } from "@/components/sections/Capabilities";
 import { ExoraShowcase } from "@/components/sections/ExoraShowcase";
 import { SchoolSyncShowcase } from "@/components/sections/SchoolSyncShowcase";
 import { LaunchpadShowcase } from "@/components/sections/LaunchpadShowcase";
+import { TrustSection } from "@/components/sections/TrustSection";
 import { ContactCTA } from "@/components/sections/ContactCTA";
 
 export default function Home() {
@@ -13,6 +14,7 @@ export default function Home() {
       <ExoraShowcase />
       <SchoolSyncShowcase />
       <LaunchpadShowcase />
+      <TrustSection />
       <ContactCTA />
     </>
   );

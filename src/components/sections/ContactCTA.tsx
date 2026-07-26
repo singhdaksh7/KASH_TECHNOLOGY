@@ -1,7 +1,11 @@
+"use client";
+
 import { ContactForm } from "@/components/contact/ContactForm";
 import { Mail, MessageSquare } from "lucide-react";
 import { SITE_CONFIG } from "@/lib/constants";
 import Link from "next/link";
+import { ConsultationCTA } from "@/components/conversion/ConsultationCTA";
+import { trackEvent } from "@/lib/analytics";
 
 export function ContactCTA() {
   return (
@@ -16,6 +20,10 @@ export function ContactCTA() {
             Whether you need a specialized engineering team or a full product build, we&apos;re ready to help bring your vision to life.
           </p>
           
+          <div className="mb-8 flex justify-start">
+            <ConsultationCTA variant="contact" className="w-full sm:w-auto" />
+          </div>
+          
           <div className="bg-white/5 border border-white/10 rounded-2xl p-8 mb-8">
             <h3 className="font-bold mb-4 flex items-center gap-2">
               <Mail className="w-5 h-5 text-primary" />
@@ -27,18 +35,21 @@ export function ContactCTA() {
             <div className="flex flex-col gap-2">
               <Link 
                 href={`mailto:${SITE_CONFIG.contactEmail}`}
+                onClick={() => trackEvent("cta_click", { location: "contact_section", label: "email_link" })}
                 className="text-primary hover:text-primary/80 font-bold underline underline-offset-4 transition-colors"
               >
                 {SITE_CONFIG.contactEmail}
               </Link>
               <Link 
                 href={`tel:${SITE_CONFIG.contactPhonePrimary?.replace(/\s+/g, '')}`}
+                onClick={() => trackEvent("cta_click", { location: "contact_section", label: "phone_primary" })}
                 className="text-primary hover:text-primary/80 font-bold transition-colors"
               >
                 {SITE_CONFIG.contactPhonePrimary}
               </Link>
               <Link 
                 href={`tel:${SITE_CONFIG.contactPhoneAlternate?.replace(/\s+/g, '')}`}
+                onClick={() => trackEvent("cta_click", { location: "contact_section", label: "phone_alternate" })}
                 className="text-muted hover:text-primary transition-colors text-sm"
               >
                 {SITE_CONFIG.contactPhoneAlternate} (Alternate)

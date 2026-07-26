@@ -1,14 +1,27 @@
+"use client";
+
 import { LinkButton } from "@/components/ui/Button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { CaseStudy } from "@/types/case-study";
 import { SITE_CONFIG } from "@/lib/constants";
+import { trackEvent } from "@/lib/analytics";
+import { useConsultation } from "@/components/conversion/ConsultationContext";
 
 interface Props {
   caseStudy: CaseStudy;
 }
 
 export function CaseStudyHero({ caseStudy }: Props) {
+  const { setLeadSource } = useConsultation();
+
+  const getSource = () => {
+    if (caseStudy.slug === "exora") return "Exora Case Study";
+    if (caseStudy.slug === "schoolsync") return "SchoolSync Case Study";
+    if (caseStudy.slug === "crypto-launchpad") return "Crypto Launchpad Case Study";
+    return "Unknown";
+  };
+
   return (
     <section className="pt-32 pb-16 px-8 max-w-[1280px] mx-auto">
       <Link href="/#work" className="inline-flex items-center gap-2 text-sm font-bold text-muted hover:text-foreground transition-colors mb-8">
@@ -40,10 +53,23 @@ export function CaseStudyHero({ caseStudy }: Props) {
           <h3 className="text-2xl font-black">Ready to build?</h3>
           <p className="text-muted">Explore how we engineered this solution, or start a conversation about your own project.</p>
           <div className="flex flex-col sm:flex-row gap-4 w-full justify-center flex-wrap">
-            <LinkButton href="/#contact" variant="primary" className="w-full sm:w-auto flex-1">
+            <LinkButton 
+              href="/#contact" 
+              variant="primary" 
+              className="w-full sm:w-auto flex-1"
+              onClick={() => {
+                setLeadSource(getSource());
+                trackEvent("cta_click", { location: "case_study_hero", label: "start_project" });
+              }}
+            >
               Start a Project
             </LinkButton>
-            <LinkButton href="#demo" variant="outline" className="w-full sm:w-auto flex-1">
+            <LinkButton 
+              href="#demo" 
+              variant="outline" 
+              className="w-full sm:w-auto flex-1"
+              onClick={() => trackEvent("cta_click", { location: "case_study_hero", label: "view_demo" })}
+            >
               View Interactive Demo
             </LinkButton>
             {caseStudy.slug === "exora" && SITE_CONFIG.products.exora.externalUrl && (
@@ -52,6 +78,7 @@ export function CaseStudyHero({ caseStudy }: Props) {
                 target="_blank" 
                 rel="noopener noreferrer"
                 aria-label={`Visit live project for ${caseStudy.title}`}
+                onClick={() => trackEvent("live_project_click", { project: "exora", location: "case_study" })}
                 className="w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold bg-white/5 border border-white/20 hover:bg-white/10 transition-all text-sm"
               >
                 Visit Live Project
@@ -64,6 +91,7 @@ export function CaseStudyHero({ caseStudy }: Props) {
                 target="_blank" 
                 rel="noopener noreferrer"
                 aria-label={`Visit live project for ${caseStudy.title}`}
+                onClick={() => trackEvent("live_project_click", { project: "schoolsync", location: "case_study" })}
                 className="w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold bg-white/5 border border-white/20 hover:bg-white/10 transition-all text-sm"
               >
                 Visit Live Project
@@ -76,6 +104,7 @@ export function CaseStudyHero({ caseStudy }: Props) {
                 target="_blank" 
                 rel="noopener noreferrer"
                 aria-label={`Visit live project for ${caseStudy.title}`}
+                onClick={() => trackEvent("live_project_click", { project: "crypto-launchpad", location: "case_study" })}
                 className="w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold bg-white/5 border border-white/20 hover:bg-white/10 transition-all text-sm"
               >
                 Visit Live Project

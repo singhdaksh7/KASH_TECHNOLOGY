@@ -53,5 +53,11 @@ export function sanitizeContactForm(values: Partial<ContactFormValues>): Partial
     estimatedBudget: values.estimatedBudget || "",
     message: values.message?.trim() || "",
     honeypot: values.honeypot || "",
+    leadSource: values.leadSource || "Unknown",
+    landingPage: values.landingPage || "/",
+    trafficSource: values.trafficSource || "Direct",
+    browser: values.browser || "Other",
+    device: values.device || "Desktop",
+    referenceId: values.referenceId || "",
   };
 }

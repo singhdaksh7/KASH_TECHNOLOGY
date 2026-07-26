@@ -1,7 +1,10 @@
+"use client";
+
 import { Reveal } from "@/components/motion/Reveal";
 import { LinkButton } from "@/components/ui/Button";
 import { SITE_CONFIG } from "@/lib/constants";
 import { SchoolSyncDemo } from "@/components/product-demos/schoolsync/SchoolSyncDemo";
+import { trackEvent } from "@/lib/analytics";
 
 export function SchoolSyncShowcase() {
   const product = SITE_CONFIG.products.schoolsync;
@@ -19,7 +22,11 @@ export function SchoolSyncShowcase() {
           <p className="text-lg text-muted max-w-2xl mx-auto mb-8">
             Bridging the gap between administrators, teachers, and parents with a unified data-driven platform.
           </p>
-          <LinkButton href={product.caseStudyPath} variant="primary">
+          <LinkButton 
+            href={product.caseStudyPath} 
+            variant="primary"
+            onClick={() => trackEvent("case_study_click", { project: "schoolsync", location: "homepage_showcase" })}
+          >
             View Case Study
           </LinkButton>
         </Reveal>

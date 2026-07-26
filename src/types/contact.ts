@@ -7,6 +7,26 @@ export interface ContactFormValues {
   estimatedBudget: string;
   message: string;
   honeypot: string; // Anti-spam
+  
+  // Hidden attribution metadata
+  leadSource?: string;
+  landingPage?: string;
+  trafficSource?: string;
+  browser?: string;
+  device?: string;
+  referenceId?: string;
+}
+
+export interface LeadMetadata {
+  referenceId: string;
+  leadSource: string;
+  trafficSource: string;
+  landingPage: string;
+  browser: string;
+  device: string;
+  consultation: boolean;
+  projectType: string;
+  timestamp: string;
 }
 
 export interface ContactResponse {
@@ -16,6 +36,7 @@ export interface ContactResponse {
 }
 
 export const PROJECT_TYPES = [
+  "Free Consultation",
   "Web Application",
   "Mobile Application",
   "SaaS Platform",

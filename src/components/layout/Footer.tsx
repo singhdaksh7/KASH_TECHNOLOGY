@@ -3,7 +3,6 @@ import { Container } from "@/components/ui/Container";
 import { SITE_CONFIG } from "@/lib/constants";
 
 export function Footer() {
-  const year = new Date().getFullYear();
 
   return (
     <footer className="py-16 border-t border-border bg-black">
@@ -85,11 +84,21 @@ export function Footer() {
         </div>
       </Container>
 
-      <Container className="pt-16 text-muted/40 text-sm font-medium">
-        <p>
-          © {year} {SITE_CONFIG.companyName}. All Rights Reserved.
-        </p>
-        <p className="mt-2">Product demonstrations use local dummy data only.</p>
+      <Container className="pt-16 text-muted/40 text-sm font-medium flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="space-y-1 text-center md:text-left">
+          <p>
+            © 2026 {SITE_CONFIG.companyName}. All rights reserved.
+          </p>
+          <p className="text-xs opacity-75">Product demonstrations use local dummy data only.</p>
+        </div>
+        <div className="flex flex-wrap justify-center gap-6 text-xs font-bold">
+          <Link href="/privacy" className="hover:text-primary transition-colors">
+            Privacy Policy
+          </Link>
+          <Link href="/terms" className="hover:text-primary transition-colors">
+            Terms of Service
+          </Link>
+        </div>
       </Container>
     </footer>
   );

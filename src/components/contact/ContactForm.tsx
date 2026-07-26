@@ -1,11 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ContactFormValues, PROJECT_TYPES, ESTIMATED_BUDGETS, ContactResponse } from "@/types/contact";
 import { validateContactForm } from "@/lib/contact-validation";
 import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { useConsultation } from "@/components/conversion/ConsultationContext";
+import { trackEvent } from "@/lib/analytics";
+import {
+  getBrowserName,
+  getDeviceType,
+  generateReferenceId,
+  determineTrafficSource,
+  getLandingPage
+} from "@/lib/attribution";
 
 export function ContactForm() {
+  const { isConsultationSelected, setIsConsultationSelected, leadSource, setLeadSource } = useConsultation();
+  const [formStarted, setFormStarted] = useState(false);
   const [formData, setFormData] = useState<ContactFormValues>({
     fullName: "",
     email: "",
@@ -15,6 +26,12 @@ export function ContactForm() {
     estimatedBudget: "",
     message: "",
     honeypot: "",
+    leadSource: "",
+    landingPage: "",
+    trafficSource: "",
+    browser: "",
+    device: "",
+    referenceId: "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -22,9 +39,68 @@ export function ContactForm() {
   const [success, setSuccess] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
+  // Sync consultation selection from client context
+  useEffect(() => {
+    if (isConsultationSelected) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setFormData(prev => ({ ...prev, projectType: "Free Consultation" }));
+    }
+  }, [isConsultationSelected]);
+
+  // Load client attribution details on mount and leadSource updates
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const ts = determineTrafficSource();
+      const lp = getLandingPage(window.location.pathname);
+      const ua = navigator.userAgent;
+      const br = getBrowserName(ua);
+      const dv = getDeviceType(ua);
+      const ref = generateReferenceId();
+
+      let ls = leadSource;
+      if (ls === "Unknown") {
+        const storedLs = sessionStorage.getItem("kash_lead_source");
+        if (storedLs) {
+          ls = storedLs;
+        }
+      }
+
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setFormData(prev => ({
+        ...prev,
+        trafficSource: ts,
+        landingPage: lp,
+        browser: br,
+        device: dv,
+        referenceId: ref,
+        leadSource: ls !== "Unknown" ? ls : ""
+      }));
+    }
+  }, [leadSource]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+
+    // Track when user first starts filling out the form
+    if (!formStarted) {
+      setFormStarted(true);
+      
+      let finalLs = formData.leadSource || leadSource;
+      if (finalLs === "Unknown" || !finalLs) {
+        finalLs = "Homepage Contact";
+        setLeadSource("Homepage Contact");
+        setFormData(prev => ({ ...prev, leadSource: "Homepage Contact" }));
+      }
+      
+      trackEvent("contact_form_started");
+    }
+
+    // Reset context state if user changes projectType to something else manually
+    if (name === "projectType" && value !== "Free Consultation") {
+      setIsConsultationSelected(false);
+    }
+
     // Clear field error on change
     if (errors[name]) {
       setErrors(prev => {
@@ -40,10 +116,26 @@ export function ContactForm() {
     setServerError(null);
     setSuccess(false);
 
+    // Resolve final lead source on submission if still unknown
+    let finalLeadSource = formData.leadSource || leadSource;
+    if (finalLeadSource === "Unknown" || !finalLeadSource) {
+      finalLeadSource = "Homepage Contact";
+      setLeadSource("Homepage Contact");
+    }
+
+    const submissionData = {
+      ...formData,
+      leadSource: finalLeadSource
+    };
+
     // Client side validation
-    const clientErrors = validateContactForm(formData);
+    const clientErrors = validateContactForm(submissionData);
     if (Object.keys(clientErrors).length > 0) {
       setErrors(clientErrors);
+      // Do not track honeypot bot submissions as failures/events
+      if (!clientErrors.honeypot) {
+        trackEvent("contact_form_failed", { reason: "validation" });
+      }
       return;
     }
 
@@ -52,17 +144,38 @@ export function ContactForm() {
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(submissionData),
       });
+
+      // Handle specific configuration errors (503 status code)
+      if (response.status === 503) {
+        trackEvent("contact_form_failed", { reason: "configuration" });
+      } else if (!response.ok) {
+        trackEvent("contact_form_failed", { reason: "server" });
+      }
 
       const data: ContactResponse = await response.json();
 
       if (data.success) {
         setSuccess(true);
+        trackEvent("contact_form_submitted", {
+          project_type: submissionData.projectType || "Other",
+          budget_range: submissionData.estimatedBudget || "Exploring options",
+          consultation: isConsultationSelected,
+          lead_source: finalLeadSource,
+          landing_page: submissionData.landingPage || "/",
+          traffic_source: submissionData.trafficSource || "Direct",
+        });
+        
+        const newRef = generateReferenceId();
         setFormData({
           fullName: "", email: "", phone: "", company: "", 
-          projectType: "", estimatedBudget: "", message: "", honeypot: ""
+          projectType: "", estimatedBudget: "", message: "", honeypot: "",
+          leadSource: "", landingPage: submissionData.landingPage, 
+          trafficSource: submissionData.trafficSource, browser: submissionData.browser,
+          device: submissionData.device, referenceId: newRef
         });
+        setFormStarted(false); // Reset interaction tracker for next form submission
       } else {
         setServerError(data.message || "Something went wrong.");
         if (data.errors) {
@@ -71,6 +184,7 @@ export function ContactForm() {
       }
     } catch {
       setServerError("Network error. Please try again or contact us directly.");
+      trackEvent("contact_form_failed", { reason: "network" });
     } finally {
       setLoading(false);
     }
@@ -100,11 +214,25 @@ export function ContactForm() {
         </div>
       )}
 
+      {formData.projectType === "Free Consultation" && (
+        <div className="bg-blue-500/10 border border-blue-500/20 p-4 rounded-xl text-blue-400 text-sm font-medium">
+          Tell us briefly what you’re planning, and we’ll arrange a 30-minute introductory call.
+        </div>
+      )}
+
       {/* Honeypot field - visually hidden, removed from tab order */}
       <div className="absolute left-[-9999px] top-[-9999px]" aria-hidden="true">
         <label htmlFor="honeypot">Do not fill this out if you are human</label>
         <input type="text" id="honeypot" name="honeypot" tabIndex={-1} value={formData.honeypot} onChange={handleChange} />
       </div>
+
+      {/* Hidden Attribution Metadata fields */}
+      <input type="hidden" name="leadSource" value={formData.leadSource || ""} />
+      <input type="hidden" name="landingPage" value={formData.landingPage || ""} />
+      <input type="hidden" name="trafficSource" value={formData.trafficSource || ""} />
+      <input type="hidden" name="browser" value={formData.browser || ""} />
+      <input type="hidden" name="device" value={formData.device || ""} />
+      <input type="hidden" name="referenceId" value={formData.referenceId || ""} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>

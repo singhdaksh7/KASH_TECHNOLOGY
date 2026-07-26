@@ -1,9 +1,12 @@
 
+"use client";
+
 import { Reveal } from "@/components/motion/Reveal";
 import { LinkButton } from "@/components/ui/Button";
 import { Wallet, Settings2, Rocket, Coins } from "lucide-react";
 import { SITE_CONFIG } from "@/lib/constants";
 import { LaunchpadDemo } from "@/components/product-demos/launchpad/LaunchpadDemo";
+import { trackEvent } from "@/lib/analytics";
 
 export function LaunchpadShowcase() {
   const product = SITE_CONFIG.products.launchpad;
@@ -50,7 +53,11 @@ export function LaunchpadShowcase() {
             </button>
           </div>
           <div className="pt-2">
-            <LinkButton href={product.caseStudyPath} variant="primary">
+            <LinkButton 
+              href={product.caseStudyPath} 
+              variant="primary"
+              onClick={() => trackEvent("case_study_click", { project: "crypto-launchpad", location: "homepage_showcase" })}
+            >
               View Case Study
             </LinkButton>
           </div>
