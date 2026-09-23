@@ -13,6 +13,7 @@ import {
   determineTrafficSource,
   getLandingPage
 } from "@/lib/attribution";
+import { getStoredLeadAttribution } from "@/components/conversion/LeadTracker";
 
 export function ContactForm() {
   const { isConsultationSelected, setIsConsultationSelected, leadSource, setLeadSource } = useConsultation();
@@ -123,9 +124,17 @@ export function ContactForm() {
       setLeadSource("Homepage Contact");
     }
 
+    const attribution = getStoredLeadAttribution();
     const submissionData = {
       ...formData,
-      leadSource: finalLeadSource
+      leadSource: finalLeadSource,
+      utmSource: attribution.utmSource,
+      utmMedium: attribution.utmMedium,
+      utmCampaign: attribution.utmCampaign,
+      utmTerm: attribution.utmTerm,
+      utmContent: attribution.utmContent,
+      referrer: attribution.referrer || (typeof document !== "undefined" ? document.referrer : undefined),
+      landingPage: formData.landingPage || attribution.landingPage || "/",
     };
 
     // Client side validation
@@ -165,6 +174,10 @@ export function ContactForm() {
           lead_source: finalLeadSource,
           landing_page: submissionData.landingPage || "/",
           traffic_source: submissionData.trafficSource || "Direct",
+        });
+        trackEvent("contact_form_submit", {
+          project_type: submissionData.projectType || "Other",
+          lead_source: finalLeadSource,
         });
         
         const newRef = generateReferenceId();

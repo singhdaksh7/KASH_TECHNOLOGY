@@ -56,7 +56,7 @@ Landing Page
 ${data.landingPage || "/"}
 
 Traffic Source
-${data.trafficSource || "Direct"}
+${data.trafficSource || "Direct"}${data.utmSource ? `\n\nUTM Source\n${data.utmSource}` : ""}${data.utmMedium ? `\n\nUTM Medium\n${data.utmMedium}` : ""}${data.utmCampaign ? `\n\nUTM Campaign\n${data.utmCampaign}` : ""}${data.referrer ? `\n\nReferrer\n${data.referrer}` : ""}
 
 Device
 ${data.device || "Desktop"}
@@ -109,6 +109,10 @@ export function buildInternalNotificationHtml(data: ContactFormValues): string {
               ${metadataRow("Lead Source", data.leadSource || "Unknown")}
               ${metadataRow("Landing Page", data.landingPage || "/")}
               ${metadataRow("Traffic Source", data.trafficSource || "Direct")}
+              ${data.utmSource ? metadataRow("UTM Source", data.utmSource) : ""}
+              ${data.utmMedium ? metadataRow("UTM Medium", data.utmMedium) : ""}
+              ${data.utmCampaign ? metadataRow("UTM Campaign", data.utmCampaign) : ""}
+              ${data.referrer ? metadataRow("Referrer", data.referrer) : ""}
               ${metadataRow("Device", data.device || "Desktop")}
               ${metadataRow("Browser", data.browser || "Other")}
               ${metadataRow("Submitted", submittedTime)}

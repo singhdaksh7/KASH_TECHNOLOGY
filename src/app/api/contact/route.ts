@@ -1,121 +1,115 @@
 import { NextResponse } from "next/server";
-import { ContactFormValues, ContactResponse } from "@/types/contact";
-import { validateContactForm, sanitizeContactForm } from "@/lib/contact-validation";
-import {
-  buildInternalNotificationText,
-  buildInternalNotificationHtml,
-  buildAcknowledgementText,
-  buildAcknowledgementHtml,
-} from "@/lib/email-templates";
+import { contactFormSchema, sanitizeString } from "@/lib/contact-schema";
+import { sendContactEmails } from "@/lib/email-service";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Helper: send a single email via the Resend API
-// ─────────────────────────────────────────────────────────────────────────────
-async function sendEmail(
-  apiKey: string,
-  payload: {
-    from: string;
-    to: string;
-    reply_to?: string;
-    subject: string;
-    html: string;
-    text: string;
+// In-memory rate limiting map (IP -> { count, expiresAt })
+const rateLimitMap = new Map<string, { count: number; expiresAt: number }>();
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const windowMs = 10 * 60 * 1000; // 10 minutes
+  const maxRequests = 5;
+
+  const record = rateLimitMap.get(ip);
+  if (!record || now > record.expiresAt) {
+    rateLimitMap.set(ip, { count: 1, expiresAt: now + windowMs });
+    return true;
   }
-): Promise<{ ok: boolean; status: number; body: string }> {
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify(payload),
-  });
 
-  const body = await res.text();
-  return { ok: res.ok, status: res.status, body };
+  if (record.count >= maxRequests) {
+    return false;
+  }
+
+  record.count += 1;
+  return true;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// POST /api/contact
-// ─────────────────────────────────────────────────────────────────────────────
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const sanitizedData = sanitizeContactForm(body) as ContactFormValues;
-    const errors = validateContactForm(sanitizedData);
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      request.headers.get("x-real-ip") ||
+      "127.0.0.1";
 
-    if (Object.keys(errors).length > 0) {
-      if (errors.honeypot) {
-        // Silently accept honeypot hits to deter bots
-        return NextResponse.json<ContactResponse>({ success: true, message: "Thank you for your inquiry." });
-      }
-      return NextResponse.json<ContactResponse>({ success: false, message: "Validation failed", errors }, { status: 400 });
-    }
-
-    const resendApiKey = process.env.RESEND_API_KEY;
-    const contactEmail = process.env.CONTACT_EMAIL || "founder@kash-technology.com";
-    const fromEmail = process.env.CONTACT_FROM_EMAIL || "KASH Technologies <website@kash-technology.com>";
-
-    if (!resendApiKey) {
-      return NextResponse.json<ContactResponse>({
-        success: false,
-        message: "Online inquiry delivery is not configured yet. Please contact us by email at " + contactEmail,
-      }, { status: 503 });
-    }
-
-    // ── 1. Internal notification email (to founder) ───────────────────────
-    const internalResult = await sendEmail(resendApiKey, {
-      from: fromEmail,
-      to: contactEmail,
-      reply_to: sanitizedData.email,
-      subject: `New Project Inquiry: ${sanitizedData.projectType}`,
-      html: buildInternalNotificationHtml(sanitizedData),
-      text: buildInternalNotificationText(sanitizedData),
-    });
-
-    if (!internalResult.ok) {
-      console.error(
-        "[Contact] Internal notification failed:",
-        internalResult.status,
-        internalResult.body
+    if (!checkRateLimit(ip)) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Too many inquiries received. Please wait a few minutes before submitting again or email founder@kash-technology.com directly.",
+        },
+        { status: 429 }
       );
-      throw new Error("Internal email delivery failed");
     }
 
-    // ── 2. Acknowledgement email (to visitor) ─────────────────────────────
-    // This is best-effort: a failure here must NOT prevent a success response
-    // since the inquiry itself has already been delivered.
-    try {
-      const ackResult = await sendEmail(resendApiKey, {
-        from: fromEmail,
-        to: sanitizedData.email,
-        reply_to: contactEmail,
-        subject: `We received your inquiry — KASH Technologies`,
-        html: buildAcknowledgementHtml(sanitizedData),
-        text: buildAcknowledgementText(sanitizedData),
+    const rawBody = await request.json();
+
+    // Sanitize input strings
+    const sanitizedBody = {
+      fullName: sanitizeString(rawBody.fullName),
+      email: sanitizeString(rawBody.email),
+      phone: sanitizeString(rawBody.phone),
+      company: sanitizeString(rawBody.company),
+      serviceInterested: sanitizeString(rawBody.serviceInterested),
+      projectBudget: sanitizeString(rawBody.projectBudget),
+      message: sanitizeString(rawBody.message),
+      honeypot: sanitizeString(rawBody.honeypot),
+    };
+
+    // Bot trap: if honeypot is filled, return silent success
+    if (sanitizedBody.honeypot) {
+      return NextResponse.json({
+        success: true,
+        message: "Thank you! Your enquiry has been received. We'll get back to you shortly.",
+      });
+    }
+
+    // Server-side Zod validation
+    const parseResult = contactFormSchema.safeParse(sanitizedBody);
+    if (!parseResult.success) {
+      const fieldErrors: Record<string, string> = {};
+      parseResult.error.issues.forEach((issue) => {
+        if (issue.path[0]) {
+          fieldErrors[issue.path[0].toString()] = issue.message;
+        }
       });
 
-      if (!ackResult.ok) {
-        console.error(
-          "[Contact] Acknowledgement email failed (non-blocking):",
-          ackResult.status,
-          ackResult.body
-        );
-      }
-    } catch (ackError) {
-      console.error("[Contact] Acknowledgement email threw (non-blocking):", ackError);
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Please correct the highlighted errors.",
+          errors: fieldErrors,
+        },
+        { status: 400 }
+      );
     }
 
-    return NextResponse.json<ContactResponse>({
-      success: true,
-      message: "Thank you for your inquiry. We will get back to you shortly."
-    });
+    const validData = parseResult.data;
 
+    // Send emails via abstraction
+    const emailResult = await sendContactEmails(validData);
+
+    if (!emailResult.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Unable to deliver message automatically. Please contact founder@kash-technology.com directly.",
+        },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "Thank you! Your enquiry has been received. We'll get back to you shortly.",
+    });
   } catch (error) {
-    console.error("Contact form error:", error);
-    return NextResponse.json<ContactResponse>({
-      success: false,
-      message: "An unexpected server error occurred. Please try again later."
-    }, { status: 500 });
+    console.error("[Contact API] Server error:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        message: "An unexpected error occurred. Please try again or email founder@kash-technology.com.",
+      },
+      { status: 500 }
+    );
   }
 }

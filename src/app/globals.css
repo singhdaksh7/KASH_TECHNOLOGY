@@ -1,60 +1,59 @@
 @import "tailwindcss";
 
 :root {
-  /* Core surfaces */
-  --background: #050505;
-  --surface: #0f1116;
-  --surface-elevated: #161923;
-  --foreground: #f5f6f8;
-  --muted: #9198a8;
-  --border: #23262f;
+  /* Core Dark surfaces matching screenshots */
+  --bg-dark: #050708;
+  --bg-dark-surface: #0b0d0e;
+  --bg-dark-elevated: #121418;
+  --text-dark-primary: #ffffff;
+  --text-dark-muted: #9ca3af;
+  --border-dark: rgba(255, 255, 255, 0.1);
 
-  /* Brand */
-  --primary: #aec6ff;
-  --primary-foreground: #002e6b;
-  --primary-container: #0070f3;
-  --on-primary-container: #ffffff;
-  --secondary: #1c1f2a;
+  /* Core Ivory / Light surfaces */
+  --bg-ivory: #fbf8f2;
+  --bg-ivory-surface: #ffffff;
+  --bg-ivory-elevated: #f5f1e8;
+  --text-ivory-primary: #111827;
+  --text-ivory-muted: #6b7280;
+  --border-ivory: rgba(0, 0, 0, 0.06);
 
-  /* Product accents */
-  --accent-exora: #f0b90b;
-  --accent-schoolsync: #22c55e;
-  --accent-launchpad: #a855f7;
+  /* Brand Accents */
+  --accent-orange: #f36b21;
+  --accent-orange-hover: #e05b14;
+  --accent-orange-light: rgba(243, 107, 33, 0.12);
+  --accent-gold: #c5a880;
+  --accent-gold-light: rgba(197, 168, 128, 0.15);
+
+  /* System tokens */
+  --background: var(--bg-dark);
+  --foreground: var(--text-dark-primary);
+  --primary: var(--accent-orange);
+  --primary-foreground: #ffffff;
 
   /* Radii */
-  --radius-sm: 0.375rem;
-  --radius-md: 0.625rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.5rem;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-surface: var(--surface);
-  --color-surface-elevated: var(--surface-elevated);
-  --color-foreground: var(--foreground);
-  --color-muted: var(--muted);
-  --color-border: var(--border);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary-container: var(--primary-container);
-  --color-on-primary-container: var(--on-primary-container);
-  --color-secondary: var(--secondary);
-  --color-accent-exora: var(--accent-exora);
-  --color-accent-schoolsync: var(--accent-schoolsync);
-  --color-accent-launchpad: var(--accent-launchpad);
+  --color-bg-dark: var(--bg-dark);
+  --color-bg-dark-surface: var(--bg-dark-surface);
+  --color-bg-dark-elevated: var(--bg-dark-elevated);
+  --color-bg-ivory: var(--bg-ivory);
+  --color-bg-ivory-surface: var(--bg-ivory-surface);
+  --color-bg-ivory-elevated: var(--bg-ivory-elevated);
+  --color-accent-orange: var(--accent-orange);
+  --color-accent-gold: var(--accent-gold);
 
-  --radius-sm: var(--radius-sm);
-  --radius-md: var(--radius-md);
-  --radius-lg: var(--radius-lg);
-  --radius-xl: var(--radius-xl);
-
+  --font-serif: var(--font-playfair);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 * {
-  border-color: var(--border);
+  box-sizing: border-box;
 }
 
 html {
@@ -62,13 +61,19 @@ html {
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--bg-dark);
+  color: var(--text-dark-primary);
+  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+}
+
+.font-serif-heading {
+  font-family: var(--font-playfair), "Cormorant Garamond", Georgia, serif;
 }
 
 ::selection {
-  background: var(--primary);
-  color: var(--primary-foreground);
+  background: var(--accent-orange);
+  color: #ffffff;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -86,45 +91,69 @@ body {
   }
 }
 
-@layer utilities {
-  .glass-panel {
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
+/* Circuit lines & glowing geometric accents */
+.circuit-pattern-dark {
+  background-image: 
+    radial-gradient(circle at 50% 50%, rgba(243, 107, 33, 0.07) 0%, transparent 60%),
+    linear-gradient(rgba(243, 107, 33, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(243, 107, 33, 0.035) 1px, transparent 1px);
+  background-size: 100% 100%, 48px 48px, 48px 48px;
+}
 
-  .gradient-border {
-    border: 1px solid transparent;
-    background: linear-gradient(var(--background), var(--background)) padding-box,
-                linear-gradient(to bottom right, rgba(255,255,255,0.15), rgba(255,255,255,0.02)) border-box;
-  }
+.circuit-pattern-ivory {
+  background-image: 
+    linear-gradient(rgba(243, 107, 33, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(243, 107, 33, 0.04) 1px, transparent 1px);
+  background-size: 40px 40px, 40px 40px;
+}
 
-  .glow-blob {
-    background: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
-    filter: blur(80px);
-  }
+/* Diagonal split angle utility */
+.clip-diagonal-hero {
+  clip-path: polygon(0 0, 100% 0, 100% 88%, 0 100%);
+}
 
-  .marquee-track {
-    display: flex;
-    width: max-content;
-    animation: marquee 40s linear infinite;
-  }
+.clip-diagonal-inverted {
+  clip-path: polygon(0 12%, 100% 0, 100% 100%, 0 100%);
+}
 
-  @keyframes marquee {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
+/* Rotating technical ring animations */
+@keyframes spinSlow {
+  from {
+    transform: rotate(0deg);
   }
-
-  .grid-pattern {
-    background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-                      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-  }
-
-  .nav-scrolled {
-    background: rgba(8, 9, 12, 0.8);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  to {
+    transform: rotate(360deg);
   }
 }
 
+@keyframes spinReverseSlow {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spinSlow 35s linear infinite;
+}
+
+.animate-spin-reverse-slow {
+  animation: spinReverseSlow 45s linear infinite;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #050708;
+}
+::-webkit-scrollbar-thumb {
+  background: #23262d;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #f36b21;
+}

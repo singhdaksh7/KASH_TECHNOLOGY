@@ -1,66 +1,94 @@
 "use client";
 
 import { ContactForm } from "@/components/contact/ContactForm";
-import { Mail, MessageSquare } from "lucide-react";
 import { SITE_CONFIG } from "@/lib/constants";
 import Link from "next/link";
-import { ConsultationCTA } from "@/components/conversion/ConsultationCTA";
 import { trackEvent } from "@/lib/analytics";
+import { Reveal } from "@/components/motion/Reveal";
 
 export function ContactCTA() {
   return (
-    <section id="contact" className="py-24 px-8 max-w-[1280px] mx-auto scroll-mt-24">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-        <div>
-          <h2 className="text-4xl md:text-5xl font-black mb-6 flex items-center gap-3">
-            <MessageSquare className="text-primary w-10 h-10" />
-            Let&apos;s build something remarkable.
-          </h2>
-          <p className="text-xl text-muted leading-relaxed mb-8">
-            Whether you need a specialized engineering team or a full product build, we&apos;re ready to help bring your vision to life.
-          </p>
-          
-          <div className="mb-8 flex justify-start">
-            <ConsultationCTA variant="contact" className="w-full sm:w-auto" />
-          </div>
-          
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-8 mb-8">
-            <h3 className="font-bold mb-4 flex items-center gap-2">
-              <Mail className="w-5 h-5 text-primary" />
-              Direct Contact
-            </h3>
-            <p className="text-muted text-sm mb-4">
-              Prefer direct communication? Reach out to our team via email or phone.
+    <section id="contact" className="py-20 md:py-32 px-6 md:px-12 lg:px-16 w-full max-w-[1520px] mx-auto scroll-mt-24 bg-[#050505] relative overflow-hidden">
+      {/* Background grid overlay */}
+      <div className="absolute inset-0 grid-pattern opacity-[0.02] pointer-events-none" />
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start relative z-10">
+        
+        {/* Left Side: Copy and Contacts (col-span-5) */}
+        <div className="lg:col-span-5 text-left shrink-0">
+          <Reveal>
+            <span className="text-[10px] tracking-[0.25em] font-mono text-primary uppercase font-bold mb-4 block">
+              09 / Contact
+            </span>
+          </Reveal>
+
+          <Reveal delay={0.1}>
+            <h2 className="text-4xl sm:text-5xl font-bold tracking-tight text-white mb-6 leading-[1.12]">
+              LET&apos;S BUILD
+              <br />
+              WHAT&apos;S NEXT.
+            </h2>
+          </Reveal>
+
+          <Reveal delay={0.15}>
+            <p className="text-[#8e9aa8] text-base md:text-lg max-w-sm mb-8 leading-relaxed">
+              Tell us what you&apos;re building. We&apos;ll help turn it into production-ready software.
             </p>
-            <div className="flex flex-col gap-2">
+          </Reveal>
+
+          {/* Direct contact info */}
+          <Reveal className="border-t border-white/5 pt-8 w-full max-w-xs space-y-6">
+            <div>
+              <span className="text-[9px] tracking-[0.2em] font-mono text-white/30 uppercase font-bold block mb-2">
+                Founder Email
+              </span>
               <Link 
                 href={`mailto:${SITE_CONFIG.contactEmail}`}
                 onClick={() => trackEvent("cta_click", { location: "contact_section", label: "email_link" })}
-                className="text-primary hover:text-primary/80 font-bold underline underline-offset-4 transition-colors"
+                className="text-white hover:text-primary transition-colors text-sm font-semibold tracking-tight"
               >
                 {SITE_CONFIG.contactEmail}
               </Link>
+            </div>
+
+            <div>
+              <span className="text-[9px] tracking-[0.2em] font-mono text-white/30 uppercase font-bold block mb-2">
+                Primary Phone
+              </span>
               <Link 
                 href={`tel:${SITE_CONFIG.contactPhonePrimary?.replace(/\s+/g, '')}`}
                 onClick={() => trackEvent("cta_click", { location: "contact_section", label: "phone_primary" })}
-                className="text-primary hover:text-primary/80 font-bold transition-colors"
+                className="text-white hover:text-primary transition-colors text-sm font-semibold tracking-tight"
               >
                 {SITE_CONFIG.contactPhonePrimary}
               </Link>
+            </div>
+
+            <div>
+              <span className="text-[9px] tracking-[0.2em] font-mono text-white/30 uppercase font-bold block mb-2">
+                Alternate Phone
+              </span>
               <Link 
                 href={`tel:${SITE_CONFIG.contactPhoneAlternate?.replace(/\s+/g, '')}`}
                 onClick={() => trackEvent("cta_click", { location: "contact_section", label: "phone_alternate" })}
-                className="text-muted hover:text-primary transition-colors text-sm"
+                className="text-[#8e9aa8] hover:text-primary transition-colors text-xs font-semibold tracking-tight"
               >
-                {SITE_CONFIG.contactPhoneAlternate} (Alternate)
+                {SITE_CONFIG.contactPhoneAlternate}
               </Link>
             </div>
-          </div>
+          </Reveal>
         </div>
 
-        <div>
-          <ContactForm />
-        </div>
+        {/* Right Side: Form (col-span-7) */}
+        <Reveal delay={0.2} className="lg:col-span-7 w-full relative">
+          {/* Subtle radial ambient blue glow behind the form container */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] h-[90%] bg-blue-500/[0.03] rounded-full blur-[80px] pointer-events-none" />
+          
+          <div className="relative border border-white/5 bg-[#0b0b0d] p-6 sm:p-8 rounded-lg shadow-2xl">
+            <ContactForm />
+          </div>
+        </Reveal>
+
       </div>
     </section>
   );

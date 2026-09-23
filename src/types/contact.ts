@@ -12,6 +12,12 @@ export interface ContactFormValues {
   leadSource?: string;
   landingPage?: string;
   trafficSource?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmTerm?: string;
+  utmContent?: string;
+  referrer?: string;
   browser?: string;
   device?: string;
   referenceId?: string;
