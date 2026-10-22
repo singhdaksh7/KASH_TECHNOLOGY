@@ -6,8 +6,8 @@ import { Testimonials } from "@/components/sections/Testimonials";
 import { CtaBanner } from "@/components/sections/CtaBanner";
 
 export const metadata: Metadata = {
-  title: "Portfolio — Selected Systems & Case Studies | KASH Technology",
-  description: "Explore our recent enterprise ERPs, e-commerce applications, CRM platforms, and custom software systems built with precision.",
+  title: "Portfolio — Selected Work & Case Studies | KASH Technology",
+  description: "Explore our recent web platforms, custom apps, software systems, and creative digital projects engineered for business growth.",
 };
 
 export default function PortfolioPage() {
@@ -15,12 +15,13 @@ export default function PortfolioPage() {
     <>
       {/* 1. Hero */}
       <HeroDiagonal
+        badge="OUR SELECTED WORK"
         titlePrimary="Our Work."
-        titleAccent="Your Next Success Story."
-        description="Explore products and solutions built for real business needs."
+        titleAccent="Your Next Growth Milestone."
+        description="Explore products, platforms, and digital solutions built for real business impact."
         primaryCtaText="Discuss Your Project"
         primaryCtaHref="/contact"
-        secondaryCtaText="View Our Services"
+        secondaryCtaText="Explore Services"
         secondaryCtaHref="/services"
       />
 

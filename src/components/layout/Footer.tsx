@@ -22,22 +22,38 @@ function GithubIcon({ className = "w-4 h-4" }: { className?: string }) {
   );
 }
 
-const QUICK_LINKS = [
-  { label: "Home", href: "/" },
-  { label: "Services", href: "/services" },
-  { label: "Solutions", href: "/solutions" },
-  { label: "Portfolio", href: "/portfolio" },
-  { label: "About", href: "/about" },
-  { label: "Contact", href: "/contact" },
+const TECH_LINKS = [
+  { label: "Website Development", href: "/website-development" },
+  { label: "Custom Software", href: "/custom-software-development" },
+  { label: "Mobile Apps", href: "/mobile-app-development" },
+  { label: "ERP / CRM", href: "/erp-development" },
+  { label: "SaaS", href: "/saas-development" },
+  { label: "AI Automation", href: "/ai-automation" },
 ];
 
-const SERVICES_LINKS = [
-  { label: "Web Development", href: "/services" },
-  { label: "Mobile Apps", href: "/services" },
-  { label: "Custom Software", href: "/services" },
-  { label: "AI Automation", href: "/services" },
-  { label: "ERP / CRM Systems", href: "/services" },
-  { label: "E-commerce Solutions", href: "/services" },
+const CREATIVE_LINKS = [
+  { label: "Content Creation", href: "/content-creation" },
+  { label: "Video Editing", href: "/video-editing" },
+  { label: "Branding", href: "/branding" },
+];
+
+const MARKETING_LINKS = [
+  { label: "Social Media Management", href: "/social-media-management" },
+  { label: "Digital Marketing", href: "/digital-marketing" },
+  { label: "Performance Marketing", href: "/performance-marketing" },
+  { label: "Lead Generation", href: "/lead-generation" },
+  { label: "SEO Services", href: "/seo-services" },
+];
+
+const AREAS_WE_SERVE = [
+  { label: "Delhi NCR", href: "/delhi-ncr" },
+  { label: "Noida", href: "/noida" },
+  { label: "Greater Noida", href: "/greater-noida" },
+  { label: "Ghaziabad", href: "/ghaziabad" },
+  { label: "Meerut", href: "/meerut" },
+  { label: "Baghpat", href: "/baghpat" },
+  { label: "Baraut", href: "/baraut" },
+  { label: "Western UP", href: "/western-up" },
 ];
 
 export function Footer() {
@@ -47,17 +63,20 @@ export function Footer() {
       <div className="absolute inset-0 circuit-pattern-dark opacity-20 pointer-events-none" />
 
       <Container className="relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8 pb-12 border-b border-white/10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-6 pb-12 border-b border-white/10">
           
           {/* Column 1: Brand info & socials (col-span-4) */}
           <div className="lg:col-span-4 space-y-4">
             <KashLogo variant="header" />
             <p className="text-xs text-[#9ca3af] leading-relaxed max-w-sm pt-2">
-              We build custom software, apps, and digital solutions that help businesses innovate, grow, and scale.
+              KASH Technology is a full-service digital agency uniting engineering, creative content, performance marketing, and business automation.
             </p>
+            <div className="text-[11px] font-mono text-[#f36b21] tracking-wider uppercase font-semibold">
+              We Build. We Create. We Grow.
+            </div>
 
             {/* Social & Contact Direct Actions */}
-            <div className="flex items-center gap-2.5 pt-3">
+            <div className="flex items-center gap-2.5 pt-2">
               {SITE_CONFIG.social.linkedin && (
                 <a
                   href={SITE_CONFIG.social.linkedin}
@@ -90,70 +109,91 @@ export function Footer() {
                 <MessageSquare className="w-3.5 h-3.5" />
               </a>
             </div>
-          </div>
 
-          {/* Column 2: Quick Links (col-span-2 or 3) */}
-          <div className="lg:col-span-2 space-y-4">
-            <h4 className="text-xs font-mono font-bold tracking-wider text-white uppercase">
-              Quick Links
-            </h4>
-            <ul className="space-y-2.5 text-xs text-[#9ca3af]">
-              {QUICK_LINKS.map((item) => (
-                <li key={item.label}>
-                  <Link href={item.href} className="hover:text-white transition-colors duration-150">
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Column 3: Services (col-span-3) */}
-          <div className="lg:col-span-3 space-y-4">
-            <h4 className="text-xs font-mono font-bold tracking-wider text-white uppercase">
-              Services
-            </h4>
-            <ul className="space-y-2.5 text-xs text-[#9ca3af]">
-              {SERVICES_LINKS.map((item) => (
-                <li key={item.label}>
-                  <Link href={item.href} className="hover:text-white transition-colors duration-150">
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Column 4: Contact Us (col-span-3) */}
-          <div className="lg:col-span-3 space-y-4">
-            <h4 className="text-xs font-mono font-bold tracking-wider text-white uppercase">
-              Contact Us
-            </h4>
-            <div className="space-y-3 text-xs text-[#9ca3af]">
-              <div className="flex items-center gap-2.5">
-                <Phone className="w-4 h-4 text-[#f36b21] shrink-0" />
+            {/* Direct Contact info */}
+            <div className="space-y-2 pt-2 text-xs text-[#9ca3af]">
+              <div className="flex items-center gap-2">
+                <Phone className="w-3.5 h-3.5 text-[#f36b21]" />
                 <a href={`tel:${SITE_CONFIG.contactPhonePrimary.replace(/\s+/g, "")}`} className="hover:text-white transition-colors">
                   {SITE_CONFIG.contactPhonePrimary}
                 </a>
               </div>
-              <div className="flex items-center gap-2.5">
-                <Phone className="w-4 h-4 text-[#f36b21] shrink-0" />
-                <a href={`tel:${SITE_CONFIG.contactPhoneAlternate.replace(/\s+/g, "")}`} className="hover:text-white transition-colors">
-                  {SITE_CONFIG.contactPhoneAlternate}
-                </a>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <Mail className="w-4 h-4 text-[#f36b21] shrink-0" />
-                <a href={`mailto:${SITE_CONFIG.contactEmail}`} className="hover:text-white transition-colors break-all">
+              <div className="flex items-center gap-2">
+                <Mail className="w-3.5 h-3.5 text-[#f36b21]" />
+                <a href={`mailto:${SITE_CONFIG.contactEmail}`} className="hover:text-white transition-colors">
                   {SITE_CONFIG.contactEmail}
                 </a>
               </div>
-              <div className="flex items-start gap-2.5">
-                <MapPin className="w-4 h-4 text-[#f36b21] shrink-0 mt-0.5" />
-                <span className="text-[#9ca3af]">
-                  {SITE_CONFIG.locationText}
-                </span>
-              </div>
+            </div>
+          </div>
+
+          {/* Column 2: Technology (col-span-2) */}
+          <div className="lg:col-span-2 space-y-3">
+            <h4 className="text-xs font-mono font-bold tracking-wider text-white uppercase flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#f36b21]" /> Technology
+            </h4>
+            <ul className="space-y-2 text-xs text-[#9ca3af]">
+              {TECH_LINKS.map((item) => (
+                <li key={item.label}>
+                  <Link href={item.href} className="hover:text-white transition-colors">
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Column 3: Creative & Marketing (col-span-3) */}
+          <div className="lg:col-span-3 space-y-6">
+            <div className="space-y-3">
+              <h4 className="text-xs font-mono font-bold tracking-wider text-[#c5a880] uppercase flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#c5a880]" /> Creative
+              </h4>
+              <ul className="space-y-2 text-xs text-[#9ca3af]">
+                {CREATIVE_LINKS.map((item) => (
+                  <li key={item.label}>
+                    <Link href={item.href} className="hover:text-white transition-colors">
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="space-y-3">
+              <h4 className="text-xs font-mono font-bold tracking-wider text-[#f36b21] uppercase flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#f36b21]" /> Marketing
+              </h4>
+              <ul className="space-y-2 text-xs text-[#9ca3af]">
+                {MARKETING_LINKS.map((item) => (
+                  <li key={item.label}>
+                    <Link href={item.href} className="hover:text-white transition-colors">
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Column 4: Areas We Serve (col-span-3) */}
+          <div className="lg:col-span-3 space-y-3">
+            <h4 className="text-xs font-mono font-bold tracking-wider text-white uppercase flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5 text-[#f36b21]" /> Areas We Serve
+            </h4>
+            <div className="grid grid-cols-2 gap-x-2 gap-y-2 text-xs text-[#9ca3af]">
+              {AREAS_WE_SERVE.map((area) => (
+                <Link
+                  key={area.label}
+                  href={area.href}
+                  className="hover:text-white transition-colors hover:translate-x-0.5 transform duration-150"
+                >
+                  {area.label}
+                </Link>
+              ))}
+            </div>
+            <div className="pt-3 text-[11px] font-mono text-white/40">
+              {SITE_CONFIG.locationText}
             </div>
           </div>
 

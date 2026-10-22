@@ -4,17 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, BarChart3, Smartphone, Activity, GraduationCap, Truck, Home, Stethoscope, Sprout } from "lucide-react";
 import { Container } from "@/components/ui/Container";
-import { ALL_PORTFOLIO_PROJECTS, ProjectItem } from "@/data/portfolioData";
-
-const CATEGORIES = [
-  "All Projects",
-  "Web Platforms",
-  "Mobile Apps",
-  "Enterprise Solutions",
-  "E-commerce",
-  "CRM / ERP",
-  "Dashboard / Analytics",
-];
+import { ALL_PORTFOLIO_PROJECTS, PORTFOLIO_FILTERS, PortfolioFilter, ProjectItem } from "@/data/portfolioData";
 
 function MockupIllustration({ type }: { type: ProjectItem["previewType"] }) {
   if (type === "mobile" || type === "medicare") {
@@ -138,17 +128,19 @@ interface PortfolioGridProps {
 }
 
 export function PortfolioGrid({ limit, showFilters = true }: PortfolioGridProps) {
-  const [activeCategory, setActiveCategory] = useState("All Projects");
+  const [activeCategory, setActiveCategory] = useState<PortfolioFilter>("All");
 
   const filtered = ALL_PORTFOLIO_PROJECTS.filter((proj) => {
-    if (activeCategory === "All Projects") return true;
-    if (activeCategory === "Web Platforms") return proj.category === "Web Platforms";
-    if (activeCategory === "Mobile Apps") return proj.category === "Mobile Apps";
-    if (activeCategory === "Enterprise Solutions") return proj.category === "Enterprise Solutions" || proj.category === "CRM / ERP";
-    if (activeCategory === "E-commerce") return proj.category === "E-commerce" || proj.tag.includes("E-commerce");
-    if (activeCategory === "CRM / ERP") return proj.category === "CRM / ERP" || proj.tag.includes("ERP") || proj.tag.includes("CRM");
-    if (activeCategory === "Dashboard / Analytics") return proj.category === "Dashboard / Analytics" || proj.tag.includes("Analytics") || proj.tag.includes("Dashboard");
-    return proj.category === activeCategory;
+    if (activeCategory === "All") return true;
+    if (activeCategory === "Technology") return proj.pillar === "Technology";
+    if (activeCategory === "Websites") return proj.filterTags.includes("Websites");
+    if (activeCategory === "Apps") return proj.filterTags.includes("Apps");
+    if (activeCategory === "Software") return proj.filterTags.includes("Software");
+    if (activeCategory === "Social Media") return proj.filterTags.includes("Social Media");
+    if (activeCategory === "Creative") return proj.pillar === "Creative" || proj.filterTags.includes("Creative");
+    if (activeCategory === "Video") return proj.filterTags.includes("Video");
+    if (activeCategory === "Marketing") return proj.pillar === "Marketing" || proj.filterTags.includes("Marketing");
+    return true;
   });
 
   const displayItems = limit ? filtered.slice(0, limit) : filtered;
@@ -161,7 +153,7 @@ export function PortfolioGrid({ limit, showFilters = true }: PortfolioGridProps)
         {/* Filter Tabs */}
         {showFilters && (
           <div className="flex flex-wrap items-center justify-center gap-2 mb-10 max-w-4xl mx-auto">
-            {CATEGORIES.map((cat) => {
+            {PORTFOLIO_FILTERS.map((cat) => {
               const isActive = activeCategory === cat;
               return (
                 <button
@@ -178,6 +170,30 @@ export function PortfolioGrid({ limit, showFilters = true }: PortfolioGridProps)
                 </button>
               );
             })}
+          </div>
+        )}
+
+        {/* Empty state for categories where work is not yet publicly published */}
+        {displayItems.length === 0 && (
+          <div className="max-w-xl mx-auto bg-white rounded-2xl p-8 border border-black/5 text-center shadow-lg my-8 space-y-3">
+            <span className="text-[11px] font-mono font-bold tracking-widest text-[#f36b21] uppercase block">
+              PORTFOLIO ARCHIVE // {activeCategory.toUpperCase()}
+            </span>
+            <h4 className="font-serif-heading text-xl font-bold text-[#111827]">
+              Case Studies Under Active Production
+            </h4>
+            <p className="text-xs sm:text-sm text-[#6b7280] leading-relaxed">
+              Client campaigns and creative productions in this category are currently active or under non-disclosure. Contact our team to review private portfolio samples and customized strategy decks.
+            </p>
+            <div className="pt-2">
+              <Link
+                href="/contact"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#f36b21] hover:bg-[#e05b14] text-white text-xs font-bold transition-all shadow-md"
+              >
+                <span>Request Case Studies</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
           </div>
         )}
 

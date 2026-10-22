@@ -1,9 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, Calendar, ArrowRight } from "lucide-react";
+import { X, Calendar, ChevronDown, ArrowRight } from "lucide-react";
 import { KashLogo } from "@/components/branding/KashLogo";
 import { SITE_CONFIG } from "@/lib/constants";
 import { trackEvent } from "@/lib/analytics";
@@ -16,6 +17,19 @@ interface MobileNavigationProps {
 
 export function MobileNavigation({ open, onClose }: MobileNavigationProps) {
   const pathname = usePathname();
+  // Store expanded accordion keys (default open currently active section)
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    Technology: true,
+    Creative: false,
+    Marketing: false,
+  });
+
+  const toggleSection = (label: string) => {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [label]: !prev[label],
+    }));
+  };
 
   return (
     <AnimatePresence>
@@ -44,17 +58,81 @@ export function MobileNavigation({ open, onClose }: MobileNavigationProps) {
               </button>
             </div>
 
-            {/* Links */}
-            <nav className="flex flex-col gap-2 py-8">
+            {/* Links with Nested Accordions */}
+            <nav className="flex flex-col gap-1.5 py-6">
               {SITE_CONFIG.navLinks.map((link) => {
-                const isActive = pathname === link.href;
+                const hasChildren = "children" in link && Boolean(link.children?.length);
+                const isChildActive = hasChildren && link.children?.some((c) => pathname === c.href);
+                const isActive = pathname === link.href || isChildActive;
+                const isExpanded = Boolean(expandedSections[link.label]);
+
+                if (hasChildren && link.children) {
+                  return (
+                    <div key={link.label} className="rounded-xl overflow-hidden border border-white/5 bg-white/[0.02]">
+                      <button
+                        type="button"
+                        onClick={() => toggleSection(link.label)}
+                        className={cn(
+                          "w-full flex items-center justify-between px-4 py-3.5 text-base font-semibold transition-colors",
+                          isActive ? "text-[#f36b21]" : "text-white/90 hover:text-white"
+                        )}
+                      >
+                        <span className="flex items-center gap-2">
+                          <span>{link.label}</span>
+                          {isActive && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#f36b21]" />
+                          )}
+                        </span>
+                        <ChevronDown
+                          className={cn(
+                            "w-4 h-4 text-white/50 transition-transform duration-200",
+                            isExpanded ? "rotate-180 text-[#f36b21]" : ""
+                          )}
+                        />
+                      </button>
+
+                      <AnimatePresence>
+                        {isExpanded && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="px-3 pb-3 space-y-1 overflow-hidden"
+                          >
+                            {link.children.map((child) => {
+                              const isCurrent = pathname === child.href;
+                              return (
+                                <Link
+                                  key={child.href}
+                                  href={child.href}
+                                  onClick={onClose}
+                                  className={cn(
+                                    "flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                                    isCurrent
+                                      ? "bg-[#f36b21]/15 text-[#f36b21] font-semibold"
+                                      : "text-white/70 hover:bg-white/5 hover:text-white"
+                                  )}
+                                >
+                                  <span>{child.label}</span>
+                                  <ArrowRight className="w-3.5 h-3.5 opacity-40" />
+                                </Link>
+                              );
+                            })}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  );
+                }
+
                 return (
                   <Link
                     key={link.href}
                     href={link.href}
                     onClick={onClose}
                     className={cn(
-                      "flex items-center justify-between px-4 py-3.5 rounded-lg text-lg font-medium transition-colors",
+                      "flex items-center justify-between px-4 py-3 rounded-xl text-base font-medium transition-colors",
                       isActive
                         ? "bg-[#f36b21]/15 text-[#f36b21] font-semibold border-l-2 border-[#f36b21]"
                         : "text-white/80 hover:bg-white/5 hover:text-white"
@@ -79,7 +157,7 @@ export function MobileNavigation({ open, onClose }: MobileNavigationProps) {
               className="flex items-center justify-center gap-2 w-full py-3.5 rounded-lg bg-[#f36b21] hover:bg-[#e05b14] text-white font-bold tracking-wide transition-all shadow-[0_4px_14px_rgba(243,107,33,0.35)]"
             >
               <Calendar className="w-4 h-4" />
-              <span>Book a Call</span>
+              <span>Start Your Project</span>
             </Link>
             <p className="text-center text-xs text-white/40 font-mono tracking-wider">
               {SITE_CONFIG.tagline}

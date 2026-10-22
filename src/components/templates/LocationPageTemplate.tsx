@@ -256,6 +256,46 @@ export function LocationPageTemplate({ location }: LocationPageTemplateProps) {
         </Container>
       </section>
 
+      {/* 5. Full-Service Capabilities for Location */}
+      <section className="py-16 bg-[#0c0e14] border-b border-white/10 text-white">
+        <Container>
+          <div className="max-w-4xl mx-auto text-center space-y-3 mb-10">
+            <span className="text-[11px] font-mono font-bold text-[#f36b21] uppercase tracking-[0.25em]">
+              FULL-SERVICE DIGITAL PARTNER
+            </span>
+            <h3 className="font-serif-heading text-2xl sm:text-3xl font-bold text-white">
+              Integrated Capabilities for {location.name}
+            </h3>
+            <p className="text-xs sm:text-sm text-[#9ca3af] max-w-xl mx-auto">
+              From web and software development to content creation, social media management, and digital marketing — everything required to build and grow in {location.name}.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 max-w-5xl mx-auto text-center">
+            <Link href="/website-development" className="p-4 rounded-xl bg-white/[0.03] border border-white/10 hover:border-[#f36b21]/40 hover:bg-white/[0.06] transition-all group">
+              <span className="text-xs font-mono font-bold text-white block group-hover:text-[#f36b21] mb-1">Websites</span>
+              <span className="text-[11px] text-white/50">Next.js &amp; E-commerce</span>
+            </Link>
+            <Link href="/custom-software-development" className="p-4 rounded-xl bg-white/[0.03] border border-white/10 hover:border-[#f36b21]/40 hover:bg-white/[0.06] transition-all group">
+              <span className="text-xs font-mono font-bold text-white block group-hover:text-[#f36b21] mb-1">Software</span>
+              <span className="text-[11px] text-white/50">ERP, CRM &amp; Mobile</span>
+            </Link>
+            <Link href="/social-media-management" className="p-4 rounded-xl bg-white/[0.03] border border-white/10 hover:border-[#f36b21]/40 hover:bg-white/[0.06] transition-all group">
+              <span className="text-xs font-mono font-bold text-white block group-hover:text-[#f36b21] mb-1">Social Media</span>
+              <span className="text-[11px] text-white/50">Instagram &amp; LinkedIn</span>
+            </Link>
+            <Link href="/content-creation" className="p-4 rounded-xl bg-white/[0.03] border border-white/10 hover:border-[#f36b21]/40 hover:bg-white/[0.06] transition-all group">
+              <span className="text-xs font-mono font-bold text-white block group-hover:text-[#f36b21] mb-1">Video &amp; Creative</span>
+              <span className="text-[11px] text-white/50">Reels &amp; Brand GFX</span>
+            </Link>
+            <Link href="/digital-marketing" className="p-4 rounded-xl bg-white/[0.03] border border-white/10 hover:border-[#f36b21]/40 hover:bg-white/[0.06] transition-all group col-span-2 sm:col-span-1">
+              <span className="text-xs font-mono font-bold text-white block group-hover:text-[#f36b21] mb-1">Marketing</span>
+              <span className="text-[11px] text-white/50">Leads &amp; Meta Ads</span>
+            </Link>
+          </div>
+        </Container>
+      </section>
+
       {/* 6. Nearby Service Areas */}
       <section className="py-16 bg-[#080808] border-b border-white/10 text-white">
         <Container>

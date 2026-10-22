@@ -1,5 +1,6 @@
 import { HeroDiagonal } from "@/components/sections/HeroDiagonal";
-import { ServiceCardsGrid } from "@/components/sections/ServiceCardsGrid";
+import { ServiceScrollShowcase } from "@/components/sections/ServiceScrollShowcase";
+import { AgencyPillars } from "@/components/sections/AgencyPillars";
 import { WhyChooseUs, HOME_PILLARS } from "@/components/sections/WhyChooseUs";
 import { PortfolioGrid } from "@/components/sections/PortfolioGrid";
 import { ProcessSteps, HOME_STEPS } from "@/components/sections/ProcessSteps";
@@ -8,27 +9,25 @@ import { CtaBanner } from "@/components/sections/CtaBanner";
 export default function Home() {
   return (
     <>
-      {/* 1. Hero matching media_1790146926985.jpg */}
+      {/* 1. Hero matching full-service digital agency positioning */}
       <HeroDiagonal
-        titlePrimary="Custom Apps, Websites"
-        titleSecondary="& Business Solutions"
-        titleAccent="That Scale"
-        description="Web, mobile, ERP, CRM and AI solutions built for growing businesses."
+        badge="TECHNOLOGY • CREATIVE • GROWTH"
+        titlePrimary="We Build. We Create."
+        titleAccent="We Grow."
+        description="From websites, apps, and custom software to social media, video content, and digital marketing — KASH Technology helps businesses build their presence and grow online."
         primaryCtaText="Start Your Project"
         primaryCtaHref="/contact"
-        secondaryCtaText="View Services"
-        secondaryCtaHref="/services"
+        secondaryCtaText="Explore Our Work"
+        secondaryCtaHref="/portfolio"
       />
 
-      {/* 2. Services Overview (6 cards on Ivory) */}
-      <ServiceCardsGrid
-        badge="OUR SERVICES"
-        title="Everything Your Business Needs"
-        limit={6}
-        columns={3}
-      />
+      {/* 2. Sticky Scroll-Driven Services Showcase */}
+      <ServiceScrollShowcase />
 
-      {/* 3. Why Choose Us on Dark */}
+      {/* 3. Three Agency Pillars: BUILD, CREATE, GROW */}
+      <AgencyPillars />
+
+      {/* 4. Why Choose Us on Dark */}
       <WhyChooseUs
         badge="WHY CHOOSE US"
         title="Built Around Your Business"

@@ -1,13 +1,38 @@
+export type PortfolioFilter = 
+  | "All"
+  | "Technology"
+  | "Websites"
+  | "Apps"
+  | "Software"
+  | "Social Media"
+  | "Creative"
+  | "Video"
+  | "Marketing";
+
 export interface ProjectItem {
   id: string;
   title: string;
   description: string;
   tag: string;
-  category: "Web Platforms" | "Mobile Apps" | "Enterprise Solutions" | "E-commerce" | "CRM / ERP" | "Dashboard / Analytics";
-  previewType: "erp" | "mobile" | "health" | "edulearn" | "logistics" | "realestate" | "medicare" | "agriculture";
+  category: "Web Platforms" | "Mobile Apps" | "Enterprise Solutions" | "E-commerce" | "CRM / ERP" | "Dashboard / Analytics" | "Creative" | "Marketing";
+  pillar: "Technology" | "Creative" | "Marketing";
+  filterTags: PortfolioFilter[];
+  previewType: "erp" | "mobile" | "health" | "edulearn" | "logistics" | "realestate" | "medicare" | "agriculture" | "social" | "video" | "campaign";
   href: string;
   status: "real" | "concept";
 }
+
+export const PORTFOLIO_FILTERS: PortfolioFilter[] = [
+  "All",
+  "Technology",
+  "Websites",
+  "Apps",
+  "Software",
+  "Social Media",
+  "Creative",
+  "Video",
+  "Marketing",
+];
 
 export const ALL_PORTFOLIO_PROJECTS: ProjectItem[] = [
   {
@@ -16,6 +41,8 @@ export const ALL_PORTFOLIO_PROJECTS: ProjectItem[] = [
     description: "Finance & operations ERP platform.",
     tag: "ERP / Finance",
     category: "CRM / ERP",
+    pillar: "Technology",
+    filterTags: ["Technology", "Software"],
     previewType: "erp",
     href: "/contact",
     status: "concept",
@@ -26,6 +53,8 @@ export const ALL_PORTFOLIO_PROJECTS: ProjectItem[] = [
     description: "E-commerce mobile app experience.",
     tag: "E-commerce / Retail",
     category: "Mobile Apps",
+    pillar: "Technology",
+    filterTags: ["Technology", "Apps", "Websites"],
     previewType: "mobile",
     href: "/contact",
     status: "concept",
@@ -36,6 +65,8 @@ export const ALL_PORTFOLIO_PROJECTS: ProjectItem[] = [
     description: "Healthcare CRM & patient platform.",
     tag: "Healthcare / CRM",
     category: "CRM / ERP",
+    pillar: "Technology",
+    filterTags: ["Technology", "Software"],
     previewType: "health",
     href: "/contact",
     status: "concept",
@@ -46,6 +77,8 @@ export const ALL_PORTFOLIO_PROJECTS: ProjectItem[] = [
     description: "Online learning & assessment portal.",
     tag: "Education / E-learning",
     category: "Web Platforms",
+    pillar: "Technology",
+    filterTags: ["Technology", "Websites", "Software"],
     previewType: "edulearn",
     href: "/contact",
     status: "concept",
@@ -56,6 +89,8 @@ export const ALL_PORTFOLIO_PROJECTS: ProjectItem[] = [
     description: "Logistics and fleet tracking system.",
     tag: "Logistics / Dashboard",
     category: "Dashboard / Analytics",
+    pillar: "Technology",
+    filterTags: ["Technology", "Software"],
     previewType: "logistics",
     href: "/contact",
     status: "concept",
@@ -66,6 +101,8 @@ export const ALL_PORTFOLIO_PROJECTS: ProjectItem[] = [
     description: "Real estate listings and lead CRM.",
     tag: "Real Estate / Web",
     category: "Web Platforms",
+    pillar: "Technology",
+    filterTags: ["Technology", "Websites"],
     previewType: "realestate",
     href: "/contact",
     status: "concept",
@@ -76,6 +113,8 @@ export const ALL_PORTFOLIO_PROJECTS: ProjectItem[] = [
     description: "Telemedicine & appointment bookings.",
     tag: "Healthcare / Mobile App",
     category: "Mobile Apps",
+    pillar: "Technology",
+    filterTags: ["Technology", "Apps"],
     previewType: "medicare",
     href: "/contact",
     status: "concept",
@@ -86,6 +125,8 @@ export const ALL_PORTFOLIO_PROJECTS: ProjectItem[] = [
     description: "Crop monitoring & yield analytics.",
     tag: "Agriculture / Analytics",
     category: "Dashboard / Analytics",
+    pillar: "Technology",
+    filterTags: ["Technology", "Software"],
     previewType: "agriculture",
     href: "/contact",
     status: "concept",

@@ -1,7 +1,7 @@
 export const SITE_CONFIG = {
   companyName: "KASH Technology",
-  tagline: "TAILORED | AFFORDABLE | SCALABLE",
-  subTagline: "Custom Software Development Agency",
+  tagline: "Technology • Creative • Growth",
+  subTagline: "Full-Service Digital Agency",
   websiteUrl: process.env.NEXT_PUBLIC_SITE_URL || "https://www.kash-technology.com",
   contactEmail: process.env.CONTACT_RECEIVER_EMAIL || "founder@kash-technology.com",
   contactPhonePrimary: "+91 97609 42003",
@@ -20,9 +20,39 @@ export const SITE_CONFIG = {
   },
   navLinks: [
     { label: "Home", href: "/" },
-    { label: "Services", href: "/services" },
-    { label: "Solutions", href: "/solutions" },
-    { label: "Portfolio", href: "/portfolio" },
+    {
+      label: "Technology",
+      href: "/services",
+      children: [
+        { label: "Website Development", href: "/website-development" },
+        { label: "Custom Software", href: "/custom-software-development" },
+        { label: "Mobile Apps", href: "/mobile-app-development" },
+        { label: "ERP / CRM", href: "/erp-development" },
+        { label: "SaaS", href: "/saas-development" },
+        { label: "AI & Automation", href: "/ai-automation" },
+      ],
+    },
+    {
+      label: "Creative",
+      href: "/content-creation",
+      children: [
+        { label: "Content Creation", href: "/content-creation" },
+        { label: "Video Editing", href: "/video-editing" },
+        { label: "Branding", href: "/branding" },
+      ],
+    },
+    {
+      label: "Marketing",
+      href: "/digital-marketing",
+      children: [
+        { label: "Social Media Management", href: "/social-media-management" },
+        { label: "Digital Marketing", href: "/digital-marketing" },
+        { label: "Performance Marketing", href: "/performance-marketing" },
+        { label: "Lead Generation", href: "/lead-generation" },
+        { label: "SEO", href: "/seo-services" },
+      ],
+    },
+    { label: "Work", href: "/portfolio" },
     { label: "About", href: "/about" },
     { label: "Contact", href: "/contact" },
   ],

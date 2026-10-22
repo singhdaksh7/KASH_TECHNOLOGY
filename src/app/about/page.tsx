@@ -28,48 +28,48 @@ function LinkedInIcon({ className = "w-4 h-4" }: { className?: string }) {
 }
 
 export const metadata: Metadata = {
-  title: "About Us — Custom Software. Real Impact. | KASH Technology",
-  description: "Learn about KASH Technology's engineering philosophy, mission, values, and experienced leadership team.",
+  title: "About Us — Full-Service Digital Agency | KASH Technology",
+  description: "Learn about KASH Technology's philosophy. We are a full-service digital agency combining engineering, creative content, marketing, and automation.",
 };
 
 const PILLARS = [
   {
-    title: "Client-Focused",
-    description: "Built around your needs.",
-    icon: Users,
+    title: "Technology & Engineering",
+    description: "Robust websites, mobile apps, and custom software.",
+    icon: Cpu,
   },
   {
-    title: "Innovation",
-    description: "Modern technology. Practical value.",
+    title: "Creative & Content",
+    description: "High-retention video, branding, and graphics.",
     icon: Lightbulb,
   },
   {
-    title: "Quality",
-    description: "Reliable solutions built to last.",
-    icon: Award,
+    title: "Marketing & Growth",
+    description: "Paid acquisition, social media, and lead funnels.",
+    icon: TrendingUp,
   },
 ];
 
 const CORE_VALUES = [
-  { title: "Integrity", desc: "Transparent.", icon: ShieldCheck },
-  { title: "Innovation", desc: "Forward-thinking.", icon: Lightbulb },
-  { title: "Quality", desc: "Reliable.", icon: Award },
-  { title: "Collaboration", desc: "Together.", icon: Users },
-  { title: "Growth", desc: "Scalable.", icon: TrendingUp },
+  { title: "Engineering Rigor", desc: "Solid code.", icon: Cpu },
+  { title: "Creative Craft", desc: "Attention-grabbing.", icon: Lightbulb },
+  { title: "Commercial Focus", desc: "Measurable ROI.", icon: TrendingUp },
+  { title: "Transparency", desc: "Zero hype.", icon: ShieldCheck },
+  { title: "Partnership", desc: "Integrated team.", icon: Users },
 ];
 
 const STATS_DATA = [
+  { value: "Full", label: "Service Integration", icon: Cpu },
   { value: "100%", label: "Custom Architecture", icon: CheckCircle2 },
-  { value: "Full", label: "Cycle Delivery", icon: Cpu },
-  { value: "Modern", label: "Tech Stacks", icon: Lightbulb },
-  { value: "Agile", label: "Sprint Delivery", icon: TrendingUp },
-  { value: "Direct", label: "Engineer Support", icon: Award },
+  { value: "Studio", label: "Grade Production", icon: Lightbulb },
+  { value: "Direct", label: "Lead Engineer Access", icon: Award },
+  { value: "Rapid", label: "Sprint Delivery", icon: TrendingUp },
 ];
 
 const TEAM_MEMBERS = [
   {
     name: "Solutions Architecture",
-    role: "System Design & Strategy",
+    role: "System Design & Technology",
     linkedin: SITE_CONFIG.social.linkedin,
     email: SITE_CONFIG.contactEmail,
   },
@@ -80,14 +80,14 @@ const TEAM_MEMBERS = [
     email: SITE_CONFIG.contactEmail,
   },
   {
-    name: "UI/UX & Product Design",
-    role: "Design Systems & UX",
+    name: "Creative Direction & Video",
+    role: "Content, Motion & Design",
     linkedin: SITE_CONFIG.social.linkedin,
     email: SITE_CONFIG.contactEmail,
   },
   {
-    name: "Cloud & DevOps",
-    role: "Security & Infrastructure",
+    name: "Performance & Growth",
+    role: "Marketing, Funnels & SEO",
     linkedin: SITE_CONFIG.social.linkedin,
     email: SITE_CONFIG.contactEmail,
   },
@@ -99,10 +99,9 @@ export default function AboutPage() {
       {/* 1. Hero */}
       <HeroDiagonal
         badge="ABOUT KASH TECHNOLOGY"
-        titlePrimary="Custom Software."
-        titleSecondary="Real Impact."
-        titleAccent="Built Around You."
-        description="We help businesses simplify, automate and scale through technology."
+        titlePrimary="We Build. We Create."
+        titleAccent="We Grow."
+        description="A full-service digital agency combining technology, creative, marketing, and automation to give businesses one integrated partner."
         primaryCtaText="Our Story"
         primaryCtaHref="#our-story"
         secondaryCtaText="Explore Services"
@@ -119,7 +118,7 @@ export default function AboutPage() {
               OUR STORY
             </span>
             <h2 className="font-serif-heading text-2xl sm:text-3xl md:text-[34px] font-bold tracking-tight text-[#111827]">
-              Built for Real Business Needs
+              One Unified Digital Partner
             </h2>
           </div>
 
@@ -127,10 +126,10 @@ export default function AboutPage() {
             {/* Story narrative */}
             <div className="lg:col-span-6 space-y-4 text-[#4b5563] text-sm sm:text-base leading-relaxed">
               <p>
-                KASH Technology builds practical digital solutions for businesses that want to work smarter and grow faster.
+                KASH Technology was founded on a simple observation: modern businesses waste immense time and momentum coordinating multiple disconnected vendors for software, web development, video production, social media, and digital advertising.
               </p>
               <p>
-                We focus on scalable technology that solves real operational challenges.
+                We unite <strong>engineering, design, content, marketing, and automation</strong> under one roof. Our technical roots ensure high-speed software and pristine data capture, while our creative team ensures your brand commands attention and builds genuine audience authority.
               </p>
             </div>
 
@@ -177,7 +176,7 @@ export default function AboutPage() {
                 OUR MISSION
               </span>
               <p className="text-xs sm:text-sm text-[#9ca3af] leading-relaxed">
-                Build tailored, affordable and scalable technology for growing businesses.
+                Provide growing businesses with an integrated partner combining technology, creative storytelling, and growth marketing.
               </p>
             </div>
 
@@ -190,7 +189,7 @@ export default function AboutPage() {
                 OUR VISION
               </span>
               <p className="text-xs sm:text-sm text-[#9ca3af] leading-relaxed">
-                Make powerful digital solutions accessible to every growing business.
+                Build enduring digital products and creative marketing engines that empower ambitious businesses to scale without limits.
               </p>
             </div>
           </div>

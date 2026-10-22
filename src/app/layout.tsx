@@ -33,20 +33,26 @@ const gscVerification = process.env.NEXT_PUBLIC_GSC_VERIFICATION;
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || SITE_CONFIG.websiteUrl),
   title: {
-    default: `${SITE_CONFIG.companyName} | Custom Software, Web, Mobile, ERP & AI Solutions`,
+    default: "KASH Technology | Web, Software, Social Media & Digital Marketing Agency",
     template: `%s | ${SITE_CONFIG.companyName}`,
   },
-  description: "KASH Technology is a custom software development agency building websites, custom web apps, mobile apps, SaaS, ERP, CRM, and AI automation tailored to your business.",
+  description: "KASH Technology helps businesses build websites, apps and custom software, create video and social content, and grow through digital marketing, SEO, lead generation and automation. Serving Delhi NCR and Western Uttar Pradesh.",
   keywords: [
     "KASH Technology",
+    "Full-Service Digital Agency",
     "Custom Software Development",
     "Web Development",
     "Mobile Apps",
+    "Social Media Management",
+    "Content Creation",
+    "Video Editing",
+    "Digital Marketing",
+    "Performance Marketing",
+    "Lead Generation",
+    "SEO Services",
     "AI Automation",
     "ERP Systems",
-    "CRM Systems",
-    "SaaS Platforms",
-    "E-commerce Solutions"
+    "CRM Systems"
   ],
   authors: [{ name: SITE_CONFIG.companyName }],
   creator: SITE_CONFIG.companyName,
@@ -55,8 +61,8 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: SITE_CONFIG.websiteUrl,
-    title: `${SITE_CONFIG.companyName} | ${SITE_CONFIG.tagline}`,
-    description: "Tailored, Affordable & Scalable custom software, mobile apps, AI automation, and digital platforms.",
+    title: "KASH Technology | Web, Software, Social Media & Digital Marketing Agency",
+    description: "KASH Technology helps businesses build websites, apps and custom software, create video and social content, and grow through digital marketing, SEO, lead generation and automation.",
     siteName: SITE_CONFIG.companyName,
     images: [
       {
@@ -69,8 +75,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: `${SITE_CONFIG.companyName} | ${SITE_CONFIG.tagline}`,
-    description: "Custom software development agency building websites, mobile apps, and business solutions that scale.",
+    title: "KASH Technology | Web, Software, Social Media & Digital Marketing Agency",
+    description: "Custom software, high-speed websites, video content, social media management, and automated lead generation.",
     images: [`${SITE_CONFIG.websiteUrl}/images/logo/kash-logo-emblem.jpg`],
   },
   robots: {
@@ -91,7 +97,7 @@ const jsonLd = {
       "email": SITE_CONFIG.contactEmail,
       "telephone": SITE_CONFIG.contactPhonePrimary,
       "slogan": SITE_CONFIG.tagline,
-      "description": "Custom software development agency delivering tailored, affordable, and scalable web platforms, mobile apps, ERP/CRM systems, and AI automation.",
+      "description": "Full-service digital agency delivering tailored, affordable, and scalable web platforms, mobile apps, video content, social media management, and performance marketing automation.",
       "contactPoint": [
         {
           "@type": "ContactPoint",
@@ -112,7 +118,7 @@ const jsonLd = {
       "@id": `${SITE_CONFIG.websiteUrl}/#website`,
       "url": SITE_CONFIG.websiteUrl,
       "name": SITE_CONFIG.companyName,
-      "description": "Custom Apps, Websites & Business Solutions That Scale",
+      "description": "We Build. We Create. We Grow. — Technology • Creative • Growth",
       "publisher": {
         "@id": `${SITE_CONFIG.websiteUrl}/#organization`
       }
