@@ -90,7 +90,7 @@ const MARKETING_FAQS = [
   },
   {
     question: "Do you guarantee specific ROAS or revenue numbers?",
-    answer: "No, we strictly avoid unsubstantiated marketing hype or false guarantees. Success depends on product-market fit, pricing, and market conditions. What we do guarantee is transparent reporting, disciplined testing, and high-performance technical execution.",
+    answer: "No, we strictly avoid unsubstantiated marketing hype or false guarantees. Success depends on product-market fit, pricing, and market conditions. What we commit to is transparent reporting, disciplined testing, and high-performance technical execution.",
   },
   {
     question: "What platforms do you advertise on?",
@@ -182,7 +182,7 @@ export default function DigitalMarketingPage() {
               Marketing Backed by Software Engineering
             </h3>
             <p className="text-sm sm:text-base text-[#4b5563] leading-relaxed mb-6">
-              Great marketing cannot survive a slow website or broken lead capture. Because we are engineers first, we guarantee sub-second landing page speed, pristine tracking event data, and instant CRM synchronization.
+              Great marketing cannot survive a slow website or broken lead capture. Because we are engineers first, we engineer sub-second landing page speed, pristine tracking event data, and instant CRM synchronization.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs font-medium text-[#111827]">
               <div className="flex items-center gap-2">

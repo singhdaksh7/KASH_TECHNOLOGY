@@ -3,7 +3,6 @@ import {
   Target, 
   Award, 
   TrendingUp, 
-  ShieldCheck, 
   Headphones, 
   Sliders, 
   Lock 

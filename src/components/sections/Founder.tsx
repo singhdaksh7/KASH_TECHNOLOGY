@@ -38,7 +38,7 @@ export function Founder() {
             </Reveal>
             <Reveal delay={0.2}>
               <p>
-                We do not have sales representatives, project managers, or communication layers. When you collaborate with us, you work directly with the developers building your systems. This removes latency, ensures alignment, and guarantees technical integrity from day one.
+                We do not have sales representatives, project managers, or communication layers. When you collaborate with us, you work directly with the developers building your systems. This removes latency, ensures alignment, and maintains technical integrity from day one.
               </p>
             </Reveal>
             <Reveal delay={0.25}>

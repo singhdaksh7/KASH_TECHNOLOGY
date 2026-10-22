@@ -86,7 +86,7 @@ const SEO_STEPS = [
 const SEO_FAQS = [
   {
     question: "Do you guarantee that my website will rank #1 on Google?",
-    answer: "No, and any agency promising a guaranteed '#1 ranking' is misleading you. Google's algorithms change constantly and involve hundreds of ranking factors. What we guarantee is rigorous technical SEO compliance, fast page speed, clean schema markup, and transparent visibility tracking.",
+    answer: "No, and any agency promising a guaranteed '#1 ranking' is misleading you. Google's algorithms change constantly and involve hundreds of ranking factors. What we deliver is rigorous technical SEO compliance, fast page speed, clean schema markup, and transparent visibility tracking.",
   },
   {
     question: "How long does it typically take to see organic SEO results?",
