@@ -1,26 +1,17 @@
-/* eslint-disable */
 "use client";
 
 import React, { useState, useEffect } from "react";
 import { LeadItem, LeadStatus } from "@/lib/admin-client/types";
-import { adminClient } from "@/lib/admin-client";
+import { adminClient, errorMessage } from "@/lib/admin-client";
 import { useToast } from "@/components/admin/ToastContext";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import {
-  Users,
   Search,
-  Filter,
   Mail,
   Phone,
-  MessageSquare,
-  Clock,
-  CheckCircle2,
-  XCircle,
-  Plus,
   Send,
   X,
-  Building,
-} from "lucide-react";
+  Building } from "lucide-react";
 
 const STATUS_COLORS: Record<LeadStatus, { bg: string; text: string; border: string }> = {
   NEW: { bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-200" },
@@ -33,7 +24,7 @@ const STATUS_COLORS: Record<LeadStatus, { bg: string; text: string; border: stri
 
 export default function LeadsCrmPage() {
   const [leads, setLeads] = useState<LeadItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [search, setSearch] = useState("");
   const [selectedLead, setSelectedLead] = useState<LeadItem | null>(null);
@@ -49,30 +40,29 @@ export default function LeadsCrmPage() {
   }, []);
 
   const handleStatusChange = async (leadId: string, status: LeadStatus) => {
-    await adminClient.updateLeadStatus(leadId, status);
-    setLeads((prev) =>
-      prev.map((l) => (l.id === leadId ? { ...l, status } : l))
-    );
-    if (selectedLead?.id === leadId) {
-      setSelectedLead({ ...selectedLead, status });
+    try {
+      await adminClient.updateLeadStatus(leadId, status);
+    } catch (err) {
+      addToast({ title: "Update failed", message: errorMessage(err), type: "error" });
+      return;
     }
+    const fresh = await adminClient.getLeads();
+    setLeads(fresh);
+    setSelectedLead(fresh.find((l) => l.id === leadId) ?? null);
     addToast({ title: "Status Updated", message: `Lead moved to ${status}.` });
   };
 
   const handleAddNote = async () => {
     if (!selectedLead || !newNote.trim()) return;
-    const note = {
-      id: `note-${Date.now()}`,
-      author: "Daksh Singh",
-      text: newNote.trim(),
-      date: new Date().toISOString().slice(0, 10),
-    };
-    const updated = {
-      ...selectedLead,
-      notes: [...selectedLead.notes, note],
-    };
-    setSelectedLead(updated);
-    setLeads((prev) => prev.map((l) => (l.id === updated.id ? updated : l)));
+    try {
+      await adminClient.addLeadNote(selectedLead.id, newNote.trim());
+    } catch (err) {
+      addToast({ title: "Note failed", message: errorMessage(err), type: "error" });
+      return;
+    }
+    const fresh = await adminClient.getLeads();
+    setLeads(fresh);
+    setSelectedLead(fresh.find((l) => l.id === selectedLead.id) ?? null);
     setNewNote("");
     addToast({ title: "Note Logged", message: "Internal note added to lead history." });
   };

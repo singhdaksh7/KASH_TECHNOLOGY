@@ -1,17 +1,17 @@
-/* eslint-disable */
 "use client";
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Image from "next/image";
 import {
   AdminPageItem,
   PageSection,
   SectionType,
-  SectionStyle,
-} from "@/lib/admin-client/types";
-import { adminClient } from "@/lib/admin-client";
+  SectionStyle } from "@/lib/admin-client/types";
+import { newId } from "@/lib/admin-client/ids";
+import { adminClient, errorMessage } from "@/lib/admin-client";
+import type { PageVersionItem } from "@/lib/admin-client/types";
 import { useToast } from "@/components/admin/ToastContext";
 import { MediaPickerModal } from "@/components/admin/MediaPickerModal";
 import {
@@ -29,27 +29,9 @@ import {
   ChevronUp,
   ChevronDown,
   Settings,
-  Sparkles,
   Search,
-  Bold,
-  Italic,
-  Underline,
-  Heading1,
-  Heading2,
-  Heading3,
-  List,
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
-  Link2,
-  Palette,
   Layout,
-  ExternalLink,
-  HelpCircle,
-  FileText,
-  X,
-  Code,
-} from "lucide-react";
+  X } from "lucide-react";
 
 const AVAILABLE_SECTIONS: Array<{ type: SectionType; label: string; desc: string; icon: string }> = [
   { type: "Hero", label: "Hero", desc: "Main landing header with headline, badges & image", icon: "🚀" },
@@ -79,7 +61,6 @@ const AVAILABLE_SECTIONS: Array<{ type: SectionType; label: string; desc: string
 
 export default function PageBuilderPage() {
   const params = useParams();
-  const router = useRouter();
   const { addToast } = useToast();
   const pageId = params.id as string;
 
@@ -91,6 +72,8 @@ export default function PageBuilderPage() {
   const [activeTab, setActiveTab] = useState<"content" | "style" | "seo">("content");
   const [searchSection, setSearchSection] = useState("");
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [versions, setVersions] = useState<PageVersionItem[]>([]);
 
   // Media Picker modal
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
@@ -135,7 +118,7 @@ export default function PageBuilderPage() {
   // SECTION OPERATIONS
   const handleAddSection = (type: SectionType) => {
     const newSection: PageSection = {
-      id: `sec-${Date.now()}`,
+      id: newId("sec"),
       type,
       order: page.sections.length + 1,
       enabled: true,
@@ -170,7 +153,7 @@ export default function PageBuilderPage() {
     if (!target) return;
     const duplicated: PageSection = {
       ...JSON.parse(JSON.stringify(target)),
-      id: `sec-${Date.now()}`,
+      id: newId("sec"),
       order: target.order + 1,
     };
     const idx = page.sections.findIndex((s) => s.id === id);
@@ -232,20 +215,62 @@ export default function PageBuilderPage() {
     setPage({ ...page, sections: updatedSections });
   };
 
-  const handleSaveDraft = async () => {
+  const handleSaveDraft = async (): Promise<AdminPageItem | null> => {
     setSaving(true);
-    await adminClient.savePage(page);
-    setSaving(false);
-    addToast({ title: "Draft Saved", message: "All page changes saved to memory.", type: "success" });
+    try {
+      const saved = await adminClient.savePage(page);
+      setPage(saved);
+      addToast({ title: "Draft Saved", message: "Saved. The live site is unchanged until you publish.", type: "success" });
+      return saved;
+    } catch (err) {
+      addToast({ title: "Save failed", message: errorMessage(err), type: "error" });
+      return null;
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handlePublish = async () => {
+    const saved = await handleSaveDraft();
+    if (!saved) return;
     setSaving(true);
-    const updated = { ...page, status: "Published" as const };
-    await adminClient.savePage(updated);
-    setPage(updated);
-    setSaving(false);
-    addToast({ title: "Page Published", message: "Page is live in the CMS repository.", type: "success" });
+    try {
+      await adminClient.publishPage(saved.id);
+      const fresh = await adminClient.getPage(saved.id);
+      if (fresh) setPage(fresh);
+      addToast({ title: "Page Published", message: "Live on the public site (may take up to a minute to appear everywhere).", type: "success" });
+    } catch (err) {
+      addToast({ title: "Publish failed", message: errorMessage(err), type: "error" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handlePreview = async () => {
+    const saved = await handleSaveDraft();
+    if (saved) window.open(`/preview?page=${encodeURIComponent(saved.id)}`, "_blank", "noopener");
+  };
+
+  const openHistory = async () => {
+    setHistoryOpen(true);
+    try {
+      setVersions(await adminClient.getPageVersions(page.id));
+    } catch (err) {
+      addToast({ title: "Could not load history", message: errorMessage(err), type: "error" });
+    }
+  };
+
+  const restoreVersion = async (v: number) => {
+    if (!confirm(`Restore version ${v}? It becomes the live page and is recorded as a new version.`)) return;
+    try {
+      const restored = await adminClient.restorePageVersion(page.id, v);
+      setPage(restored);
+      setSelectedSectionId(restored.sections[0]?.id ?? null);
+      setHistoryOpen(false);
+      addToast({ title: "Version restored", message: `Version ${v} is now live.`, type: "success" });
+    } catch (err) {
+      addToast({ title: "Restore failed", message: errorMessage(err), type: "error" });
+    }
   };
 
   return (
@@ -280,7 +305,7 @@ export default function PageBuilderPage() {
                 {page.status}
               </span>
             </div>
-            <p className="text-[11px] text-[#4B5563] px-1 font-mono">/{page.slug}</p>
+            <p className="text-[11px] text-[#4B5563] px-1 font-mono">{page.slug.startsWith("/") ? page.slug : `/${page.slug}`}{(page as AdminPageItem & { hasUnpublishedChanges?: boolean }).hasUnpublishedChanges ? " · unpublished changes" : ""}</p>
           </div>
         </div>
 
@@ -318,15 +343,29 @@ export default function PageBuilderPage() {
         {/* Action buttons */}
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setPreviewOpen(true)}
+            onClick={openHistory}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#4B5563] hover:text-[#0B0B0F] border border-[#E8E5E2] rounded-lg hover:bg-stone-50 transition-colors"
           >
-            <Eye className="w-3.5 h-3.5" />
-            <span>Full Preview</span>
+            <span>History</span>
           </button>
 
           <button
-            onClick={handleSaveDraft}
+            onClick={handlePreview}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#4B5563] hover:text-[#0B0B0F] border border-[#E8E5E2] rounded-lg hover:bg-stone-50 transition-colors"
+          >
+            <Eye className="w-3.5 h-3.5" />
+            <span>Preview</span>
+          </button>
+
+          <button
+            onClick={() => setPreviewOpen(true)}
+            className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#4B5563] hover:text-[#0B0B0F] border border-[#E8E5E2] rounded-lg hover:bg-stone-50 transition-colors"
+          >
+            <span>Canvas view</span>
+          </button>
+
+          <button
+            onClick={() => void handleSaveDraft()}
             disabled={saving}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-[#0B0B0F] rounded-lg transition-colors"
           >
@@ -715,7 +754,7 @@ export default function PageBuilderPage() {
                     <label className="block font-semibold text-[#0B0B0F] mb-1.5">Shadow Level</label>
                     <select
                       value={selectedSection.style.shadow || "None"}
-                      onChange={(e) => handleUpdateStyle("shadow", e.target.value as any)}
+                      onChange={(e) => handleUpdateStyle("shadow", e.target.value as SectionStyle["shadow"])}
                       className="w-full px-3 py-1.5 border border-[#E8E5E2] rounded-lg text-xs"
                     >
                       <option value="None">None</option>
@@ -873,10 +912,26 @@ export default function PageBuilderPage() {
           </div>
         </div>
       )}
+      {historyOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" role="dialog" aria-label="Revision history">
+          <div className="w-full max-w-lg max-h-[80vh] overflow-y-auto bg-white rounded-2xl p-5 space-y-3">
+            <div className="flex items-center justify-between"><h3 className="text-sm font-bold">Revision history</h3><button onClick={() => setHistoryOpen(false)} className="text-xs text-stone-500">Close</button></div>
+            {!versions.length && <p className="text-xs text-stone-400">No versions yet.</p>}
+            <ul className="divide-y divide-[#E8E5E2] text-xs">
+              {versions.map((v) => (
+                <li key={v.version} className="py-2.5 flex items-center gap-3">
+                  <span className="font-mono font-bold">v{v.version}</span>
+                  <span className="flex-1"><b>{v.reason || "edit"}</b><br /><span className="text-stone-500">{v.by} · {v.createdAt.replace("T", " ").slice(0, 16)} UTC</span></span>
+                  <button onClick={() => restoreVersion(v.version)} className="px-2.5 py-1 border border-[#E8E5E2] rounded-lg font-semibold hover:bg-[#FFF3E9]">Restore</button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-
 // -------------------------------------------------------------
 // SUB-COMPONENTS & HELPERS
 // -------------------------------------------------------------
@@ -951,7 +1006,6 @@ function getDefaultContentForType(type: SectionType): Record<string, unknown> {
 // Visual Renderer inside the canvas iframe/viewport
 function SectionVisualPreview({ section }: { section: PageSection }) {
   const content = section.content;
-  const isDark = section.style.background === "Black" || section.style.background === "Orange";
 
   switch (section.type) {
     case "Hero":
@@ -1194,6 +1248,15 @@ function SectionContentFields({
     );
   }
 
+  if (section.type === "Built-in Page") {
+    return (
+      <p className="text-xs text-stone-600 leading-relaxed bg-[#FFF9F4] border border-[#E8E5E2] rounded-lg p-3">
+        This block is the approved, hand-built page for this route. It can be moved, hidden or surrounded by new sections, and the page&apos;s SEO below applies to it. Its own text is edited in code.
+      </p>
+    );
+  }
+
+  const itemCfg = ITEM_CONFIG[section.type];
   // Generic content fields
   return (
     <div className="space-y-3 text-xs">
@@ -1216,6 +1279,35 @@ function SectionContentFields({
           className="w-full px-3 py-1.5 border border-[#E8E5E2] rounded-lg text-xs"
         />
       </div>
+      {itemCfg && <ItemsEditor cfg={itemCfg} items={(Array.isArray(c[itemCfg.key]) ? c[itemCfg.key] : []) as Record<string, string>[]} onChange={(v) => onChange(itemCfg.key, v)} />}
+    </div>
+  );
+}
+
+const ITEM_CONFIG: Partial<Record<SectionType, { key: string; label: string; fields: { name: string; label: string }[] }>> = {
+  FAQ: { key: "faqs", label: "Questions", fields: [{ name: "question", label: "Question" }, { name: "answer", label: "Answer" }] },
+  "Services Grid": { key: "items", label: "Service cards", fields: [{ name: "title", label: "Title" }, { name: "description", label: "Description" }, { name: "href", label: "Link (optional)" }] },
+  Process: { key: "steps", label: "Steps", fields: [{ name: "title", label: "Title" }, { name: "description", label: "Description" }] },
+  Stats: { key: "items", label: "Stats", fields: [{ name: "value", label: "Value" }, { name: "label", label: "Label" }] },
+  Testimonials: { key: "items", label: "Quotes", fields: [{ name: "quote", label: "Quote" }, { name: "name", label: "Name" }, { name: "role", label: "Role / company" }] },
+  "Contact Form": { key: "__none", label: "", fields: [] },
+};
+
+function ItemsEditor({ cfg, items, onChange }: { cfg: { key: string; label: string; fields: { name: string; label: string }[] }; items: Record<string, string>[]; onChange: (v: Record<string, string>[]) => void }) {
+  if (!cfg.fields.length) return null;
+  const set = (i: number, name: string, value: string) => onChange(items.map((it, idx) => (idx === i ? { ...it, [name]: value } : it)));
+  return (
+    <div className="space-y-2 pt-2 border-t border-[#E8E5E2]">
+      <div className="flex items-center justify-between"><span className="font-semibold text-[#0B0B0F]">{cfg.label}</span>
+        <button type="button" onClick={() => onChange([...items, {}])} className="text-[#FF5A00] font-semibold">+ Add</button></div>
+      {items.map((it, i) => (
+        <div key={i} className="p-2 border border-[#E8E5E2] rounded-lg space-y-1.5 bg-stone-50">
+          {cfg.fields.map((f) => (
+            <input key={f.name} type="text" placeholder={f.label} value={it[f.name] ?? ""} onChange={(e) => set(i, f.name, e.target.value)} className="w-full px-2 py-1 border border-[#E8E5E2] rounded text-xs bg-white" />
+          ))}
+          <button type="button" onClick={() => onChange(items.filter((_, idx) => idx !== i))} className="text-[11px] text-red-600">Remove</button>
+        </div>
+      ))}
     </div>
   );
 }

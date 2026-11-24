@@ -1,29 +1,30 @@
-/* eslint-disable */
 "use client";
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
-import { PortfolioItem, ProjectKind, ProjectStatus } from "@/lib/admin-client/types";
-import { adminClient } from "@/lib/admin-client";
+import { PortfolioItem, ProjectKind } from "@/lib/admin-client/types";
+import { newId } from "@/lib/admin-client/ids";
+import { adminClient, errorMessage } from "@/lib/admin-client";
 import { useToast } from "@/components/admin/ToastContext";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { MediaPickerModal } from "@/components/admin/MediaPickerModal";
 import {
-  ArrowLeft,
   Save,
   CheckCircle2,
   Trash2,
-  Plus,
-  ImageIcon,
-  Sparkles,
-  Search,
-  ExternalLink,
-  Layers,
-  Code,
-  FileText,
-} from "lucide-react";
+  Plus } from "lucide-react";
+
+/** Blank draft: nothing is pre-filled with claims, and it starts as a CONCEPT until the owner sets the real maturity. */
+function blankProject(): PortfolioItem {
+  return {
+    id: newId("proj"), name: "", slug: "", status: "Draft", projectType: "CONCEPT", category: "", industry: "", shortDescription: "", fullDescription: "",
+    thumbnail: "", heroImage: "", gallery: [], technologies: [], services: [], problem: [], solution: [], features: [], architecture: [],
+    clickBehaviour: "No Link", updatedAt: "",
+    seo: { title: "", metaDescription: "", slug: "", canonicalUrl: "", focusKeyword: "", secondaryKeywords: "", ogTitle: "", ogDescription: "", ogImage: "", index: true, follow: true },
+  };
+}
 
 export default function PortfolioEditorPage() {
   const params = useParams();
@@ -32,8 +33,8 @@ export default function PortfolioEditorPage() {
   const projectId = params.id as string;
   const isNew = projectId === "new" || !projectId;
 
-  const [project, setProject] = useState<PortfolioItem | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [project, setProject] = useState<PortfolioItem | null>(() => (isNew ? blankProject() : null));
+  const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<"overview" | "content" | "media" | "seo">("overview");
 
@@ -42,49 +43,16 @@ export default function PortfolioEditorPage() {
   const [mediaPickerTarget, setMediaPickerTarget] = useState<"thumbnail" | "heroImage" | "gallery">("thumbnail");
 
   useEffect(() => {
-    if (isNew) {
-      setProject({
-        id: `proj-${Date.now()}`,
-        name: "New Showcase Project",
-        slug: "new-showcase-project",
-        status: "Draft",
-        projectType: "REAL PROJECT",
-        category: "Web Platform",
-        industry: "Enterprise",
-        shortDescription: "A modern platform built with high performance and scalable architecture.",
-        fullDescription: "Detailed case study description highlighting problem, solution, and technical impact.",
-        thumbnail: "/images/projects/exora-preview.png",
-        heroImage: "/images/hero/hero-laptop-composition.png",
-        gallery: [],
-        technologies: ["Next.js", "TypeScript", "Tailwind CSS"],
-        services: ["Web Development", "UI/UX Design"],
-        problem: ["Fragmented legacy tooling", "High manual overhead"],
-        solution: ["Unified reactive dashboard", "Automated pipelines"],
-        features: [{ title: "Automated Workflows", description: "Streamlined operational data syncing." }],
-        architecture: [{ label: "Frontend", description: "Next.js 16 with SSR & Static caching." }],
-        clickBehaviour: "Open Case Study",
-        seo: {
-          title: "New Project | KASH Technology",
-          metaDescription: "Case study for KASH Technology project deliverable.",
-          slug: "new-showcase-project",
-          canonicalUrl: "",
-          focusKeyword: "project",
-          secondaryKeywords: "",
-          ogTitle: "",
-          ogDescription: "",
-          ogImage: "",
-          index: true,
-          follow: true,
-        },
-        updatedAt: new Date().toISOString().slice(0, 10),
-      });
+    if (isNew) return;
+    let alive = true;
+    adminClient.getProject(projectId).then((data) => {
+      if (!alive) return;
+      if (data) setProject(data);
       setLoading(false);
-    } else {
-      adminClient.getProject(projectId).then((data) => {
-        if (data) setProject(data);
-        setLoading(false);
-      });
-    }
+    });
+    return () => {
+      alive = false;
+    };
   }, [projectId, isNew]);
 
   if (loading) {
@@ -113,16 +81,23 @@ export default function PortfolioEditorPage() {
       status: publish ? "Published" : project.status,
       updatedAt: new Date().toISOString().slice(0, 10),
     };
-    await adminClient.saveProject(updated);
-    setProject(updated);
+    let saved: PortfolioItem;
+    try {
+      saved = await adminClient.saveProject(updated);
+    } catch (err) {
+      setSaving(false);
+      addToast({ title: "Save failed", message: errorMessage(err), type: "error" });
+      return;
+    }
+    setProject(saved);
     setSaving(false);
     addToast({
       title: publish ? "Project Published" : "Project Saved",
-      message: `Changes for "${updated.name}" updated successfully.`,
+      message: `Changes for "${saved.name}" updated successfully.`,
       type: "success",
     });
     if (isNew) {
-      router.push(`/admin/portfolio/${updated.id}`);
+      router.push(`/admin/portfolio/${saved.id}`);
     }
   };
 
@@ -512,7 +487,7 @@ export default function PortfolioEditorPage() {
               <label className="block font-semibold text-[#0B0B0F] mb-1">Click Behaviour on Public Cards</label>
               <select
                 value={project.clickBehaviour}
-                onChange={(e) => setProject({ ...project, clickBehaviour: e.target.value as any })}
+                onChange={(e) => setProject({ ...project, clickBehaviour: e.target.value as PortfolioItem["clickBehaviour"] })}
                 className="w-full px-3 py-2 border border-[#E8E5E2] rounded-lg text-xs"
               >
                 <option value="Open Case Study">Open Dedicated Case Study Page</option>

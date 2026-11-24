@@ -1,4 +1,20 @@
-import { z } from "zod"; import { prisma } from "@/lib/db/prisma"; import { requirePermission } from "@/lib/rbac/permissions"; import { ok,fail } from "@/lib/server/http"; import { validateRedirect } from "@/lib/server/redirects";
-const schema=z.object({sourcePath:z.string().max(2048),destination:z.string().max(2048),statusCode:z.union([z.literal(301),z.literal(302),z.literal(307),z.literal(308)]),active:z.boolean().default(true)});
-export async function GET(){const a=await requirePermission("seo.view");if(a.error)return a.error;return ok(await prisma.redirect.findMany({orderBy:{sourcePath:"asc"}}));}
-export async function POST(r:Request){const a=await requirePermission("seo.edit");if(a.error)return a.error;const p=schema.safeParse(await r.json());if(!p.success)return fail("VALIDATION_ERROR","Invalid redirect");try{validateRedirect(p.data.sourcePath,p.data.destination);const existing=await prisma.redirect.findUnique({where:{sourcePath:p.data.destination}});if(existing?.destination===p.data.sourcePath)return fail("VALIDATION_ERROR","Redirect loop detected");return ok(await prisma.redirect.create({data:p.data}),201);}catch(e){return fail("VALIDATION_ERROR",e instanceof Error?e.message:"Invalid redirect");}}
+import { prisma } from "@/lib/db/prisma";
+import { admin, body, HttpError, refreshPublicSite } from "@/lib/server/api";
+import { ok } from "@/lib/server/http";
+import { audit } from "@/lib/server/audit";
+import { refreshRedirectCache, validateRedirect } from "@/lib/server/redirects";
+import { assertNoLoop, redirectSchema } from "@/lib/server/redirect-admin";
+
+export const GET = admin("seo.view", async () => ok(await prisma.redirect.findMany({ orderBy: { sourcePath: "asc" } })));
+
+export const POST = admin("seo.edit", async ({ request, session }) => {
+  const d = await body(request, redirectSchema);
+  let v;
+  try { v = validateRedirect(d.sourcePath, d.destination); } catch (e) { throw new HttpError(400, "VALIDATION_ERROR", e instanceof Error ? e.message : "Invalid redirect"); }
+  await assertNoLoop(v.sourcePath, v.destination);
+  const row = await prisma.redirect.create({ data: { ...d, sourcePath: v.sourcePath, destination: v.destination } });
+  await audit({ actorId: session.userId, action: "redirect.create", entity: "Redirect", entityId: row.id });
+  refreshRedirectCache();
+  refreshPublicSite();
+  return ok(row, 201);
+});

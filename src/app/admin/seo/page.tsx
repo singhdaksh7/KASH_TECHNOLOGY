@@ -1,4 +1,3 @@
-/* eslint-disable */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -9,18 +8,11 @@ import { AdminHeader } from "@/components/admin/AdminHeader";
 import {
   AlertTriangle,
   AlertCircle,
-  Info,
-  CheckCircle2,
-  ExternalLink,
-  Search,
-  Globe,
-  ArrowRight,
-  ShieldAlert,
-} from "lucide-react";
+  ArrowRight } from "lucide-react";
 
 export default function SeoManagerPage() {
   const [issues, setIssues] = useState<SeoIssue[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [filterSeverity, setFilterSeverity] = useState<string>("ALL");
 
   useEffect(() => {

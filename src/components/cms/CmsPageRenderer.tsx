@@ -1,4 +1,6 @@
+import type { ReactNode } from "react";
 import type { PageDocument } from "@/lib/cms/types";
+import { normalizeContent } from "@/lib/cms/section-compat";
 import { logOnce } from "@/lib/cms/log";
 import { getRegistryEntry } from "@/components/cms-sections/registry";
 import { SectionFrame } from "./SectionFrame";
@@ -10,7 +12,7 @@ import { SectionFrame } from "./SectionFrame";
  * Section components are defensive by construction (every field goes through str()/objs()/cta()), and the
  * repository never throws, so a malformed section degrades to empty output instead of crashing the page.
  */
-export function CmsPageRenderer({ page }: { page: PageDocument }) {
+export function CmsPageRenderer({ page, legacy }: { page: PageDocument; legacy?: ReactNode }) {
   const sections = [...page.sections].filter((s) => s.enabled).sort((a, b) => a.order - b.order);
   const primaryHeroId = sections.find((s) => s.type === "hero" && getRegistryEntry("hero"))?.id;
 
@@ -23,12 +25,13 @@ export function CmsPageRenderer({ page }: { page: PageDocument }) {
           return null;
         }
         const isPrimaryHero = section.id === primaryHeroId;
+        if (section.type === "builtIn") return legacy ? <div key={section.id} data-section-type="builtIn">{legacy}</div> : null;
         const Comp = entry.component as React.ComponentType<{ section: typeof section; isPrimaryHero?: boolean }>;
         const labelRaw = entry.labelKey ? section.content[entry.labelKey] : undefined;
         const label = typeof labelRaw === "string" ? labelRaw.slice(0, 120) : undefined;
         return (
           <SectionFrame key={section.id} id={section.id} type={section.type} style={section.style} label={label} selfFramed={entry.selfFramed}>
-            <Comp section={section} isPrimaryHero={isPrimaryHero} />
+            <Comp section={{ ...section, content: normalizeContent(section.type, section.content) }} isPrimaryHero={isPrimaryHero} />
           </SectionFrame>
         );
       })}

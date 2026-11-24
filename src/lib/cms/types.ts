@@ -69,6 +69,11 @@ export type RichTextValue = RichTextBlock[];
 
 /* ───────── Sections ───────── */
 export const SECTION_TYPES = [
+  "builtIn",
+  "textImage",
+  "customEmbed",
+  "serviceShowcase",
+  "agencyPillars",
   "hero",
   "richText",
   "imageText",
@@ -106,7 +111,8 @@ export interface Section {
   enabled: boolean;
   /** Section-type specific payload. Narrowed by each section component. */
   content: Record<string, unknown>;
-  style?: SectionStyle;
+  /** Builder style JSON; interpreted by resolveStyle() (unknown values ignored). */
+  style?: SectionStyle | Record<string, unknown>;
 }
 
 export interface PageDocument {
@@ -202,7 +208,7 @@ export interface GlobalSettings {
 }
 
 /* ───────── Portfolio ───────── */
-export type ProjectStatus = "REAL PROJECT" | "PROTOTYPE" | "CONCEPT";
+export type ProjectStatus = "REAL PROJECT" | "PROTOTYPE" | "IN DEVELOPMENT" | "STAGING" | "CONCEPT";
 
 export interface ProjectDocument {
   id: string;
@@ -247,7 +253,19 @@ export interface ArticleDocument {
 }
 
 /* ───────── Forms ───────── */
+export interface FormFieldDefinition {
+  name: string;
+  label: string;
+  type: "text" | "email" | "phone" | "textarea" | "select" | "checkbox" | "radio" | "date" | "file" | "hidden";
+  required: boolean;
+  placeholder?: string;
+  options?: string[];
+}
 export interface FormDefinition {
   slug: string;
   title: string;
+  description?: string;
+  submitButtonText: string;
+  successMessage: string;
+  fields: FormFieldDefinition[];
 }

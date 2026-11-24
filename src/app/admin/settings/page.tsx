@@ -1,112 +1,50 @@
-/* eslint-disable */
 "use client";
 
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { useToast } from "@/components/admin/ToastContext";
-import { Save, Shield, Database, Globe, Bell, Lock } from "lucide-react";
+import { adminClient, errorMessage, type SessionInfo } from "@/lib/admin-client";
+import { ShieldCheck, Lock, Palette } from "lucide-react";
 
 export default function SystemSettingsPage() {
   const { addToast } = useToast();
-  const [siteName, setSiteName] = useState("KASH Technology");
-  const [canonicalDomain, setCanonicalDomain] = useState("kash-technology.com");
-  const [require2fa, setRequire2fa] = useState(true);
-  const [notifyLeads, setNotifyLeads] = useState(true);
-  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [session, setSession] = useState<SessionInfo | null>(null);
+  const [current, setCurrent] = useState("");
+  const [next, setNext] = useState("");
+  useEffect(() => { adminClient.getSession().then(setSession).catch(() => undefined); }, []);
 
-  const handleSave = (e: React.FormEvent) => {
+  const changePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    addToast({ title: "Settings Saved", message: "System preferences updated.", type: "success" });
+    try {
+      await adminClient.changePassword(current, next);
+      setCurrent(""); setNext("");
+      addToast({ title: "Password changed", message: "Other sessions were signed out.", type: "success" });
+    } catch (err) {
+      addToast({ title: "Could not change password", message: errorMessage(err), type: "error" });
+    }
   };
+  const input = "w-full px-3 py-2 border border-[#E8E5E2] rounded-lg text-xs";
 
   return (
     <div className="space-y-6">
-      <AdminHeader
-        title="System Settings"
-        subtitle="Global platform preferences, security enforcement, email dispatch, and canonical domain"
-        breadcrumbs={[{ label: "System" }, { label: "Settings" }]}
-      />
-
-      <form onSubmit={handleSave} className="bg-white rounded-xl border border-[#E8E5E2] p-6 shadow-xs max-w-3xl space-y-6 text-xs">
-        <div>
-          <h4 className="font-bold text-xs uppercase tracking-wider text-[#0B0B0F] mb-3 flex items-center gap-2">
-            <Globe className="w-4 h-4 text-[#FF5A00]" />
-            <span>Site Identity</span>
-          </h4>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block font-semibold text-[#0B0B0F] mb-1">Site Title</label>
-              <input
-                type="text"
-                value={siteName}
-                onChange={(e) => setSiteName(e.target.value)}
-                className="w-full px-3 py-2 border border-[#E8E5E2] rounded-lg"
-              />
-            </div>
-            <div>
-              <label className="block font-semibold text-[#0B0B0F] mb-1">Primary Canonical Domain</label>
-              <input
-                type="text"
-                value={canonicalDomain}
-                onChange={(e) => setCanonicalDomain(e.target.value)}
-                className="w-full px-3 py-2 border border-[#E8E5E2] rounded-lg font-mono"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="pt-4 border-t border-[#E8E5E2]">
-          <h4 className="font-bold text-xs uppercase tracking-wider text-[#0B0B0F] mb-3 flex items-center gap-2">
-            <Shield className="w-4 h-4 text-[#FF5A00]" />
-            <span>Security & Authentication</span>
-          </h4>
-          <div className="space-y-2">
-            <label className="flex items-center gap-2 cursor-pointer font-semibold text-[#0B0B0F]">
-              <input
-                type="checkbox"
-                checked={require2fa}
-                onChange={(e) => setRequire2fa(e.target.checked)}
-                className="rounded text-[#FF5A00]"
-              />
-              <span>Mandate TOTP Two-Factor Authentication for all Admin Accounts</span>
-            </label>
-            <p className="text-[11px] text-[#4B5563] pl-5">
-              Requires Google Authenticator or 1Password setup before dashboard access is permitted.
-            </p>
-          </div>
-        </div>
-
-        <div className="pt-4 border-t border-[#E8E5E2]">
-          <h4 className="font-bold text-xs uppercase tracking-wider text-[#0B0B0F] mb-3 flex items-center gap-2">
-            <Bell className="w-4 h-4 text-[#FF5A00]" />
-            <span>Notifications</span>
-          </h4>
-          <div className="space-y-2">
-            <label className="flex items-center gap-2 cursor-pointer font-semibold text-[#0B0B0F]">
-              <input
-                type="checkbox"
-                checked={notifyLeads}
-                onChange={(e) => setNotifyLeads(e.target.checked)}
-                className="rounded text-[#FF5A00]"
-              />
-              <span>Email Founder immediately on new lead capture</span>
-            </label>
-            <p className="text-[11px] text-[#4B5563] pl-5">
-              Dispatches transactional alert to founder@kash-technology.com via Resend.
-            </p>
-          </div>
-        </div>
-
-        <div className="pt-4 border-t border-[#E8E5E2] flex justify-end">
-          <button
-            type="submit"
-            className="px-5 py-2 bg-[#FF5A00] text-white rounded-lg font-semibold hover:bg-[#e04f00] flex items-center gap-1.5 shadow-sm"
-          >
-            <Save className="w-3.5 h-3.5" />
-            <span>Save Preferences</span>
-          </button>
-        </div>
-      </form>
+      <AdminHeader title="Account & Security" subtitle="Your sign-in security. Site-wide design settings live under Design; the server is configured through environment variables." breadcrumbs={[{ label: "System" }, { label: "Settings" }]} />
+      <div className="px-4 sm:px-6 grid gap-5 max-w-4xl lg:grid-cols-2">
+        <section className="bg-white rounded-xl border border-[#E8E5E2] p-5 shadow-xs space-y-3 text-xs">
+          <h4 className="font-bold uppercase tracking-wider flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-[#FF5A00]" />Signed in as</h4>
+          <p className="font-semibold">{session?.user.name ?? session?.user.email}</p>
+          <p className="text-stone-500">{session?.user.email}</p>
+          <p><span className="text-stone-400">Roles:</span> {session?.user.roles.map((r) => r.replace(/_/g, " ")).join(", ")}</p>
+          <p><span className="text-stone-400">Two-factor authentication:</span> <b className={session?.twoFactorEnabled ? "text-green-700" : "text-red-600"}>{session?.twoFactorEnabled ? "Enabled" : "Not enabled"}</b></p>
+          <Link href="/admin/design/theme" className="inline-flex items-center gap-1.5 text-[#FF5A00] font-semibold hover:underline"><Palette className="w-3.5 h-3.5" />Theme, header &amp; footer</Link>
+        </section>
+        <form onSubmit={changePassword} className="bg-white rounded-xl border border-[#E8E5E2] p-5 shadow-xs space-y-3 text-xs">
+          <h4 className="font-bold uppercase tracking-wider flex items-center gap-2"><Lock className="w-4 h-4 text-[#FF5A00]" />Change password</h4>
+          <label className="block font-semibold">Current password<input type="password" required autoComplete="current-password" value={current} onChange={(e) => setCurrent(e.target.value)} className={`${input} mt-1`} /></label>
+          <label className="block font-semibold">New password (min 12 characters)<input type="password" required minLength={12} autoComplete="new-password" value={next} onChange={(e) => setNext(e.target.value)} className={`${input} mt-1`} /></label>
+          <button type="submit" className="px-4 py-2 bg-[#FF5A00] text-white rounded-lg font-bold">Update password</button>
+        </form>
+      </div>
     </div>
   );
 }

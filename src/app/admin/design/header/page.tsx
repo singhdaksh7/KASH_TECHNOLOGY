@@ -1,4 +1,3 @@
-/* eslint-disable */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -6,7 +5,7 @@ import { HeaderConfig } from "@/lib/admin-client/types";
 import { adminClient } from "@/lib/admin-client";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { useToast } from "@/components/admin/ToastContext";
-import { Save, CheckCircle2 } from "lucide-react";
+import { Save } from "lucide-react";
 
 export default function HeaderEditorPage() {
   const [header, setHeader] = useState<HeaderConfig | null>(null);
@@ -136,7 +135,7 @@ export default function HeaderEditorPage() {
           <label className="block font-semibold text-[#0B0B0F] mb-1">Mobile Menu Display Type</label>
           <select
             value={header.mobileMenuType}
-            onChange={(e) => setHeader({ ...header, mobileMenuType: e.target.value as any })}
+            onChange={(e) => setHeader({ ...header, mobileMenuType: e.target.value as HeaderConfig["mobileMenuType"] })}
             className="w-full px-3 py-2 border border-[#E8E5E2] rounded-lg"
           >
             <option value="Drawer">Slide-Over Drawer</option>

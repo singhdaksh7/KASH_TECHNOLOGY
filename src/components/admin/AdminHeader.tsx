@@ -1,9 +1,7 @@
-/* eslint-disable */
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { Menu, Bell, Search, Plus, ExternalLink } from "lucide-react";
+import { Menu, ExternalLink } from "lucide-react";
 
 interface AdminHeaderProps {
   onToggleSidebar?: () => void;
@@ -20,13 +18,14 @@ export function AdminHeader({
   breadcrumbs,
   actions,
 }: AdminHeaderProps) {
+  const toggle = onToggleSidebar ?? (() => window.dispatchEvent(new Event("kash:toggle-sidebar")));
   return (
     <header className="sticky top-0 z-30 bg-[#FFF9F4]/90 backdrop-blur-md border-b border-[#E8E5E2] px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
       {/* Left: Mobile Toggle & Page Title / Breadcrumbs */}
       <div className="flex items-center gap-3 min-w-0">
-        {onToggleSidebar && (
+        {(
           <button
-            onClick={onToggleSidebar}
+            onClick={toggle}
             aria-label="Toggle Navigation"
             className="p-1.5 rounded-lg border border-[#E8E5E2] bg-white text-[#0B0B0F] hover:border-[#FF5A00] lg:hidden"
           >

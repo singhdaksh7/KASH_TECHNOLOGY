@@ -38,7 +38,7 @@ export default async function PreviewPage({ searchParams }: Props) {
   return (
     <>
       <PreviewBanner title={page.title} status={page.status} />
-      <CmsPageRenderer page={page} />
+      <CmsPageRenderer page={page} legacy={<div className="mx-auto max-w-3xl p-10 text-center text-sm text-stone-500">Built-in page content is shown here on the live site (preview shows the draft sections only).</div>} />
     </>
   );
 }

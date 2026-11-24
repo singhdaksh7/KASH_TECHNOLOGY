@@ -1,8 +1,9 @@
-/* eslint-disable */
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { adminClient, type SessionInfo } from "@/lib/admin-client";
 import { 
   LayoutDashboard, 
   FileText, 
@@ -23,9 +24,7 @@ import {
   History, 
   Settings, 
   LogOut,
-  ChevronRight
 } from "lucide-react";
-import { KashLogo } from "@/components/branding/KashLogo";
 
 interface NavGroup {
   title: string;
@@ -34,6 +33,8 @@ interface NavGroup {
     href: string;
     icon: React.ComponentType<{ className?: string }>;
     badge?: string;
+    /** Advisory only: the API enforces permissions regardless. */
+    perm?: string;
   }>;
 }
 
@@ -41,37 +42,37 @@ const NAV_GROUPS: NavGroup[] = [
   {
     title: "CONTENT",
     items: [
-      { label: "Pages", href: "/admin/pages", icon: FileText },
-      { label: "Portfolio", href: "/admin/portfolio", icon: Briefcase },
-      { label: "Insights", href: "/admin/insights", icon: BookOpen },
-      { label: "Media Library", href: "/admin/media", icon: ImageIcon },
+      { label: "Pages", perm: "pages.view", href: "/admin/pages", icon: FileText },
+      { label: "Portfolio", perm: "portfolio.view", href: "/admin/portfolio", icon: Briefcase },
+      { label: "Insights", perm: "articles.view", href: "/admin/insights", icon: BookOpen },
+      { label: "Media Library", perm: "media.view", href: "/admin/media", icon: ImageIcon },
     ],
   },
   {
     title: "DESIGN & THEME",
     items: [
-      { label: "Page Builder", href: "/admin/pages/page-home/edit", icon: Layers, badge: "Live" },
-      { label: "Navigation", href: "/admin/design/navigation", icon: Compass },
-      { label: "Header Editor", href: "/admin/design/header", icon: PanelTop },
-      { label: "Footer Editor", href: "/admin/design/footer", icon: PanelBottom },
-      { label: "Theme Settings", href: "/admin/design/theme", icon: Palette },
+      { label: "Page Builder", perm: "pages.view", href: "/admin/pages", icon: Layers },
+      { label: "Navigation", perm: "settings.view", href: "/admin/design/navigation", icon: Compass },
+      { label: "Header Editor", perm: "settings.view", href: "/admin/design/header", icon: PanelTop },
+      { label: "Footer Editor", perm: "settings.view", href: "/admin/design/footer", icon: PanelBottom },
+      { label: "Theme Settings", perm: "settings.view", href: "/admin/design/theme", icon: Palette },
     ],
   },
   {
     title: "MARKETING",
     items: [
-      { label: "SEO Dashboard", href: "/admin/seo", icon: Search },
-      { label: "Forms", href: "/admin/forms", icon: CheckSquare },
-      { label: "Leads", href: "/admin/leads", icon: Users, badge: "New" },
-      { label: "Redirects", href: "/admin/redirects", icon: CornerUpRight },
+      { label: "SEO Dashboard", perm: "seo.view", href: "/admin/seo", icon: Search },
+      { label: "Forms", perm: "forms.view", href: "/admin/forms", icon: CheckSquare },
+      { label: "Leads", perm: "leads.view", href: "/admin/leads", icon: Users },
+      { label: "Redirects", perm: "seo.view", href: "/admin/redirects", icon: CornerUpRight },
     ],
   },
   {
     title: "SYSTEM",
     items: [
-      { label: "Team", href: "/admin/team", icon: UserCheck },
-      { label: "Roles & Permissions", href: "/admin/roles", icon: ShieldAlert },
-      { label: "Audit Log", href: "/admin/audit-log", icon: History },
+      { label: "Team", perm: "users.view", href: "/admin/team", icon: UserCheck },
+      { label: "Roles & Permissions", perm: "users.view", href: "/admin/roles", icon: ShieldAlert },
+      { label: "Audit Log", perm: "audit.view", href: "/admin/audit-log", icon: History },
       { label: "Settings", href: "/admin/settings", icon: Settings },
     ],
   },
@@ -79,6 +80,19 @@ const NAV_GROUPS: NavGroup[] = [
 
 export function AdminSidebar({ mobileOpen, onClose }: { mobileOpen?: boolean; onClose?: () => void }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [session, setSession] = useState<SessionInfo | null>(null);
+  useEffect(() => {
+    adminClient.getSession().then(setSession).catch(() => undefined);
+  }, []);
+  const can = (perm?: string) => !perm || !session || session.user.roles.includes("SUPER_ADMIN") || session.user.permissions.includes(perm);
+  const name = session?.user.name || session?.user.email || "…";
+  const initials = name.split(/[\s@.]+/).filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join("") || "?";
+  const logout = async () => {
+    await adminClient.logout().catch(() => undefined);
+    router.push("/admin/login");
+    router.refresh();
+  };
 
   return (
     <>
@@ -142,7 +156,7 @@ export function AdminSidebar({ mobileOpen, onClose }: { mobileOpen?: boolean; on
               <span className="px-3 text-[10px] font-mono font-bold tracking-wider text-white/40 uppercase block mb-1">
                 {group.title}
               </span>
-              {group.items.map((item) => {
+              {group.items.filter((i) => can(i.perm)).map((item) => {
                 const Icon = item.icon;
                 const isActive = pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href));
                 return (
@@ -176,20 +190,21 @@ export function AdminSidebar({ mobileOpen, onClose }: { mobileOpen?: boolean; on
         <div className="p-3 border-t border-white/10 bg-[#08080B] flex items-center justify-between">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="w-8 h-8 rounded-full bg-[#FF5A00] text-white font-bold text-xs flex items-center justify-center shrink-0">
-              DS
+              {initials}
             </div>
             <div className="min-w-0 leading-tight">
-              <div className="text-xs font-bold text-white truncate">Daksh Singh</div>
-              <div className="text-[10px] text-white/50 truncate">Super Admin</div>
+              <div className="text-xs font-bold text-white truncate">{name}</div>
+              <div className="text-[10px] text-white/50 truncate">{session?.user.roles.map((r) => r.replace(/_/g, " ").toLowerCase()).join(", ")}</div>
             </div>
           </div>
-          <Link
-            href="/admin/login"
-            aria-label="Logout"
+          <button
+            type="button"
+            onClick={logout}
+            aria-label="Sign out"
             className="p-1.5 text-white/50 hover:text-red-400 hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
           >
             <LogOut className="w-4 h-4" />
-          </Link>
+          </button>
         </div>
       </aside>
     </>

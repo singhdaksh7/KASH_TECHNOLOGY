@@ -1,4 +1,33 @@
-import { Prisma } from "@prisma/client"; import { z } from "zod"; import { prisma } from "@/lib/db/prisma"; import { requirePermission } from "@/lib/rbac/permissions"; import { ok,fail } from "@/lib/server/http"; import { snapshotPage } from "@/lib/cms/pages"; import { audit } from "@/lib/server/audit";
-const schema=z.object({title:z.string().min(1).max(200),slug:z.string().regex(/^\/[a-z0-9/-]*$/),pageType:z.string().max(50).optional(),sections:z.array(z.object({type:z.string().min(1),order:z.number().int().nonnegative(),enabled:z.boolean().default(true),content:z.record(z.string(),z.unknown()),style:z.record(z.string(),z.unknown()).optional()})).optional()});
-export async function GET(){const a=await requirePermission("pages.view");if(a.error)return a.error;return ok(await prisma.page.findMany({where:{deletedAt:null},include:{sections:true,seo:true},orderBy:{updatedAt:"desc"}}));}
-export async function POST(r:Request){const a=await requirePermission("pages.create");if(a.error)return a.error;const p=schema.safeParse(await r.json());if(!p.success)return fail("VALIDATION_ERROR","Invalid page",400,p.error.flatten());try{const page=await prisma.page.create({data:{...p.data,createdById:a.session.userId,updatedById:a.session.userId,sections:p.data.sections?{create:p.data.sections.map(x=>({...x,content:x.content as Prisma.InputJsonValue,style:x.style as Prisma.InputJsonValue|undefined}))}:undefined},include:{sections:true}});await snapshotPage(page.id,a.session.userId,"create");await audit({actorId:a.session.userId,action:"page.create",entity:"Page",entityId:page.id});return ok(page,201);}catch{return fail("CONFLICT","A page with that slug already exists",409);}}
+import { z } from "zod";
+import { prisma } from "@/lib/db/prisma";
+import { admin, body, HttpError } from "@/lib/server/api";
+import { ok } from "@/lib/server/http";
+import { audit } from "@/lib/server/audit";
+import { pageInclude, snapshotPage } from "@/lib/cms/pages";
+import { toAdminPage } from "@/lib/server/dto-pages";
+
+const createSchema = z.object({
+  title: z.string().trim().min(1).max(200),
+  slug: z.string().trim().regex(/^[a-z0-9]+(?:[a-z0-9/-]*[a-z0-9])?$/, "Use lowercase letters, numbers, dashes and slashes"),
+});
+
+export const GET = admin("pages.view", async () => {
+  const pages = await prisma.page.findMany({ where: { deletedAt: null }, include: pageInclude, orderBy: { updatedAt: "desc" } });
+  return ok(pages.map(toAdminPage));
+});
+
+export const POST = admin("pages.create", async ({ request, session }) => {
+  const data = await body(request, createSchema);
+  const slug = `/${data.slug}`;
+  if (await prisma.page.findUnique({ where: { slug } })) throw new HttpError(409, "CONFLICT", "A page with that slug already exists");
+  const page = await prisma.page.create({
+    data: {
+      title: data.title, slug, status: "DRAFT", createdById: session.userId, updatedById: session.userId,
+      draft: { title: data.title, slug, seo: { title: data.title }, sections: [] },
+    },
+    include: pageInclude,
+  });
+  await snapshotPage(page.id, session.userId, "create");
+  await audit({ actorId: session.userId, action: "page.create", entity: "Page", entityId: page.id, metadata: { slug } });
+  return ok(toAdminPage(page), 201);
+});

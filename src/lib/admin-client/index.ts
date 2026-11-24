@@ -1,3 +1,3 @@
 export * from "./types";
-export * from "./mock-data";
-export { adminClient } from "./store";
+export { adminClient } from "./client";
+export { AdminApiError, errorMessage } from "./http";

@@ -7,6 +7,16 @@ import {
 } from "./basic";
 import { ContactFormSection, FeaturedProjectSection, InsightsFeedSection, PortfolioGridSection, ServicesGridSection } from "./data";
 import type { SectionType } from "@/lib/cms/types";
+import { ServiceScrollShowcase } from "@/components/sections/ServiceScrollShowcase";
+import { AgencyPillars } from "@/components/sections/AgencyPillars";
+import { CustomEmbedSection } from "./embed";
+
+/** Renders the approved static implementation of a route inside a CMS page (see CmsPageRenderer `legacy`). */
+function BuiltInPlaceholder() {
+  return null;
+}
+const ServiceShowcaseSection = () => <ServiceScrollShowcase />;
+const AgencyPillarsSection = () => <AgencyPillars />;
 
 type SectionComponent = ComponentType<SectionProps> | ((props: SectionProps) => Promise<React.ReactNode>);
 
@@ -41,6 +51,12 @@ export const SECTION_REGISTRY: Record<SectionType, RegistryEntry> = {
   testimonials: { component: TestimonialsSection, labelKey: "heading" },
   insightsFeed: { component: InsightsFeedSection, labelKey: "heading" },
   spacer: { component: SpacerSection },
+  textImage: { component: ImageTextSection, labelKey: "heading" },
+  customEmbed: { component: CustomEmbedSection, labelKey: "heading" },
+  serviceShowcase: { component: ServiceShowcaseSection, selfFramed: true },
+  agencyPillars: { component: AgencyPillarsSection, selfFramed: true },
+  // Placeholder only: CmsPageRenderer substitutes the route's approved implementation.
+  builtIn: { component: BuiltInPlaceholder, selfFramed: true },
 };
 
 export function getRegistryEntry(type: string): RegistryEntry | null {

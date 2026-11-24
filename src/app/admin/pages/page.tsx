@@ -1,4 +1,3 @@
-/* eslint-disable */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -6,36 +5,49 @@ import Link from "next/link";
 import { 
   Plus, 
   Search, 
-  Filter, 
   ExternalLink, 
-  Edit, 
   Copy, 
   Trash2, 
-  CheckCircle, 
-  Clock, 
-  MoreVertical 
-} from "lucide-react";
+  CheckCircle } from "lucide-react";
 import { AdminHeader } from "@/components/admin/AdminHeader";
-import { adminClient } from "@/lib/admin-client";
-import { AdminPageItem, PageStatus } from "@/lib/admin-client/types";
+import { adminClient, errorMessage } from "@/lib/admin-client";
+import { AdminPageItem } from "@/lib/admin-client/types";
 import { useToast } from "@/components/admin/ToastContext";
 
 export default function AdminPagesListPage() {
   const [pages, setPages] = useState<AdminPageItem[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("All");
-  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   const loadPages = async () => {
-    const data = await adminClient.getPages();
-    setPages(data);
-    setLoading(false);
+    try {
+      setPages(await adminClient.getPages());
+    } catch (err) {
+      toast(errorMessage(err), "error");
+    }
   };
 
   useEffect(() => {
-    loadPages();
+    let alive = true;
+    adminClient.getPages().then((d) => alive && setPages(d)).catch(() => undefined);
+    return () => {
+      alive = false;
+    };
   }, []);
+
+  const handleCreate = async () => {
+    const title = window.prompt("Page title");
+    if (!title?.trim()) return;
+    const slug = window.prompt("URL slug (lowercase letters, numbers, dashes)", title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""));
+    if (!slug?.trim()) return;
+    try {
+      const page = await adminClient.createPage(title.trim(), slug.trim().replace(/^\//, ""));
+      window.location.assign(`/admin/pages/${page.id}/edit`);
+    } catch (err) {
+      toast(errorMessage(err), "error");
+    }
+  };
 
   const handleDuplicate = async (id: string) => {
     const dup = await adminClient.duplicatePage(id);
@@ -46,20 +58,28 @@ export default function AdminPagesListPage() {
   };
 
   const handleTogglePublish = async (page: AdminPageItem) => {
-    if (page.status === "Published") {
-      await adminClient.unpublishPage(page.id);
-      toast(`Unpublished "${page.title}"`, "info");
-    } else {
-      await adminClient.publishPage(page.id);
-      toast(`Published "${page.title}" live!`, "success");
+    try {
+      if (page.status === "Published") {
+        await adminClient.unpublishPage(page.id);
+        toast(`Unpublished "${page.title}"`, "info");
+      } else {
+        await adminClient.publishPage(page.id);
+        toast(`Published "${page.title}" live!`, "success");
+      }
+    } catch (err) {
+      toast(errorMessage(err), "error");
     }
     loadPages();
   };
 
   const handleDelete = async (id: string, title: string) => {
     if (confirm(`Are you sure you want to delete "${title}"?`)) {
-      await adminClient.deletePage(id);
-      toast(`Deleted "${title}"`, "info");
+      try {
+        await adminClient.deletePage(id);
+        toast(`Deleted "${title}"`, "info");
+      } catch (err) {
+        toast(errorMessage(err), "error");
+      }
       loadPages();
     }
   };
@@ -78,13 +98,13 @@ export default function AdminPagesListPage() {
         title="Page Management"
         subtitle="Manage live routes, drafts, visual canvas editors, and SEO indexation."
         actions={
-          <Link
-            href="/admin/pages/page-home/edit"
+          <button
+            onClick={handleCreate}
             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#FF5A00] text-white text-xs font-bold hover:bg-[#FF8A3D] transition-colors shadow-sm"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Create Page</span>
-          </Link>
+          </button>
         }
       />
 

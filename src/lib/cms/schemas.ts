@@ -25,19 +25,7 @@ export const seoSchema = z
   })
   .partial();
 
-export const sectionStyleSchema = z
-  .object({
-    background: z.enum(["default", "ivory", "dark", "primary", "transparent"]),
-    textColor: z.enum(["auto", "light", "dark"]),
-    paddingTop: z.enum(["none", "sm", "md", "lg", "xl"]),
-    paddingBottom: z.enum(["none", "sm", "md", "lg", "xl"]),
-    container: z.enum(["narrow", "default", "wide", "full"]),
-    alignment: z.enum(["left", "center", "right"]),
-    borderRadius: z.enum(["none", "sm", "md", "lg", "xl"]),
-    shadow: z.enum(["none", "sm", "md", "lg"]),
-    customClass: z.string().max(120),
-  })
-  .partial();
+export const sectionStyleSchema = z.record(z.string(), z.unknown());
 
 export const sectionSchema = z.object({
   id: str,
@@ -126,7 +114,7 @@ export const projectSchema = z.object({
   title: str,
   slug: str,
   status: z.enum(["draft", "published", "archived"]),
-  projectStatus: z.enum(["REAL PROJECT", "PROTOTYPE", "CONCEPT"]),
+  projectStatus: z.enum(["REAL PROJECT", "PROTOTYPE", "IN DEVELOPMENT", "STAGING", "CONCEPT"]),
   category: str,
   thumbnail: optStr,
   hero: optStr,

@@ -50,6 +50,6 @@ export function PrimaryButton({ children, className = "" }: { children: ReactNod
 
 export function CardBox({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`rounded-[var(--radius-card)] border border-current/10 bg-white/5 p-6 ${className}`}>{children}</div>
+    <div className={`rounded-[var(--radius-card)] border border-current/10 bg-current/[0.04] p-6 ${className}`}>{children}</div>
   );
 }

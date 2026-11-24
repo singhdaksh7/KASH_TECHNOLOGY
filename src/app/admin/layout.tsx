@@ -1,33 +1,29 @@
-"use client";
+import type { Metadata } from "next";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { currentSession } from "@/lib/auth/session";
+import { requires2fa } from "@/lib/rbac/permissions";
+import { AdminShell } from "@/components/admin/AdminShell";
 
-import { useState } from "react";
-import { usePathname } from "next/navigation";
-import { AdminSidebar } from "@/components/admin/AdminSidebar";
-import { ToastProvider } from "@/components/admin/ToastContext";
+export const metadata: Metadata = {
+  title: { absolute: "KASH CMS" },
+  robots: { index: false, follow: false, nocache: true },
+};
+export const dynamic = "force-dynamic";
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const pathname = usePathname();
+const PUBLIC_AUTH = ["/admin/login", "/admin/verify-2fa"];
 
-  // If on login / 2FA routes, render standalone view without sidebar
-  const isAuthRoute =
-    pathname === "/admin/login" ||
-    pathname === "/admin/setup-2fa" ||
-    pathname === "/admin/verify-2fa";
-
-  if (isAuthRoute) {
-    return <ToastProvider>{children}</ToastProvider>;
+/**
+ * Server-side gate for EVERY /admin/** page (in addition to proxy.ts and per-API authorization):
+ * no valid session → /admin/login; session without enrolled 2FA → /admin/setup-2fa.
+ */
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const pathname = (await headers()).get("x-pathname") ?? "";
+  if (!PUBLIC_AUTH.some((p) => pathname.startsWith(p))) {
+    const session = await currentSession();
+    if (!session) redirect("/admin/login");
+    const enrolled = !!session.user.twoFactor?.enabledAt;
+    if (requires2fa() && !enrolled && !pathname.startsWith("/admin/setup-2fa")) redirect("/admin/setup-2fa");
   }
-
-  return (
-    <ToastProvider>
-      <div className="min-h-screen bg-[#FFF9F4] text-[#0B0B0F] flex flex-col font-sans">
-        <AdminSidebar mobileOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-
-        <div className="lg:pl-64 flex-1 flex flex-col min-w-0">
-          <main className="flex-1 flex flex-col min-w-0">{children}</main>
-        </div>
-      </div>
-    </ToastProvider>
-  );
+  return <AdminShell>{children}</AdminShell>;
 }

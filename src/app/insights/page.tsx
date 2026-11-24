@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { getPublishedArticles } from "@/lib/cms";
 import { InsightsIndex } from "@/components/insights/InsightsIndex";
+import { createCmsRoute } from "@/components/cms/createCmsRoute";
 
-export const metadata: Metadata = {
+const baseMetadata: Metadata = {
   title: "Insights & Engineering Perspectives | KASH Technology",
   description: "Practical engineering blueprints, software architecture insights, and technology strategy for growing businesses in Delhi NCR and Western UP.",
   alternates: { canonical: "/insights" },
@@ -13,11 +14,15 @@ export const metadata: Metadata = {
   },
 };
 
-export const revalidate = 60;
 
 // Server wrapper: articles come from the CMS repository (static fallback when the CMS is empty/unavailable);
 // the approved redesigned list UI lives unchanged in InsightsIndex (client, for category filtering).
-export default async function InsightsPage() {
+async function InsightsPage() {
   const articles = await getPublishedArticles();
   return <InsightsIndex articles={articles} />;
 }
+
+const cmsRoute = createCmsRoute({ path: "/insights", pageType: "page", Fallback: InsightsPage, metadata: baseMetadata });
+export const generateMetadata = cmsRoute.generateMetadata;
+export const revalidate = 60;
+export default cmsRoute.Page;

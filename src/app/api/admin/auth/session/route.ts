@@ -1,2 +1,15 @@
-import { currentSession } from "@/lib/auth/session"; import { ok,fail } from "@/lib/server/http";
-export async function GET(){const session=await currentSession();if(!session)return fail("UNAUTHENTICATED","Authentication required",401);return ok({user:{id:session.user.id,email:session.user.email,name:session.user.name,roles:session.user.roles.map(x=>x.role.name),permissions:[...new Set(session.user.roles.flatMap(x=>x.role.permissions.map(p=>p.permission.key)))]},expiresAt:session.expiresAt});}
+import { currentSession } from "@/lib/auth/session";
+import { userPermissions, requires2fa } from "@/lib/rbac/permissions";
+import { ok, fail } from "@/lib/server/http";
+
+export async function GET() {
+  const session = await currentSession();
+  if (!session) return fail("UNAUTHENTICATED", "Authentication required", 401);
+  const u = session.user;
+  return ok({
+    user: { id: u.id, email: u.email, name: u.name, roles: u.roles.map((x) => x.role.name), permissions: userPermissions(session) },
+    twoFactorEnabled: !!u.twoFactor?.enabledAt,
+    twoFactorRequired: requires2fa(),
+    expiresAt: session.expiresAt,
+  });
+}

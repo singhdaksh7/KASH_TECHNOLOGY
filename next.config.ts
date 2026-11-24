@@ -2,6 +2,8 @@ import path from "node:path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // The proxy buffers request bodies; admin media uploads go up to 40 MB.
+  experimental: { proxyClientMaxBodySize: "50mb" },
   turbopack: {
     root: path.join(__dirname),
   },

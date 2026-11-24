@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
@@ -152,6 +153,8 @@ model Page {
   slug        String        @unique
   status      PageStatus    @default(DRAFT)
   pageType    String        @default("STANDARD")
+  /// Unpublished working copy ({title, slug, seo, sections}); live content is only replaced on publish.
+  draft       Json?
   publishedAt DateTime?
   createdById String?
   updatedById String?
@@ -210,6 +213,11 @@ model SeoMetadata {
   canonicalUrl   String?
   robots         String?
   ogImage        String?
+  ogTitle        String?
+  ogDescription  String?
+  twitterImage   String?
+  focusKeyword   String?
+  secondaryKeywords String?
   structuredData Json?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt

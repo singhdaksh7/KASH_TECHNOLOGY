@@ -1,28 +1,19 @@
-/* eslint-disable */
 "use client";
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { PortfolioItem, ProjectKind, ProjectStatus } from "@/lib/admin-client/types";
+import { PortfolioItem } from "@/lib/admin-client/types";
 import { adminClient } from "@/lib/admin-client";
 import { useToast } from "@/components/admin/ToastContext";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import {
   Plus,
   Search,
-  Filter,
-  ExternalLink,
   Edit,
   Trash2,
-  Copy,
   Briefcase,
-  Layers,
-  Sparkles,
-  ArrowUpRight,
-  Eye,
-  CheckCircle2,
-} from "lucide-react";
+  ArrowUpRight } from "lucide-react";
 
 export default function PortfolioAdminPage() {
   const [projects, setProjects] = useState<PortfolioItem[]>([]);

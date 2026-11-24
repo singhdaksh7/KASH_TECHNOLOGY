@@ -1,6 +1,6 @@
 import { SITE_CONFIG } from "@/lib/constants";
 import { INSIGHT_ARTICLES } from "@/lib/insights-data";
-import { ALL_PORTFOLIO_PROJECTS } from "@/data/portfolioData";
+import { APPROVED_PROJECTS } from "@/data/approved-projects";
 import { CASE_STUDIES } from "@/data/case-studies";
 import { DEFAULT_THEME } from "@/lib/theme/theme";
 import type { CmsRepository } from "../repository";
@@ -15,38 +15,16 @@ import type { ArticleDocument, GlobalSettings, ProjectDocument } from "../types"
  * while config/list methods return the current static data.
  */
 
-const PROJECTS: ProjectDocument[] = [
-  ...Object.values(CASE_STUDIES).map(
-    (c): ProjectDocument => ({
-      id: `case-${c.slug}`,
-      title: c.title,
-      slug: c.slug,
-      status: "published",
-      projectStatus: "REAL PROJECT",
-      category: c.category,
-      description: c.description,
-      technologies: c.technologies,
-      problem: normalizeRichText(c.problem.map((p) => `${p}`)),
-      solution: normalizeRichText(c.solution.map((p) => `${p}`)),
-      features: c.features.map((f) => f.title),
-      internalHref: `/work/${c.slug}`,
-    }),
-  ),
-  ...ALL_PORTFOLIO_PROJECTS.map(
-    (p): ProjectDocument => ({
-      id: p.id,
-      title: p.title,
-      slug: p.id,
-      status: "published",
-      // Truthfulness: static "concept" entries are concepts, never presented as client work.
-      projectStatus: p.status === "real" ? "REAL PROJECT" : "CONCEPT",
-      category: p.category,
-      description: p.description,
-      services: [p.pillar],
-      internalHref: p.href,
-    }),
-  ),
-];
+const PROJECTS: ProjectDocument[] = APPROVED_PROJECTS.map((p): ProjectDocument => {
+  const slug = p.href.startsWith("/work/") ? p.href.slice(6) : p.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const cs = Object.values(CASE_STUDIES).find((c) => c.slug === slug);
+  return {
+    id: `static-${slug}`, title: p.title, slug, status: "published", projectStatus: p.statusType, category: p.category, thumbnail: p.image,
+    description: p.description, technologies: cs?.technologies, features: cs?.features.map((f) => f.title),
+    problem: cs ? normalizeRichText(cs.problem) : undefined, solution: cs ? normalizeRichText(cs.solution) : undefined,
+    internalHref: p.href,
+  };
+});
 
 const ARTICLES: ArticleDocument[] = INSIGHT_ARTICLES.map((a) => ({
   id: a.slug,
@@ -117,6 +95,9 @@ export class StaticFallbackRepository implements CmsRepository {
   }
   async getArticle(slug: string) {
     return ARTICLES.find((a) => a.slug === slug) ?? null;
+  }
+  async getForm() {
+    return null;
   }
   async getPreviewPage() {
     return null;

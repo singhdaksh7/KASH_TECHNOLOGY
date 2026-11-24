@@ -101,10 +101,11 @@ export async function InsightsFeedSection({ section }: SectionProps) {
   );
 }
 
-export function ContactFormSection({ section }: SectionProps) {
+export async function ContactFormSection({ section }: SectionProps) {
   const c = section.content;
   const slug = str(c.formSlug, 80) ?? "contact";
-  return <FormEmbed formSlug={slug} heading={str(c.heading)} subheading={str(c.subheading)} />;
+  const definition = slug === "contact" ? null : await cms.getForm(slug);
+  return <FormEmbed formSlug={slug} definition={definition} heading={str(c.heading)} subheading={str(c.subheading) ?? str(c.description)} />;
 }
 
 export { ProjectDetail };

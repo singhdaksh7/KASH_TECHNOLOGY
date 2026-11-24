@@ -39,17 +39,24 @@ export function createCmsRoute<P extends object = object>({ path, pageType, Fall
     const page = await load();
     if (!page) return metadata ?? {};
     const settings = await getSettings();
-    return buildMetadata({ path: normalizePath(path), seo: page.seo ?? { title: page.title }, fallback: metadata, settings });
+    // A page that wraps the built-in implementation keeps the approved route metadata unless SEO was edited in the CMS.
+    const builtIn = page.sections.some((s) => s.type === "builtIn" && s.enabled);
+    return buildMetadata({ path: normalizePath(path), seo: builtIn ? page.seo : page.seo ?? { title: page.title }, fallback: metadata, settings });
   }
 
-  async function Page(props: P) {
+  // Next passes `params`/`searchParams` to pages; forwarding those Promises into client Fallbacks forces dynamic rendering,
+  // so the approved implementations are rendered without them (they never read route props).
+  async function Page() {
+    const props = {} as P;
     const page = await load();
     if (!page) return <Fallback {...props} />;
+    // A published page whose only content is the built-in block renders exactly the approved implementation.
+    if (page.sections.length > 0 && page.sections.every((s) => s.type === "builtIn" || !s.enabled) && page.sections.some((s) => s.type === "builtIn" && s.enabled)) return <Fallback {...props} />;
     const settings = await getSettings();
     return (
       <>
         <JsonLd data={buildPageSchemas(page, normalizePath(path), settings)} />
-        <CmsPageRenderer page={page} />
+        <CmsPageRenderer page={page} legacy={<Fallback {...props} />} />
       </>
     );
   }

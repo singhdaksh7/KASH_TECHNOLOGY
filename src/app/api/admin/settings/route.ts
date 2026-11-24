@@ -1,4 +1,40 @@
-import { Prisma } from "@prisma/client"; import { z } from "zod"; import { prisma } from "@/lib/db/prisma"; import { requirePermission } from "@/lib/rbac/permissions"; import { ok,fail } from "@/lib/server/http";
-const schema=z.object({key:z.string().regex(/^[a-z0-9._-]+$/i),value:z.unknown(),theme:z.boolean().optional()});
-export async function GET(){const a=await requirePermission("settings.view");if(a.error)return a.error;return ok({global:await prisma.globalSetting.findMany(),theme:await prisma.themeSetting.findMany()});}
-export async function PUT(r:Request){const a=await requirePermission("settings.manage");if(a.error)return a.error;const p=schema.safeParse(await r.json());if(!p.success)return fail("VALIDATION_ERROR","Invalid setting");const args={where:{key:p.data.key},update:{value:p.data.value as Prisma.InputJsonValue},create:{key:p.data.key,value:p.data.value as Prisma.InputJsonValue}};return ok(p.data.theme?await prisma.themeSetting.upsert(args):await prisma.globalSetting.upsert(args));}
+import { Prisma } from "@prisma/client";
+import { z } from "zod";
+import { prisma } from "@/lib/db/prisma";
+import { admin, body, HttpError, refreshPublicSite } from "@/lib/server/api";
+import { ok } from "@/lib/server/http";
+import { audit } from "@/lib/server/audit";
+
+/** Whitelisted keys only. Values are plain JSON owned by the admin UI (header, footer, navigation, theme, site). */
+const GLOBAL_KEYS = ["header", "footer", "navigation", "site", "integrations.public"] as const;
+const THEME_KEYS = ["theme"] as const;
+const schema = z.object({ key: z.string(), value: z.unknown(), theme: z.boolean().optional() });
+
+export const GET = admin("settings.view", async () => {
+  const [global, theme] = await Promise.all([prisma.globalSetting.findMany(), prisma.themeSetting.findMany()]);
+  return ok({ global, theme });
+});
+
+export const PUT = admin("settings.manage", async ({ request, session }) => {
+  const d = await body(request, schema);
+  const allowed = (d.theme ? THEME_KEYS : GLOBAL_KEYS) as readonly string[];
+  if (!allowed.includes(d.key)) throw new HttpError(400, "VALIDATION_ERROR", "Unknown setting");
+  if (JSON.stringify(d.value ?? null).length > 200_000) throw new HttpError(400, "VALIDATION_ERROR", "Setting too large");
+  const args = { where: { key: d.key }, update: { value: d.value as Prisma.InputJsonValue }, create: { key: d.key, value: d.value as Prisma.InputJsonValue } };
+  const row = d.theme ? await prisma.themeSetting.upsert(args) : await prisma.globalSetting.upsert(args);
+  await audit({ actorId: session.userId, action: "settings.update", entity: d.theme ? "ThemeSetting" : "GlobalSetting", entityId: d.key });
+  refreshPublicSite();
+  return ok(row);
+});
+
+/** Reset a setting back to the approved built-in defaults (the public site falls back when the row is absent). */
+export const DELETE = admin("settings.manage", async ({ request, session }) => {
+  const d = await body(request, z.object({ key: z.string(), theme: z.boolean().optional() }));
+  const allowed = (d.theme ? THEME_KEYS : GLOBAL_KEYS) as readonly string[];
+  if (!allowed.includes(d.key)) throw new HttpError(400, "VALIDATION_ERROR", "Unknown setting");
+  if (d.theme) await prisma.themeSetting.deleteMany({ where: { key: d.key } });
+  else await prisma.globalSetting.deleteMany({ where: { key: d.key } });
+  await audit({ actorId: session.userId, action: "settings.reset", entity: d.theme ? "ThemeSetting" : "GlobalSetting", entityId: d.key });
+  refreshPublicSite();
+  return ok({ reset: true });
+});

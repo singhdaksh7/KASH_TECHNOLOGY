@@ -6,8 +6,9 @@ import { CtaBanner } from "@/components/sections/CtaBanner";
 import { Rocket, Cog, Building2, ShoppingCart, BrainCircuit, Wrench, ArrowRight } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import Link from "next/link";
+import { createCmsRoute } from "@/components/cms/createCmsRoute";
 
-export const metadata: Metadata = {
+const baseMetadata: Metadata = {
   title: "Solutions — Technology That Scales | KASH Technology",
   description: "Custom software solutions: Startup MVPs, Business Automation, ERP / CRM, E-commerce Platforms, AI Solutions, and Internal Tools tailored to your industry.",
 };
@@ -73,7 +74,7 @@ const APPROACH_STEPS = [
   },
 ];
 
-export default function SolutionsPage() {
+function SolutionsPage() {
   return (
     <>
       {/* 1. Hero matching media_1790146913721.jpg */}
@@ -211,3 +212,8 @@ export default function SolutionsPage() {
     </>
   );
 }
+
+const cmsRoute = createCmsRoute({ path: "/solutions", pageType: "page", Fallback: SolutionsPage, metadata: baseMetadata });
+export const generateMetadata = cmsRoute.generateMetadata;
+export const revalidate = 60;
+export default cmsRoute.Page;

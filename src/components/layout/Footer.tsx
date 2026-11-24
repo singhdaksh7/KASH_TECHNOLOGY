@@ -15,6 +15,7 @@ interface FooterProps {
 
 const ICON_PLATFORMS = ["linkedin", "github", "instagram", "youtube"] as const;
 type IconPlatform = (typeof ICON_PLATFORMS)[number];
+const ICON_LABEL: Record<IconPlatform, string> = { linkedin: "LinkedIn", github: "GitHub", instagram: "Instagram", youtube: "YouTube" };
 const isIconPlatform = (p: string): p is IconPlatform => (ICON_PLATFORMS as readonly string[]).includes(p);
 
 export function Footer({ config = FALLBACK_FOOTER }: FooterProps) {
@@ -39,7 +40,7 @@ export function Footer({ config = FALLBACK_FOOTER }: FooterProps) {
                     href={safeHref(s.href)!}
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label={s.platform.charAt(0).toUpperCase() + s.platform.slice(1)}
+                    aria-label={ICON_LABEL[s.platform as IconPlatform]}
                     className="w-8 h-8 rounded-full bg-[#FFFFFF] border border-[#E8E5E2] flex items-center justify-center text-[#4B5563] hover:text-[#FF5A00] hover:border-[#FF5A00] transition-colors shadow-2xs"
                   >
                     <SocialIcon name={s.platform as IconPlatform} className="w-4 h-4" />
@@ -99,7 +100,7 @@ export function Footer({ config = FALLBACK_FOOTER }: FooterProps) {
               {config.note && (
                 <div className="flex items-start gap-2">
                   <MapPin className="w-3.5 h-3.5 text-[#FF5A00] shrink-0 mt-0.5" />
-                  <span className="leading-snug">{config.note}</span>
+                  <span className="leading-snug">{config.note.split("\n").map((line, i) => (i ? [<br key={i} />, line] : line))}</span>
                 </div>
               )}
             </div>

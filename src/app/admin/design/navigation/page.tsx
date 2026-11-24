@@ -1,16 +1,16 @@
-/* eslint-disable */
 "use client";
 
 import React, { useState, useEffect } from "react";
 import { NavigationLink } from "@/lib/admin-client/types";
+import { newId } from "@/lib/admin-client/ids";
 import { adminClient } from "@/lib/admin-client";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { useToast } from "@/components/admin/ToastContext";
-import { Plus, Trash2, Save, MoveUp, MoveDown, Eye, EyeOff, ExternalLink } from "lucide-react";
+import { Plus, Trash2, Save, MoveUp, MoveDown, Eye, EyeOff } from "lucide-react";
 
 export default function NavigationEditorPage() {
   const [navLinks, setNavLinks] = useState<NavigationLink[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const { addToast } = useToast();
 
   useEffect(() => {
@@ -27,7 +27,7 @@ export default function NavigationEditorPage() {
 
   const handleAddLink = () => {
     const newLink: NavigationLink = {
-      id: `nav-${Date.now()}`,
+      id: newId("nav"),
       label: "New Link",
       url: "/new-link",
       openNewTab: false,

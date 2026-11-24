@@ -6,12 +6,7 @@ import { cmsEnv } from "./env";
  *
  * `/preview?page=<id>&token=<signed>` renders a DRAFT page with noindex and a
  * banner. This file deliberately does not implement admin authentication.
- * `authorizePreview` is the single choke point: by default it accepts only a
- * short-lived HMAC token signed with CMS_PREVIEW_SECRET (mint one with
- * `signPreviewToken` from the admin backend). To use real admin sessions,
- * replace the body of `authorizePreview` (e.g. read the session cookie via
- * `cookies()` and return `{ ok: true, credential: <service credential> }`).
- * If CMS_PREVIEW_SECRET is unset and the hook is untouched, preview is DENIED.
+ * `authorizePreview` is the single choke point (admin session or signed token).
  */
 
 export type PreviewAuthResult = { ok: true; credential: string } | { ok: false };
@@ -50,8 +45,20 @@ export function verifyPreviewToken(token: string, pageId: string, secret = cmsEn
   }
 }
 
-/** ▶ INTEGRATION HOOK — replace/extend to enforce admin authentication. */
+/**
+ * ▶ INTEGRATION HOOK — preview access is granted to:
+ *   1. a signed-in admin (session cookie, 2FA enrolled) holding `pages.view` — the normal path from the Page Builder, or
+ *   2. a short-lived HMAC token minted with signPreviewToken() (shareable review link; needs CMS_PREVIEW_SECRET).
+ * Query parameters alone never grant access.
+ */
 export async function authorizePreview(req: PreviewRequest): Promise<PreviewAuthResult> {
+  try {
+    const { requirePermission } = await import("@/lib/rbac/permissions");
+    const auth = await requirePermission("pages.view");
+    if (!auth.error) return { ok: true, credential: "admin-session" };
+  } catch {
+    /* no request context / database unavailable → fall through to token check */
+  }
   if (req.token && verifyPreviewToken(req.token, req.pageId)) return { ok: true, credential: req.token };
   return { ok: false };
 }

@@ -4,6 +4,7 @@ import type {
   GlobalSettings,
   HeaderConfig,
   PageDocument,
+  FormDefinition,
   PageType,
   ProjectDocument,
   SeoFields,
@@ -40,6 +41,7 @@ export interface CmsRepository {
   getPortfolioProject(slug: string): Promise<ProjectDocument | null>;
   getArticles(): Promise<ArticleDocument[]>;
   getArticle(slug: string): Promise<ArticleDocument | null>;
+  getForm(slug: string): Promise<FormDefinition | null>;
   /** Draft-capable read. `credential` is whatever authorizePreview() accepted. */
   getPreviewPage(id: string, credential: string): Promise<PageDocument | null>;
 }

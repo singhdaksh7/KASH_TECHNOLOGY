@@ -1,31 +1,19 @@
-/* eslint-disable */
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
 import { FormItem, FormField } from "@/lib/admin-client/types";
-import { adminClient } from "@/lib/admin-client";
+import { newId } from "@/lib/admin-client/ids";
+import { adminClient, errorMessage } from "@/lib/admin-client";
 import { useToast } from "@/components/admin/ToastContext";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import {
   Plus,
   Trash2,
-  Edit,
-  Save,
-  CheckCircle2,
-  FileText,
-  Copy,
-  ChevronDown,
-  ChevronUp,
-  Settings,
-  Mail,
-  HelpCircle,
-  Eye,
-} from "lucide-react";
+  Save } from "lucide-react";
 
 export default function FormsManagerPage() {
   const [forms, setForms] = useState<FormItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [selectedForm, setSelectedForm] = useState<FormItem | null>(null);
   const { addToast } = useToast();
 
@@ -40,9 +28,9 @@ export default function FormsManagerPage() {
   const handleAddField = (type: FormField["type"]) => {
     if (!selectedForm) return;
     const newField: FormField = {
-      id: `field-${Date.now()}`,
+      id: newId("field"),
       label: `New ${type} Field`,
-      name: `field_${Date.now()}`,
+      name: newId("field").replace(/-/g, "_"),
       type,
       required: false,
       placeholder: `Enter ${type.toLowerCase()}...`,
@@ -67,8 +55,14 @@ export default function FormsManagerPage() {
 
   const handleSaveForm = async () => {
     if (!selectedForm) return;
-    await adminClient.saveForm(selectedForm);
-    addToast({ title: "Form Saved", message: `Configuration for "${selectedForm.title}" saved.`, type: "success" });
+    try {
+      const saved = await adminClient.saveForm(selectedForm);
+      setForms((prev) => prev.map((f) => (f.id === selectedForm.id ? saved : f)));
+      setSelectedForm(saved);
+      addToast({ title: "Form Saved", message: `Configuration for "${saved.title}" saved.`, type: "success" });
+    } catch (err) {
+      addToast({ title: "Save failed", message: errorMessage(err), type: "error" });
+    }
   };
 
   return (
@@ -81,9 +75,9 @@ export default function FormsManagerPage() {
           <button
             onClick={() => {
               const newForm: FormItem = {
-                id: `form-${Date.now()}`,
+                id: newId("form"),
                 title: "New Custom Form",
-                slug: `form-${Date.now()}`,
+                slug: newId("form"),
                 description: "Lead capture form",
                 fields: [
                   { id: "f1", label: "Full Name", name: "name", type: "Text", required: true },
@@ -188,7 +182,7 @@ export default function FormsManagerPage() {
                         value={field.type}
                         onChange={(e) => {
                           const updated = [...selectedForm.fields];
-                          updated[idx].type = e.target.value as any;
+                          updated[idx].type = e.target.value as FormField["type"];
                           setSelectedForm({ ...selectedForm, fields: updated });
                         }}
                         className="w-full px-2 py-1 border border-[#E8E5E2] rounded bg-white text-xs"

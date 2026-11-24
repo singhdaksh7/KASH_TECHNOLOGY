@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { MediaItem } from "@/lib/admin-client/types";
-import { adminClient } from "@/lib/admin-client";
+import { adminClient, errorMessage } from "@/lib/admin-client";
 import { X, Search, Upload, Check, ImageIcon } from "lucide-react";
 
 interface MediaPickerModalProps {
@@ -46,19 +46,16 @@ export function MediaPickerModal({
   );
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
-    const file = e.target.files[0];
-    const uploaded = await adminClient.uploadMedia({
-      filename: file.name,
-      url: `/images/hero/${file.name}`,
-      type: file.type.startsWith("image/") ? "image" : "pdf",
-      altText: file.name.replace(/\.[^/.]+$/, ""),
-      title: file.name,
-      caption: "",
-      fileSize: `${Math.round(file.size / 1024)} KB`,
-    });
-    setMediaList((prev) => [uploaded, ...prev]);
-    setActiveMedia(uploaded);
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    try {
+      const uploaded = await adminClient.uploadMedia(file, { altText: file.name.replace(/\.[^/.]+$/, "").replace(/[-_]+/g, " ") });
+      setMediaList((prev) => [uploaded, ...prev]);
+      setActiveMedia(uploaded);
+    } catch (err) {
+      window.alert(errorMessage(err));
+    }
   };
 
   return (

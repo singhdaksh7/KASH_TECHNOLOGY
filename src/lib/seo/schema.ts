@@ -1,5 +1,6 @@
 import type { ArticleDocument, GlobalSettings, PageDocument } from "@/lib/cms/types";
 import { richTextToPlainText } from "@/lib/cms/richtext";
+import { normalizeContent } from "@/lib/cms/section-compat";
 import { absoluteUrl } from "./url";
 
 type JsonLd = Record<string, unknown>;
@@ -127,7 +128,7 @@ export function extractFaqs(page: PageDocument): { question: string; answer: str
   const out: { question: string; answer: string }[] = [];
   for (const sec of page.sections) {
     if (sec.type !== "faq" || !sec.enabled) continue;
-    const items = (sec.content as { items?: unknown }).items;
+    const items = (normalizeContent("faq", sec.content) as { items?: unknown }).items;
     if (!Array.isArray(items)) continue;
     for (const it of items) {
       const q = (it as { question?: unknown }).question;

@@ -1,27 +1,20 @@
-/* eslint-disable */
 "use client";
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { MediaItem } from "@/lib/admin-client/types";
-import { adminClient } from "@/lib/admin-client";
+import { adminClient, AdminApiError, errorMessage } from "@/lib/admin-client";
 import { useToast } from "@/components/admin/ToastContext";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import {
   Upload,
   Search,
-  Filter,
   Grid,
   List as ListIcon,
   Trash2,
   Copy,
-  ExternalLink,
-  Info,
-  Check,
   ImageIcon,
-  FileText,
-  X,
-} from "lucide-react";
+  X } from "lucide-react";
 
 export default function MediaLibraryPage() {
   const [mediaList, setMediaList] = useState<MediaItem[]>([]);
@@ -40,28 +33,56 @@ export default function MediaLibraryPage() {
   }, []);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
-    const file = e.target.files[0];
-    const newMedia = await adminClient.uploadMedia({
-      filename: file.name,
-      url: `/images/hero/${file.name}`,
-      type: file.type.startsWith("image/") ? "image" : "pdf",
-      altText: file.name.replace(/\.[^/.]+$/, ""),
-      title: file.name,
-      caption: "",
-      fileSize: `${Math.round(file.size / 1024)} KB`,
-    });
-    setMediaList((prev) => [newMedia, ...prev]);
-    setSelectedItem(newMedia);
-    addToast({ title: "Media uploaded", message: `"${file.name}" saved to library.`, type: "success" });
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    try {
+      const newMedia = await adminClient.uploadMedia(file, { altText: file.name.replace(/\.[^/.]+$/, "").replace(/[-_]+/g, " ") });
+      setMediaList((prev) => [newMedia, ...prev]);
+      setSelectedItem(newMedia);
+      addToast({ title: "Media uploaded", message: `"${file.name}" saved to library.`, type: "success" });
+    } catch (err) {
+      addToast({ title: "Upload failed", message: errorMessage(err), type: "error" });
+    }
   };
 
   const handleDelete = async (id: string, filename: string) => {
-    if (confirm(`Are you sure you want to delete asset "${filename}"?`)) {
+    if (!confirm(`Are you sure you want to delete asset "${filename}"?`)) return;
+    try {
       await adminClient.deleteMedia(id);
-      setMediaList((prev) => prev.filter((m) => m.id !== id));
-      if (selectedItem?.id === id) setSelectedItem(null);
-      addToast({ title: "Asset deleted", message: `"${filename}" removed.`, type: "info" });
+    } catch (err) {
+      if (err instanceof AdminApiError && err.code === "IN_USE") {
+        if (!confirm(`${err.message}\n\nDelete anyway? Content that uses it will show a missing image.`)) return;
+        await adminClient.deleteMedia(id, true).catch((e) => addToast({ title: "Delete failed", message: errorMessage(e), type: "error" }));
+      } else {
+        addToast({ title: "Delete failed", message: errorMessage(err), type: "error" });
+        return;
+      }
+    }
+    setMediaList((prev) => prev.filter((m) => m.id !== id));
+    if (selectedItem?.id === id) setSelectedItem(null);
+    addToast({ title: "Asset deleted", message: `"${filename}" removed.`, type: "info" });
+  };
+
+  const handleSaveMeta = async (item: MediaItem) => {
+    const updated = await adminClient.updateMedia(item.id, { altText: item.altText, title: item.title, caption: item.caption });
+    if (updated) {
+      setMediaList((prev) => prev.map((m) => (m.id === updated.id ? updated : m)));
+      addToast({ title: "Saved", message: "Media details updated.", type: "success" });
+    }
+  };
+
+  const handleReplace = async (item: MediaItem, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    try {
+      const updated = await adminClient.replaceMedia(item.id, file);
+      setMediaList((prev) => prev.map((m) => (m.id === updated.id ? updated : m)));
+      setSelectedItem(updated);
+      addToast({ title: "File replaced", message: "References were updated automatically.", type: "success" });
+    } catch (err) {
+      addToast({ title: "Replace failed", message: errorMessage(err), type: "error" });
     }
   };
 
@@ -86,7 +107,7 @@ export default function MediaLibraryPage() {
           <label className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#FF5A00] to-[#FF8A3D] text-white rounded-lg text-xs font-semibold shadow-sm hover:opacity-95 transition-opacity cursor-pointer">
             <Upload className="w-4 h-4" />
             <span>Upload Asset</span>
-            <input type="file" onChange={handleUpload} className="hidden" accept="image/*,application/pdf" />
+            <input type="file" onChange={handleUpload} className="hidden" accept="image/jpeg,image/png,image/webp,image/gif,application/pdf,video/mp4,video/webm" />
           </label>
         }
       />
@@ -307,7 +328,26 @@ export default function MediaLibraryPage() {
                 />
               </div>
 
-              <div className="pt-3 flex gap-2">
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-[11px] font-semibold text-stone-400 mb-0.5">Title</label>
+                  <input type="text" value={selectedItem.title} onChange={(e) => setSelectedItem({ ...selectedItem, title: e.target.value })} className="w-full px-2.5 py-1.5 border border-[#E8E5E2] rounded-lg text-xs" />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-stone-400 mb-0.5">Caption</label>
+                  <input type="text" value={selectedItem.caption} onChange={(e) => setSelectedItem({ ...selectedItem, caption: e.target.value })} className="w-full px-2.5 py-1.5 border border-[#E8E5E2] rounded-lg text-xs" />
+                </div>
+              </div>
+
+              <div className="pt-1 flex gap-2">
+                <button onClick={() => handleSaveMeta(selectedItem)} className="flex-1 py-2 text-xs font-semibold bg-[#FF5A00] text-white rounded-lg hover:bg-[#e04f00] transition-colors">Save details</button>
+                <label className="flex-1 py-2 text-xs font-semibold border border-[#E8E5E2] text-stone-700 rounded-lg hover:bg-stone-50 transition-colors text-center cursor-pointer">
+                  Replace file
+                  <input type="file" className="hidden" onChange={(e) => handleReplace(selectedItem, e)} accept="image/jpeg,image/png,image/webp,image/gif,application/pdf,video/mp4,video/webm" />
+                </label>
+              </div>
+
+              <div className="pt-1 flex gap-2">
                 <button
                   onClick={() => handleDelete(selectedItem.id, selectedItem.filename)}
                   className="flex-1 py-2 text-xs font-semibold border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors flex items-center justify-center gap-1.5"

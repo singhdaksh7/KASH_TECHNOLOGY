@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { ApiCmsRepository } from "./adapters/api";
+import { PrismaCmsRepository } from "./adapters/prisma";
 import { StaticFallbackRepository } from "./adapters/static-fallback";
 import type { CmsRepository } from "./repository";
 import { cmsEnv } from "./env";
@@ -10,7 +11,10 @@ export * from "./types";
 export type { CmsRepository, PageSummary } from "./repository";
 
 const fallback = new StaticFallbackRepository();
-const api = new ApiCmsRepository();
+// Source of truth: the in-app database when DATABASE_URL is set (same deployment as the admin),
+// otherwise the HTTP adapter (CMS_API_URL), otherwise static fallback only.
+const api = process.env.DATABASE_URL ? new PrismaCmsRepository() : new ApiCmsRepository();
+const hasSource = () => !!process.env.DATABASE_URL || !!cmsEnv.apiUrl;
 
 /** First non-null/non-empty wins; the CMS is always consulted first, static content is the safety net. */
 async function firstOf<T>(primary: () => Promise<T | null>, secondary: () => Promise<T | null>): Promise<T | null> {
@@ -36,10 +40,11 @@ async function listOf<T>(primary: () => Promise<T[]>, secondary: () => Promise<T
 /** Composed repository: API first (when configured), static fallback always available. */
 export const cms: CmsRepository = {
   // Pages: only the CMS can produce them; null means "render the existing route implementation".
-  getPageBySlug: (slug) => (cmsEnv.apiUrl ? api.getPageBySlug(slug) : fallback.getPageBySlug()),
-  getHomePage: () => (cmsEnv.apiUrl ? api.getHomePage() : fallback.getHomePage()),
-  listPublishedPages: () => (cmsEnv.apiUrl ? api.listPublishedPages() : fallback.listPublishedPages()),
+  getPageBySlug: (slug) => (hasSource() ? api.getPageBySlug(slug) : fallback.getPageBySlug()),
+  getHomePage: () => (hasSource() ? api.getHomePage() : fallback.getHomePage()),
+  listPublishedPages: () => (hasSource() ? api.listPublishedPages() : fallback.listPublishedPages()),
   getPreviewPage: (id, credential) => api.getPreviewPage(id, credential),
+  getForm: (slug) => api.getForm(slug),
   getNavigation: () => firstOf(() => api.getNavigation(), () => fallback.getNavigation()),
   getFooter: () => firstOf(() => api.getFooter(), () => fallback.getFooter()),
   getTheme: () => firstOf(() => api.getTheme(), () => fallback.getTheme()),

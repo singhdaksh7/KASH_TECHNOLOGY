@@ -1,70 +1,42 @@
-/* eslint-disable */
 "use client";
 
-import React from "react";
+import { useEffect, useState } from "react";
 import { AdminHeader } from "@/components/admin/AdminHeader";
-import { Shield, Check, X } from "lucide-react";
+import { adminClient, errorMessage, type RoleItem } from "@/lib/admin-client";
+import { Shield, Check } from "lucide-react";
 
-const ROLES_MATRIX = [
-  {
-    role: "Super Admin",
-    desc: "Complete, unrestricted access across all CMS, code injection, credentials, and settings.",
-    permissions: ["Full CMS Access", "Deploy Authority", "User & Role Management", "Code Injection", "Billing & Integrations"],
-  },
-  {
-    role: "Administrator",
-    desc: "Full management of pages, portfolio, forms, and marketing settings without core code access.",
-    permissions: ["Full CMS Access", "User Management (Standard)", "SEO & Media Management", "No Custom Code"],
-  },
-  {
-    role: "SEO Manager",
-    desc: "Dedicated control over search metadata, slugs, redirects, indexing flags, and sitemaps.",
-    permissions: ["SEO Metadata Edits", "Redirects Management", "Analytics & Audit Logs", "Read-only CMS"],
-  },
-  {
-    role: "Content Editor",
-    desc: "Drafts and updates text, case studies, insights, and media library assets.",
-    permissions: ["Draft / Edit Content", "Upload Media", "No Publishing Directly", "No System Settings"],
-  },
-  {
-    role: "Marketing Manager",
-    desc: "Access to CRM leads, form submissions, campaign tracking, and customer communications.",
-    permissions: ["CRM Leads Pipeline", "Form Submissions", "Marketing Analytics", "Read-only Content"],
-  },
-  {
-    role: "Viewer",
-    desc: "Read-only audit access across all content and project dashboards.",
-    permissions: ["View Content Only", "No Edit Permissions", "No Asset Deletion"],
-  },
-];
+const DESC: Record<string, string> = {
+  SUPER_ADMIN: "Complete, unrestricted access. The only role that can create or modify Super Admins.",
+  ADMINISTRATOR: "Manages all content, SEO, media, forms, leads and settings. Cannot manage users.",
+  SEO_MANAGER: "Search metadata, redirects and indexing. Can edit page content but cannot publish or manage users.",
+  CONTENT_EDITOR: "Drafts pages, portfolio and articles and uploads media. Cannot publish or change system settings.",
+  MARKETING_MANAGER: "Leads, forms and Insights content. Read-only elsewhere.",
+  VIEWER: "Read-only access to content dashboards.",
+};
 
 export default function RolesManagementPage() {
+  const [roles, setRoles] = useState<RoleItem[]>([]);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    adminClient.getRoles().then(setRoles).catch((e) => setError(errorMessage(e)));
+  }, []);
+
   return (
     <div className="space-y-6">
-      <AdminHeader
-        title="Roles & Permissions Matrix"
-        subtitle="Role-based access control (RBAC) definitions and capability boundaries"
-        breadcrumbs={[{ label: "System" }, { label: "Roles" }]}
-      />
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {ROLES_MATRIX.map((r) => (
-          <div key={r.role} className="bg-white rounded-xl border border-[#E8E5E2] p-5 shadow-xs space-y-3">
+      <AdminHeader title="Roles & Permissions Matrix" subtitle="Backend-enforced role-based access control (RBAC). Permissions are checked on every API request." breadcrumbs={[{ label: "System" }, { label: "Roles" }]} />
+      {error && <p role="alert" className="text-xs text-red-600 px-6">{error}</p>}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 px-4 sm:px-6">
+        {roles.map((r) => (
+          <div key={r.id} className="bg-white rounded-xl border border-[#E8E5E2] p-5 shadow-xs space-y-3">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-[#FFF3E9] text-[#FF5A00] flex items-center justify-center">
-                <Shield className="w-4 h-4" />
-              </div>
-              <h4 className="font-bold text-sm text-[#0B0B0F]">{r.role}</h4>
+              <div className="w-8 h-8 rounded-lg bg-[#FFF3E9] text-[#FF5A00] flex items-center justify-center"><Shield className="w-4 h-4" /></div>
+              <div><h4 className="font-bold text-sm text-[#0B0B0F]">{r.name.replace(/_/g, " ")}</h4><span className="text-[10px] text-stone-400">{r.users} member{r.users === 1 ? "" : "s"}</span></div>
             </div>
-            <p className="text-xs text-[#4B5563] leading-relaxed">{r.desc}</p>
-
+            <p className="text-xs text-[#4B5563] leading-relaxed">{DESC[r.name] ?? ""}</p>
             <div className="pt-2 border-t border-[#E8E5E2] space-y-1.5">
-              <span className="text-[10px] font-bold uppercase text-stone-400">Granted Capabilities</span>
-              {r.permissions.map((p) => (
-                <div key={p} className="flex items-center gap-1.5 text-xs text-stone-700">
-                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                  <span>{p}</span>
-                </div>
+              <span className="text-[10px] font-bold uppercase text-stone-400">{r.name === "SUPER_ADMIN" ? "All permissions" : "Granted permissions"}</span>
+              {r.name !== "SUPER_ADMIN" && r.permissions.map((p) => (
+                <div key={p} className="flex items-center gap-1.5 text-xs text-stone-700"><Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" /><span className="font-mono">{p}</span></div>
               ))}
             </div>
           </div>

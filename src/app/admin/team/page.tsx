@@ -1,20 +1,20 @@
-/* eslint-disable */
 "use client";
 
 import React, { useState, useEffect } from "react";
 import { TeamMember, AdminRole } from "@/lib/admin-client/types";
-import { adminClient } from "@/lib/admin-client";
+import { adminClient, errorMessage } from "@/lib/admin-client";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { useToast } from "@/components/admin/ToastContext";
-import { Plus, UserPlus, Shield, ShieldCheck, Mail, CheckCircle2, XCircle, MoreVertical } from "lucide-react";
+import { UserPlus, Shield, ShieldCheck } from "lucide-react";
 
 export default function TeamManagementPage() {
   const [team, setTeam] = useState<TeamMember[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [newEmail, setNewEmail] = useState("");
   const [newName, setNewName] = useState("");
   const [newRole, setNewRole] = useState<AdminRole>("Content Editor");
+  const [created, setCreated] = useState<{ email: string; password: string } | null>(null);
   const { addToast } = useToast();
 
   useEffect(() => {
@@ -24,36 +24,32 @@ export default function TeamManagementPage() {
     });
   }, []);
 
-  const handleToggleStatus = (id: string) => {
-    setTeam(
-      team.map((m) => {
-        if (m.id === id) {
-          const nextStatus = m.status === "Active" ? "Disabled" : "Active";
-          addToast({ title: "User Updated", message: `${m.name} is now ${nextStatus}.` });
-          return { ...m, status: nextStatus };
-        }
-        return m;
-      })
-    );
+  const handleToggleStatus = async (id: string) => {
+    const m = team.find((x) => x.id === id);
+    if (!m) return;
+    try {
+      await adminClient.toggleTeamStatus(id, m.status);
+      setTeam(await adminClient.getTeam());
+      addToast({ title: "User Updated", message: `${m.name} is now ${m.status === "Disabled" ? "Active" : "Disabled"}.` });
+    } catch (err) {
+      addToast({ title: "Update failed", message: errorMessage(err), type: "error" });
+    }
   };
 
-  const handleInvite = (e: React.FormEvent) => {
+  const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newEmail || !newName) return;
-    const member: TeamMember = {
-      id: `usr-${Date.now()}`,
-      name: newName,
-      email: newEmail,
-      role: newRole,
-      status: "Invited",
-      lastActive: "Never",
-      twoFactorEnabled: false,
-    };
-    setTeam([...team, member]);
-    setInviteModalOpen(false);
-    setNewName("");
-    setNewEmail("");
-    addToast({ title: "Invitation Sent", message: `Invitation dispatched to ${newEmail}`, type: "success" });
+    try {
+      const member = await adminClient.inviteTeamMember(newName, newEmail, newRole);
+      setTeam((prev) => [...prev, member]);
+      setInviteModalOpen(false);
+      setNewName("");
+      setNewEmail("");
+      setCreated({ email: member.email, password: member.temporaryPassword ?? "" });
+      addToast({ title: "Member created", message: `${member.email} must set up 2FA at first sign-in.`, type: "success" });
+    } catch (err) {
+      addToast({ title: "Could not create member", message: errorMessage(err), type: "error" });
+    }
   };
 
   return (
@@ -220,10 +216,20 @@ export default function TeamManagementPage() {
                   type="submit"
                   className="px-4 py-2 bg-[#FF5A00] text-white rounded-lg font-semibold hover:bg-[#e04f00]"
                 >
-                  Send Invitation
+                  Create Member
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {created && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-md bg-white rounded-2xl p-6 space-y-3 text-xs">
+            <h3 className="text-sm font-bold">Temporary password for {created.email}</h3>
+            <p className="text-stone-600">Shown once. Share it securely; the member must sign in, change nothing else, and enrol an authenticator app before using the CMS.</p>
+            <input readOnly value={created.password} onFocus={(e) => e.currentTarget.select()} className="w-full px-3 py-2 border border-[#E8E5E2] rounded-lg font-mono text-sm" />
+            <button onClick={() => setCreated(null)} className="w-full py-2 bg-[#FF5A00] text-white rounded-lg font-semibold">I have saved it</button>
           </div>
         </div>
       )}

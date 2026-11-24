@@ -172,6 +172,10 @@ export class ApiCmsRepository implements CmsRepository {
     return r.ok ? toArticle(r.data) : null;
   }
 
+  async getForm() {
+    return null;
+  }
+
   async getPreviewPage(id: string, credential: string) {
     if (!/^[A-Za-z0-9_-]{1,64}$/.test(id)) return null;
     const r = await request(`/preview/pages/${encodeURIComponent(id)}`, { bearer: credential, noStore: true });

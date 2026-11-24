@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 import { normalizeRichText } from "@/lib/cms/richtext";
 import type { RichTextBlock, RichTextInline } from "@/lib/cms/types";
 import { CmsLink } from "./CmsLink";
@@ -19,7 +19,7 @@ function Inline({ nodes }: { nodes: RichTextInline[] }): ReactNode {
     if (n.code) el = <code className="rounded bg-black/10 px-1.5 py-0.5 font-mono text-[0.9em]">{el}</code>;
     if (n.bold) el = <strong>{el}</strong>;
     if (n.italic) el = <em>{el}</em>;
-    return <span key={i}>{el}</span>;
+    return <Fragment key={i}>{el}</Fragment>;
   });
 }
 
@@ -66,11 +66,11 @@ function Block({ block }: { block: RichTextBlock }) {
  * Renders CMS rich text. Accepts structured blocks, paragraph strings or an HTML string;
  * everything is normalised/sanitised first and rendered as React elements (no dangerouslySetInnerHTML).
  */
-export function RichText({ value, className = "" }: { value: unknown; className?: string }) {
+export function RichText({ value, className = "", gap = "space-y-5" }: { value: unknown; className?: string; gap?: string }) {
   const blocks = normalizeRichText(value);
   if (!blocks.length) return null;
   return (
-    <div className={`space-y-5 text-base sm:text-lg ${className}`}>
+    <div className={`${gap} text-base sm:text-lg ${className}`}>
       {blocks.map((b, i) => (
         <Block key={i} block={b} />
       ))}

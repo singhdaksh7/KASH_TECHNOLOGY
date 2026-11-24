@@ -1,4 +1,3 @@
-/* eslint-disable */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -8,15 +7,9 @@ import {
   Briefcase, 
   BookOpen, 
   Users, 
-  Search, 
   Plus, 
   ArrowRight, 
-  CheckCircle2, 
-  AlertTriangle, 
-  Upload, 
-  Clock, 
-  ExternalLink 
-} from "lucide-react";
+  Upload } from "lucide-react";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { adminClient } from "@/lib/admin-client";
 import { AdminPageItem, LeadItem, SeoIssue, PortfolioItem } from "@/lib/admin-client/types";
@@ -26,7 +19,7 @@ export default function AdminDashboardPage() {
   const [leads, setLeads] = useState<LeadItem[]>([]);
   const [seoIssues, setSeoIssues] = useState<SeoIssue[]>([]);
   const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadData() {

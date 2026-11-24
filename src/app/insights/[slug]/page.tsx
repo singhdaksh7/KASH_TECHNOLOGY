@@ -131,7 +131,7 @@ export default async function InsightArticlePage({ params }: Props) {
           )}
 
           {/* Article Body (structured rich text, sanitised) */}
-          <RichText value={article.content} className="text-[#374151]" />
+          <RichText value={article.content} gap="space-y-6" className="text-[#374151] leading-relaxed" />
 
           {/* Engineering Key Takeaways Card */}
           <div className="mt-12 p-8 rounded-2xl bg-[#0e0e12] text-white border border-white/5 space-y-4 shadow-xl">

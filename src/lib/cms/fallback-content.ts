@@ -69,7 +69,6 @@ export const FALLBACK_FOOTER: FooterConfig = {
   ],
   phone: SITE_CONFIG.contactPhonePrimary,
   email: SITE_CONFIG.contactEmail,
-  whatsapp: SITE_CONFIG.whatsappUrl,
   social: [
     ...(SITE_CONFIG.social.linkedin ? [{ platform: "linkedin" as const, href: SITE_CONFIG.social.linkedin }] : []),
     ...(SITE_CONFIG.social.github ? [{ platform: "github" as const, href: SITE_CONFIG.social.github }] : []),
@@ -81,7 +80,7 @@ export const FALLBACK_FOOTER: FooterConfig = {
     formSlug: "newsletter",
     heading: "Stay in the Loop",
   },
-  note: "Serving businesses across Delhi NCR & Western UP",
+  note: "Serving businesses across\nDelhi NCR & Western UP",
   copyright: "© 2026 KASH Technology. All Rights Reserved.",
   legal: [
     { label: "Privacy Policy", href: "/privacy" },

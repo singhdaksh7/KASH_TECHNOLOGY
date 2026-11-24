@@ -23,7 +23,8 @@ export type SectionType =
   | "Testimonials"
   | "Insights Feed"
   | "Spacer"
-  | "Custom Embed";
+  | "Custom Embed"
+  | "Built-in Page";
 
 export interface SectionStyle {
   background: "White" | "Ivory" | "Peach" | "Black" | "Orange" | "Gradient" | "Custom";
@@ -57,6 +58,7 @@ export interface PageSeo {
   ogTitle: string;
   ogDescription: string;
   ogImage: string;
+  twitterImage?: string;
   index: boolean;
   follow: boolean;
 }
@@ -74,7 +76,7 @@ export interface AdminPageItem {
 }
 
 export type ProjectStatus = "Draft" | "Published";
-export type ProjectKind = "REAL PROJECT" | "PROTOTYPE" | "CONCEPT";
+export type ProjectKind = "REAL PROJECT" | "PROTOTYPE" | "IN DEVELOPMENT" | "STAGING" | "CONCEPT";
 
 export interface PortfolioItem {
   id: string;
@@ -139,6 +141,10 @@ export interface LeadItem {
   source: string;
   landingPage: string;
   campaign?: string;
+  message?: string;
+  referrer?: string;
+  utm?: { source?: string; medium?: string; campaign?: string; term?: string; content?: string };
+  statusHistory?: Array<{ status: string; at: string; by?: string }>;
   date: string;
   status: LeadStatus;
   notes: Array<{ id: string; author: string; text: string; date: string }>;
@@ -177,6 +183,8 @@ export interface TeamMember {
   status: "Active" | "Disabled" | "Invited";
   lastActive: string;
   twoFactorEnabled: boolean;
+  /** Returned once, only when a member has just been created. */
+  temporaryPassword?: string;
 }
 
 export interface NavigationLink {
@@ -235,4 +243,60 @@ export interface ThemeConfig {
   cardRadius: number;
   containerWidth: number; // in px
   sectionSpacing: "Compact" | "Normal" | "Spacious";
+}
+
+export interface ArticleItem {
+  id: string;
+  title: string;
+  slug: string;
+  status: "Draft" | "Published";
+  excerpt: string;
+  category: string;
+  authorName: string;
+  authorRole: string;
+  cover: string;
+  publishedAt: string;
+  readTime: string;
+  body: string; // paragraphs separated by blank lines (or sanitised HTML)
+  relatedSlugs: string[];
+  seo: PageSeo;
+  updatedAt: string;
+}
+
+export interface RedirectItem {
+  id: string;
+  sourcePath: string;
+  destination: string;
+  statusCode: 301 | 302 | 307 | 308;
+  active: boolean;
+}
+
+export interface PageVersionItem {
+  version: number;
+  createdAt: string;
+  reason: string;
+  by: string;
+}
+
+export interface RoleItem {
+  id: string;
+  name: string;
+  permissions: string[];
+  users: number;
+}
+
+export interface AuditItem {
+  id: string;
+  action: string;
+  entity: string;
+  entityId?: string;
+  actor: string;
+  at: string;
+  metadata?: unknown;
+}
+
+export interface SessionInfo {
+  user: { id: string; email: string; name: string | null; roles: string[]; permissions: string[] };
+  twoFactorEnabled: boolean;
+  twoFactorRequired: boolean;
 }
