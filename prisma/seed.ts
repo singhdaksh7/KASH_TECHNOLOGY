@@ -11,17 +11,20 @@ import bcrypt from "bcryptjs";
 import { APPROVED_PROJECTS } from "../src/data/approved-projects";
 import { CASE_STUDIES } from "../src/data/case-studies";
 import { INSIGHT_ARTICLES } from "../src/lib/insights-data";
+import { PHASE2_KEYS, PHASE2_PERMISSIONS, PHASE2_ROLE_GRANTS } from "../src/lib/rbac/phase2-permissions";
+import { seedPhase2 } from "./seed-phase2";
 import { DEFAULT_FOOTER, DEFAULT_HEADER, DEFAULT_NAVIGATION, DEFAULT_THEME_CONFIG } from "../src/lib/admin-client/defaults";
 
 const prisma = new PrismaClient();
 
-const ALL = [
+const V1_ALL = [
   "pages.view", "pages.create", "pages.edit", "pages.publish", "pages.delete",
   "portfolio.view", "portfolio.edit", "portfolio.publish", "articles.view", "articles.edit", "articles.publish",
   "seo.view", "seo.edit", "media.view", "media.upload", "media.delete", "forms.view", "forms.edit", "leads.view", "leads.edit",
   "users.view", "users.manage", "settings.view", "settings.manage", "audit.view",
 ];
-const VIEW = ALL.filter((p) => p.endsWith(".view") && !["users.view", "audit.view"].includes(p));
+const ALL = [...V1_ALL, ...PHASE2_KEYS];
+const VIEW = V1_ALL.filter((p) => p.endsWith(".view") && !["users.view", "audit.view"].includes(p));
 const ROLES: Record<string, { description: string; permissions: string[] }> = {
   SUPER_ADMIN: { description: "Unrestricted platform administrator", permissions: ALL },
   ADMINISTRATOR: { description: "Manages content, SEO, media, forms, leads and settings; cannot manage users", permissions: ALL.filter((p) => p !== "users.manage") },
@@ -30,13 +33,16 @@ const ROLES: Record<string, { description: string; permissions: string[] }> = {
   MARKETING_MANAGER: { description: "Leads, forms and Insights content", permissions: ["leads.view", "leads.edit", "forms.view", "forms.edit", "pages.view", "articles.view", "articles.edit", "articles.publish", "seo.view", "media.view", "media.upload"] },
   VIEWER: { description: "Read-only access to content", permissions: VIEW },
 };
+// Phase 2: merge the default Phase 2 grants into each role (SUPER_ADMIN/ADMINISTRATOR already hold ALL).
+for (const [name, grants] of Object.entries(PHASE2_ROLE_GRANTS)) if (ROLES[name]) ROLES[name].permissions = [...new Set([...ROLES[name].permissions, ...grants])];
 
 async function seedAccess() {
-  for (const key of ALL) await prisma.permission.upsert({ where: { key }, update: {}, create: { key } });
+  // Phase 2 keys are part of the permission catalogue; descriptions come from the Phase 2 definition.
+  for (const key of ALL) await prisma.permission.upsert({ where: { key }, update: {}, create: { key, ...(PHASE2_PERMISSIONS[key] ? { description: PHASE2_PERMISSIONS[key] } : {}) } });
   const perms = await prisma.permission.findMany();
   for (const [name, def] of Object.entries(ROLES)) {
     const role = await prisma.role.upsert({ where: { name }, update: { description: def.description }, create: { name, description: def.description } });
-    await prisma.rolePermission.deleteMany({ where: { roleId: role.id } });
+    // Additive only: grants are added, never revoked, so permissions an administrator configured (and the Phase 2 grants) survive every re-seed.
     await prisma.rolePermission.createMany({ data: perms.filter((p) => def.permissions.includes(p.key)).map((p) => ({ roleId: role.id, permissionId: p.id })), skipDuplicates: true });
   }
   const email = process.env.BOOTSTRAP_ADMIN_EMAIL?.trim().toLowerCase();
@@ -132,5 +138,6 @@ async function seedContent() {
 async function main() {
   await seedAccess();
   if (process.env.SEED_CONTENT !== "false") await seedContent();
+  await seedPhase2(prisma); // Phase 2 built-in templates (create-if-missing, never overwritten)
 }
 main().catch((e) => { console.error(e); process.exit(1); }).finally(() => prisma.$disconnect());
