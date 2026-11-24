@@ -7,15 +7,20 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X, Calendar, ChevronDown, ArrowRight } from "lucide-react";
 import { KashLogo } from "@/components/branding/KashLogo";
 import { SITE_CONFIG } from "@/lib/constants";
+import type { HeaderConfig } from "@/lib/cms/types";
+import { FALLBACK_HEADER } from "@/lib/cms/fallback-content";
+import { safeHref } from "@/lib/cms/url-safety";
 import { trackEvent } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 
 interface MobileNavigationProps {
   open: boolean;
   onClose: () => void;
+  config?: HeaderConfig;
 }
 
-export function MobileNavigation({ open, onClose }: MobileNavigationProps) {
+export function MobileNavigation({ open, onClose, config = FALLBACK_HEADER }: MobileNavigationProps) {
+  const primaryCta = config.primaryCta ?? FALLBACK_HEADER.primaryCta!;
   const pathname = usePathname();
   // Store expanded accordion keys (default open currently active section)
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
@@ -60,7 +65,7 @@ export function MobileNavigation({ open, onClose }: MobileNavigationProps) {
 
             {/* Links with Nested Accordions */}
             <nav className="flex flex-col gap-1.5 py-6">
-              {SITE_CONFIG.navLinks.map((link) => {
+              {config.menu.map((link) => {
                 const hasChildren = "children" in link && Boolean(link.children?.length);
                 const isChildActive = hasChildren && link.children?.some((c) => pathname === c.href);
                 const isActive = pathname === link.href || isChildActive;
@@ -149,7 +154,7 @@ export function MobileNavigation({ open, onClose }: MobileNavigationProps) {
           {/* Bottom CTA */}
           <div className="pt-6 border-t border-white/10 space-y-4">
             <Link
-              href={SITE_CONFIG.bookingUrl}
+              href={safeHref(primaryCta.href) ?? "/contact"}
               onClick={() => {
                 trackEvent("book_call_click", { location: "mobile_navigation" });
                 onClose();
@@ -157,7 +162,7 @@ export function MobileNavigation({ open, onClose }: MobileNavigationProps) {
               className="flex items-center justify-center gap-2 w-full py-3.5 rounded-lg bg-[#f36b21] hover:bg-[#e05b14] text-white font-bold tracking-wide transition-all shadow-[0_4px_14px_rgba(243,107,33,0.35)]"
             >
               <Calendar className="w-4 h-4" />
-              <span>Start Your Project</span>
+              <span>{primaryCta.label}</span>
             </Link>
             <p className="text-center text-xs text-white/40 font-mono tracking-wider">
               {SITE_CONFIG.tagline}

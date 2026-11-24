@@ -10,6 +10,9 @@ import { ConsultationProvider } from "@/components/conversion/ConsultationContex
 import { FloatingContactButton } from "@/components/conversion/FloatingContactButton";
 import { LeadTracker } from "@/components/conversion/LeadTracker";
 import { Analytics } from "@vercel/analytics/next";
+import { ThemeStyle } from "@/components/cms/ThemeStyle";
+import { getFooterConfig, getHeaderConfig, getSettings } from "@/lib/cms";
+import { serializeJsonLd, siteGraph } from "@/lib/seo/schema";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -85,57 +88,21 @@ export const metadata: Metadata = {
   }
 };
 
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Organization",
-      "@id": `${SITE_CONFIG.websiteUrl}/#organization`,
-      "name": SITE_CONFIG.companyName,
-      "url": SITE_CONFIG.websiteUrl,
-      "logo": `${SITE_CONFIG.websiteUrl}/images/logo/kash-logo-emblem.jpg`,
-      "email": SITE_CONFIG.contactEmail,
-      "telephone": SITE_CONFIG.contactPhonePrimary,
-      "slogan": SITE_CONFIG.tagline,
-      "description": "Full-service digital agency delivering tailored, affordable, and scalable web platforms, mobile apps, video content, social media management, and performance marketing automation.",
-      "contactPoint": [
-        {
-          "@type": "ContactPoint",
-          "telephone": SITE_CONFIG.contactPhonePrimary,
-          "contactType": "sales",
-          "email": SITE_CONFIG.contactEmail,
-          "areaServed": ["IN", "Worldwide"],
-          "availableLanguage": ["English", "Hindi"]
-        }
-      ],
-      "sameAs": [
-        SITE_CONFIG.social.github,
-        SITE_CONFIG.social.linkedin
-      ].filter(Boolean)
-    },
-    {
-      "@type": "WebSite",
-      "@id": `${SITE_CONFIG.websiteUrl}/#website`,
-      "url": SITE_CONFIG.websiteUrl,
-      "name": SITE_CONFIG.companyName,
-      "description": "We Build. We Create. We Grow. — Technology • Creative • Growth",
-      "publisher": {
-        "@id": `${SITE_CONFIG.websiteUrl}/#organization`
-      }
-    }
-  ]
-};
-
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const [header, footer, settings] = await Promise.all([getHeaderConfig(), getFooterConfig(), getSettings()]);
+  const jsonLd = siteGraph(settings, "We Build. We Create. We Grow. — Technology • Creative • Growth");
   return (
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} h-full antialiased`}
     >
+      <head>
+        <ThemeStyle />
+      </head>
       <body className="min-h-full flex flex-col bg-[#080808] text-white">
         <ConsultationProvider>
           <Suspense fallback={null}>
@@ -149,7 +116,7 @@ export default function RootLayout({
           </a>
           <script
             type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
           />
           {gaId && (
             <>
@@ -169,9 +136,9 @@ export default function RootLayout({
               </Script>
             </>
           )}
-          <Navbar />
+          <Navbar config={header} />
           <main id="main-content" className="flex-1">{children}</main>
-          <Footer />
+          <Footer config={footer} />
           <FloatingContactButton />
           <Analytics />
         </ConsultationProvider>

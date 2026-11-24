@@ -5,8 +5,9 @@ import { WhyChooseUs, HOME_PILLARS } from "@/components/sections/WhyChooseUs";
 import { PortfolioGrid } from "@/components/sections/PortfolioGrid";
 import { ProcessSteps, HOME_STEPS } from "@/components/sections/ProcessSteps";
 import { CtaBanner } from "@/components/sections/CtaBanner";
+import { createCmsRoute } from "@/components/cms/createCmsRoute";
 
-export default function Home() {
+function Home() {
   return (
     <>
       {/* 1. Hero matching full-service digital agency positioning */}
@@ -67,3 +68,9 @@ export default function Home() {
     </>
   );
 }
+
+// CMS progressive migration: a published CMS page for this path wins; otherwise the page above renders unchanged.
+const cmsRoute = createCmsRoute({ path: "/", pageType: "home", Fallback: Home });
+export const generateMetadata = cmsRoute.generateMetadata;
+export const revalidate = 60;
+export default cmsRoute.Page;

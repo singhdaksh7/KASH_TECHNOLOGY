@@ -1,10 +1,11 @@
-"use client";
-
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { KashLogo } from "@/components/branding/KashLogo";
-import { SITE_CONFIG } from "@/lib/constants";
-import { Phone, Mail, MapPin, MessageSquare } from "lucide-react";
+import { FormEmbed } from "@/components/cms/FormEmbed";
+import { FALLBACK_FOOTER } from "@/lib/cms/fallback-content";
+import { safeHref } from "@/lib/cms/url-safety";
+import type { FooterColumn, FooterConfig, SocialLink } from "@/lib/cms/types";
+import { Phone, Mail, MapPin, MessageSquare, Globe } from "lucide-react";
 
 function LinkedInIcon({ className = "w-4 h-4" }: { className?: string }) {
   return (
@@ -22,41 +23,75 @@ function GithubIcon({ className = "w-4 h-4" }: { className?: string }) {
   );
 }
 
-const TECH_LINKS = [
-  { label: "Website Development", href: "/website-development" },
-  { label: "Custom Software", href: "/custom-software-development" },
-  { label: "Mobile Apps", href: "/mobile-app-development" },
-  { label: "ERP / CRM", href: "/erp-development" },
-  { label: "SaaS", href: "/saas-development" },
-  { label: "AI Automation", href: "/ai-automation" },
-];
+const SOCIAL_LABEL: Record<SocialLink["platform"], string> = {
+  linkedin: "LinkedIn",
+  github: "GitHub",
+  facebook: "Facebook",
+  twitter: "X (Twitter)",
+  instagram: "Instagram",
+  youtube: "YouTube",
+  whatsapp: "WhatsApp",
+};
 
-const CREATIVE_LINKS = [
-  { label: "Content Creation", href: "/content-creation" },
-  { label: "Video Editing", href: "/video-editing" },
-  { label: "Branding", href: "/branding" },
-];
+const ACCENT = {
+  primary: { text: "text-[#f36b21]", dot: "bg-[#f36b21]" },
+  gold: { text: "text-[#c5a880]", dot: "bg-[#c5a880]" },
+  neutral: { text: "text-white", dot: "bg-[#f36b21]" },
+} as const;
 
-const MARKETING_LINKS = [
-  { label: "Social Media Management", href: "/social-media-management" },
-  { label: "Digital Marketing", href: "/digital-marketing" },
-  { label: "Performance Marketing", href: "/performance-marketing" },
-  { label: "Lead Generation", href: "/lead-generation" },
-  { label: "SEO Services", href: "/seo-services" },
-];
+function SocialIcon({ platform }: { platform: SocialLink["platform"] }) {
+  if (platform === "linkedin") return <LinkedInIcon className="w-3.5 h-3.5" />;
+  if (platform === "github") return <GithubIcon className="w-3.5 h-3.5" />;
+  if (platform === "whatsapp") return <MessageSquare className="w-3.5 h-3.5" />;
+  return <Globe className="w-3.5 h-3.5" />;
+}
 
-const AREAS_WE_SERVE = [
-  { label: "Delhi NCR", href: "/delhi-ncr" },
-  { label: "Noida", href: "/noida" },
-  { label: "Greater Noida", href: "/greater-noida" },
-  { label: "Ghaziabad", href: "/ghaziabad" },
-  { label: "Meerut", href: "/meerut" },
-  { label: "Baghpat", href: "/baghpat" },
-  { label: "Baraut", href: "/baraut" },
-  { label: "Western UP", href: "/western-up" },
-];
+function ColumnBlock({ col }: { col: FooterColumn }) {
+  const accent = ACCENT[col.accent ?? "neutral"];
+  const isAreas = col.grid;
+  return (
+    <div className="space-y-3">
+      <h4 className={`text-xs font-mono font-bold tracking-wider ${accent.text} uppercase flex items-center gap-1.5`}>
+        {isAreas ? <MapPin className="w-3.5 h-3.5 text-[#f36b21]" /> : <span className={`w-1.5 h-1.5 rounded-full ${accent.dot}`} />} {col.title}
+      </h4>
+      {isAreas ? (
+        <div className="grid grid-cols-2 gap-x-2 gap-y-2 text-xs text-[#9ca3af]">
+          {col.links.map((l) => (
+            <Link key={l.label} href={safeHref(l.href) ?? "/"} className="hover:text-white transition-colors hover:translate-x-0.5 transform duration-150">
+              {l.label}
+            </Link>
+          ))}
+        </div>
+      ) : (
+        <ul className="space-y-2 text-xs text-[#9ca3af]">
+          {col.links.map((l) => (
+            <li key={l.label}>
+              <Link href={safeHref(l.href) ?? "/"} className="hover:text-white transition-colors">
+                {l.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
 
-export function Footer() {
+const GENERIC_SPAN: Record<number, string> = { 1: "lg:col-span-8", 2: "lg:col-span-4", 3: "lg:col-span-2" };
+
+interface FooterProps {
+  /** CMS footer config. Omitted → current static footer content. */
+  config?: FooterConfig;
+}
+
+export function Footer({ config = FALLBACK_FOOTER }: FooterProps) {
+  const cols = config.columns;
+  const areas = cols.filter((c) => c.grid);
+  const regular = cols.filter((c) => !c.grid);
+  // The approved layout: [Technology] [Creative + Marketing stacked] [Areas We Serve].
+  const approvedLayout = regular.length === 3 && areas.length === 1;
+  const waHref = config.whatsapp ? safeHref(config.whatsapp) : null;
+
   return (
     <footer className="border-t border-white/10 bg-[#050708] text-white pt-16 pb-8 relative overflow-hidden">
       {/* Background subtle circuit glow */}
@@ -64,152 +99,103 @@ export function Footer() {
 
       <Container className="relative z-10">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-6 pb-12 border-b border-white/10">
-          
-          {/* Column 1: Brand info & socials (col-span-4) */}
+          {/* Brand info & socials */}
           <div className="lg:col-span-4 space-y-4">
             <KashLogo variant="header" />
-            <p className="text-xs text-[#9ca3af] leading-relaxed max-w-sm pt-2">
-              KASH Technology is a full-service digital agency uniting engineering, creative content, performance marketing, and business automation.
-            </p>
-            <div className="text-[11px] font-mono text-[#f36b21] tracking-wider uppercase font-semibold">
-              We Build. We Create. We Grow.
-            </div>
+            <p className="text-xs text-[#9ca3af] leading-relaxed max-w-sm pt-2">{config.description}</p>
+            {config.tagline && (
+              <div className="text-[11px] font-mono text-[#f36b21] tracking-wider uppercase font-semibold">{config.tagline}</div>
+            )}
 
-            {/* Social & Contact Direct Actions */}
             <div className="flex items-center gap-2.5 pt-2">
-              {SITE_CONFIG.social.linkedin && (
+              {config.social
+                .filter((s) => s.platform !== "whatsapp" && safeHref(s.href))
+                .map((s) => (
+                  <a
+                    key={s.platform}
+                    href={safeHref(s.href)!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={SOCIAL_LABEL[s.platform]}
+                    className="w-8 h-8 rounded-lg bg-[#0e0e12] border border-white/10 flex items-center justify-center text-[#9ca3af] hover:text-[#f36b21] hover:border-[#f36b21]/40 transition-colors"
+                  >
+                    <SocialIcon platform={s.platform} />
+                  </a>
+                ))}
+              {waHref && (
                 <a
-                  href={SITE_CONFIG.social.linkedin}
+                  href={waHref}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label="LinkedIn"
-                  className="w-8 h-8 rounded-lg bg-[#0e0e12] border border-white/10 flex items-center justify-center text-[#9ca3af] hover:text-[#f36b21] hover:border-[#f36b21]/40 transition-colors"
+                  aria-label="WhatsApp"
+                  className="w-8 h-8 rounded-lg bg-[#0e0e12] border border-white/10 flex items-center justify-center text-[#9ca3af] hover:text-emerald-400 hover:border-emerald-500/40 transition-colors"
                 >
-                  <LinkedInIcon className="w-3.5 h-3.5" />
+                  <MessageSquare className="w-3.5 h-3.5" />
                 </a>
               )}
-              {SITE_CONFIG.social.github && (
-                <a
-                  href={SITE_CONFIG.social.github}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="GitHub"
-                  className="w-8 h-8 rounded-lg bg-[#0e0e12] border border-white/10 flex items-center justify-center text-[#9ca3af] hover:text-[#f36b21] hover:border-[#f36b21]/40 transition-colors"
-                >
-                  <GithubIcon className="w-3.5 h-3.5" />
-                </a>
-              )}
-              <a
-                href={SITE_CONFIG.whatsappUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="WhatsApp"
-                className="w-8 h-8 rounded-lg bg-[#0e0e12] border border-white/10 flex items-center justify-center text-[#9ca3af] hover:text-emerald-400 hover:border-emerald-500/40 transition-colors"
-              >
-                <MessageSquare className="w-3.5 h-3.5" />
-              </a>
             </div>
 
-            {/* Direct Contact info */}
             <div className="space-y-2 pt-2 text-xs text-[#9ca3af]">
-              <div className="flex items-center gap-2">
-                <Phone className="w-3.5 h-3.5 text-[#f36b21]" />
-                <a href={`tel:${SITE_CONFIG.contactPhonePrimary.replace(/\s+/g, "")}`} className="hover:text-white transition-colors">
-                  {SITE_CONFIG.contactPhonePrimary}
-                </a>
+              {config.phone && (
+                <div className="flex items-center gap-2">
+                  <Phone className="w-3.5 h-3.5 text-[#f36b21]" />
+                  <a href={`tel:${config.phone.replace(/[^\d+]/g, "")}`} className="hover:text-white transition-colors">
+                    {config.phone}
+                  </a>
+                </div>
+              )}
+              {config.email && (
+                <div className="flex items-center gap-2">
+                  <Mail className="w-3.5 h-3.5 text-[#f36b21]" />
+                  <a href={`mailto:${config.email}`} className="hover:text-white transition-colors">
+                    {config.email}
+                  </a>
+                </div>
+              )}
+            </div>
+
+            {config.newsletter?.enabled && config.newsletter.formSlug && (
+              <div className="pt-2 text-white">
+                <FormEmbed formSlug={config.newsletter.formSlug} heading={config.newsletter.heading ?? "Newsletter"} />
               </div>
-              <div className="flex items-center gap-2">
-                <Mail className="w-3.5 h-3.5 text-[#f36b21]" />
-                <a href={`mailto:${SITE_CONFIG.contactEmail}`} className="hover:text-white transition-colors">
-                  {SITE_CONFIG.contactEmail}
-                </a>
+            )}
+          </div>
+
+          {approvedLayout ? (
+            <>
+              <div className="lg:col-span-2">
+                <ColumnBlock col={regular[0]} />
               </div>
-            </div>
-          </div>
-
-          {/* Column 2: Technology (col-span-2) */}
-          <div className="lg:col-span-2 space-y-3">
-            <h4 className="text-xs font-mono font-bold tracking-wider text-white uppercase flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#f36b21]" /> Technology
-            </h4>
-            <ul className="space-y-2 text-xs text-[#9ca3af]">
-              {TECH_LINKS.map((item) => (
-                <li key={item.label}>
-                  <Link href={item.href} className="hover:text-white transition-colors">
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Column 3: Creative & Marketing (col-span-3) */}
-          <div className="lg:col-span-3 space-y-6">
-            <div className="space-y-3">
-              <h4 className="text-xs font-mono font-bold tracking-wider text-[#c5a880] uppercase flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#c5a880]" /> Creative
-              </h4>
-              <ul className="space-y-2 text-xs text-[#9ca3af]">
-                {CREATIVE_LINKS.map((item) => (
-                  <li key={item.label}>
-                    <Link href={item.href} className="hover:text-white transition-colors">
-                      {item.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="space-y-3">
-              <h4 className="text-xs font-mono font-bold tracking-wider text-[#f36b21] uppercase flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#f36b21]" /> Marketing
-              </h4>
-              <ul className="space-y-2 text-xs text-[#9ca3af]">
-                {MARKETING_LINKS.map((item) => (
-                  <li key={item.label}>
-                    <Link href={item.href} className="hover:text-white transition-colors">
-                      {item.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          {/* Column 4: Areas We Serve (col-span-3) */}
-          <div className="lg:col-span-3 space-y-3">
-            <h4 className="text-xs font-mono font-bold tracking-wider text-white uppercase flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-[#f36b21]" /> Areas We Serve
-            </h4>
-            <div className="grid grid-cols-2 gap-x-2 gap-y-2 text-xs text-[#9ca3af]">
-              {AREAS_WE_SERVE.map((area) => (
-                <Link
-                  key={area.label}
-                  href={area.href}
-                  className="hover:text-white transition-colors hover:translate-x-0.5 transform duration-150"
-                >
-                  {area.label}
-                </Link>
-              ))}
-            </div>
-            <div className="pt-3 text-[11px] font-mono text-white/40">
-              {SITE_CONFIG.locationText}
-            </div>
-          </div>
-
+              <div className="lg:col-span-3 space-y-6">
+                <ColumnBlock col={regular[1]} />
+                <ColumnBlock col={regular[2]} />
+              </div>
+              <div className="lg:col-span-3 space-y-3">
+                <ColumnBlock col={areas[0]} />
+                {config.note && <div className="pt-3 text-[11px] font-mono text-white/40">{config.note}</div>}
+              </div>
+            </>
+          ) : (
+            cols.map((c) => (
+              <div key={c.title} className={GENERIC_SPAN[Math.min(cols.length, 3)] ?? "lg:col-span-2"}>
+                <ColumnBlock col={c} />
+              </div>
+            ))
+          )}
         </div>
 
         {/* Bottom Bar */}
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#9ca3af]">
-          <p>© 2026 KASH Technology. All rights reserved.</p>
+          <p>{config.copyright}</p>
           <div className="flex items-center gap-6">
-            <Link href="/privacy" className="hover:text-white transition-colors">
-              Privacy Policy
-            </Link>
-            <span className="text-white/20">|</span>
-            <Link href="/terms" className="hover:text-white transition-colors">
-              Terms of Service
-            </Link>
+            {config.legal.map((l, i) => (
+              <span key={l.label} className="flex items-center gap-6">
+                {i > 0 && <span className="text-white/20">|</span>}
+                <Link href={safeHref(l.href) ?? "/"} className="hover:text-white transition-colors">
+                  {l.label}
+                </Link>
+              </span>
+            ))}
           </div>
         </div>
       </Container>

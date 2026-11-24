@@ -13,8 +13,9 @@ import {
   Compass, 
   Share2 
 } from "lucide-react";
+import { createCmsRoute } from "@/components/cms/createCmsRoute";
 
-export const metadata: Metadata = {
+const baseMetadata: Metadata = {
   title: "Brand Strategy & Visual Identity Systems | KASH Technology",
   description: "Bespoke brand identity engineering. Logo systems, typography, curated color palettes, social media identity, and comprehensive brand guidelines built for modern companies.",
   alternates: {
@@ -102,7 +103,7 @@ const BRANDING_FAQS = [
   },
 ];
 
-export default function BrandingPage() {
+function BrandingPage() {
   return (
     <>
       <HeroDiagonal
@@ -225,3 +226,9 @@ export default function BrandingPage() {
     </>
   );
 }
+
+// CMS progressive migration: a published CMS page for this path wins; otherwise the page above renders unchanged.
+const cmsRoute = createCmsRoute({ path: "/branding", pageType: "service", Fallback: BrandingPage, metadata: baseMetadata });
+export const generateMetadata = cmsRoute.generateMetadata;
+export const revalidate = 60;
+export default cmsRoute.Page;

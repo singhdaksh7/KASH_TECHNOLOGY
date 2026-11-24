@@ -13,8 +13,9 @@ import {
   Sliders, 
   FileText 
 } from "lucide-react";
+import { createCmsRoute } from "@/components/cms/createCmsRoute";
 
-export const metadata: Metadata = {
+const baseMetadata: Metadata = {
   title: "Performance Marketing Services | Meta & Google Ads | KASH Technology",
   description: "Disciplined performance marketing on Meta Ads and Google Ads. Campaign strategy, audience targeting, conversion landing pages, and transparent reporting.",
   alternates: {
@@ -102,7 +103,7 @@ const PERFORMANCE_FAQS = [
   },
 ];
 
-export default function PerformanceMarketingPage() {
+function PerformanceMarketingPage() {
   return (
     <>
       <HeroDiagonal
@@ -225,3 +226,9 @@ export default function PerformanceMarketingPage() {
     </>
   );
 }
+
+// CMS progressive migration: a published CMS page for this path wins; otherwise the page above renders unchanged.
+const cmsRoute = createCmsRoute({ path: "/performance-marketing", pageType: "service", Fallback: PerformanceMarketingPage, metadata: baseMetadata });
+export const generateMetadata = cmsRoute.generateMetadata;
+export const revalidate = 60;
+export default cmsRoute.Page;

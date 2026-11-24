@@ -7,11 +7,22 @@ import { Menu, Calendar, ChevronDown } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { MobileNavigation } from "@/components/layout/MobileNavigation";
 import { KashLogo } from "@/components/branding/KashLogo";
-import { SITE_CONFIG } from "@/lib/constants";
+import type { HeaderConfig } from "@/lib/cms/types";
+import { FALLBACK_HEADER } from "@/lib/cms/fallback-content";
+import { safeHref } from "@/lib/cms/url-safety";
 import { trackEvent } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 
-export function Navbar() {
+interface NavbarProps {
+  /** CMS header config. Omitted/undefined → current SITE_CONFIG behaviour. */
+  config?: HeaderConfig;
+}
+
+export function Navbar({ config = FALLBACK_HEADER }: NavbarProps) {
+  const menu = config.menu;
+  const primaryCta = config.primaryCta ?? FALLBACK_HEADER.primaryCta!;
+  const secondaryCta = config.secondaryCta;
+  const announcement = config.announcement;
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
@@ -27,19 +38,29 @@ export function Navbar() {
   return (
     <header
       className={cn(
-        "fixed top-0 w-full z-50 transition-all duration-200 border-b",
+        config.sticky === false ? "absolute" : "fixed",
+        "top-0 w-full z-50 transition-all duration-200 border-b",
         scrolled 
           ? "bg-[#050708]/95 backdrop-blur-md border-[#f36b21]/20 py-3 shadow-2xl" 
           : "bg-[#050708] border-white/5 py-4"
       )}
     >
+      {announcement && safeHref(announcement.href ?? "/") && (
+        <div className="-mt-4 mb-3 bg-[#f36b21] px-4 py-1.5 text-center text-xs font-semibold text-white">
+          {announcement.href ? (
+            <Link href={safeHref(announcement.href)!} className="hover:underline">{announcement.text}</Link>
+          ) : (
+            announcement.text
+          )}
+        </div>
+      )}
       <Container className="flex items-center justify-between">
         {/* Brand Logo */}
         <KashLogo variant="header" />
 
         {/* Desktop Navigation Links */}
         <nav className="hidden lg:flex items-center gap-6 xl:gap-8" aria-label="Primary">
-          {SITE_CONFIG.navLinks.map((link) => {
+          {menu.map((link) => {
             const hasChildren = "children" in link && Boolean(link.children?.length);
             const isChildActive = hasChildren && link.children?.some((c) => pathname === c.href);
             const isActive = pathname === link.href || isChildActive;
@@ -112,13 +133,21 @@ export function Navbar() {
 
         {/* Right CTA Button */}
         <div className="hidden lg:flex items-center gap-4">
+          {secondaryCta && safeHref(secondaryCta.href) && (
+            <Link
+              href={safeHref(secondaryCta.href)!}
+              className="text-xs font-semibold text-[#d1d5db] hover:text-white transition-colors"
+            >
+              {secondaryCta.label}
+            </Link>
+          )}
           <Link
-            href={SITE_CONFIG.bookingUrl}
+            href={safeHref(primaryCta.href) ?? "/contact"}
             onClick={() => trackEvent("book_call_click", { location: "navbar" })}
             className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#f36b21] hover:bg-[#e05b14] text-white text-xs font-bold tracking-wide transition-all shadow-[0_4px_14px_rgba(243,107,33,0.35)] hover:shadow-[0_6px_20px_rgba(243,107,33,0.5)] active:scale-95"
           >
             <Calendar className="w-3.5 h-3.5" />
-            <span>Start Your Project</span>
+            <span>{primaryCta.label}</span>
           </Link>
         </div>
 
@@ -133,7 +162,7 @@ export function Navbar() {
         </button>
       </Container>
 
-      <MobileNavigation open={mobileOpen} onClose={() => setMobileOpen(false)} />
+      <MobileNavigation open={mobileOpen} onClose={() => setMobileOpen(false)} config={config} />
     </header>
   );
 }

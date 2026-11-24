@@ -11,6 +11,7 @@ import {
   Clock, 
   CheckCircle2 
 } from "lucide-react";
+import { createCmsRoute } from "@/components/cms/createCmsRoute";
 
 function InstagramIcon({ className = "w-6 h-6" }: { className?: string }) {
   return (
@@ -28,7 +29,7 @@ function LinkedinIcon({ className = "w-6 h-6" }: { className?: string }) {
   );
 }
 
-export const metadata: Metadata = {
+const baseMetadata: Metadata = {
   title: "Social Media Management Services | KASH Technology",
   description: "End-to-end social media management for Instagram, LinkedIn, and Facebook. Consistent posting, custom content calendars, community engagement, and growth analytics.",
   alternates: {
@@ -116,7 +117,7 @@ const SOCIAL_FAQS = [
   },
 ];
 
-export default function SocialMediaManagementPage() {
+function SocialMediaManagementPage() {
   return (
     <>
       <HeroDiagonal
@@ -239,3 +240,9 @@ export default function SocialMediaManagementPage() {
     </>
   );
 }
+
+// CMS progressive migration: a published CMS page for this path wins; otherwise the page above renders unchanged.
+const cmsRoute = createCmsRoute({ path: "/social-media-management", pageType: "service", Fallback: SocialMediaManagementPage, metadata: baseMetadata });
+export const generateMetadata = cmsRoute.generateMetadata;
+export const revalidate = 60;
+export default cmsRoute.Page;

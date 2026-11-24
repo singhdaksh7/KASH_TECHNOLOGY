@@ -8,8 +8,9 @@ import { FaqAccordion } from "@/components/sections/FaqAccordion";
 import { CtaBanner } from "@/components/sections/CtaBanner";
 import { Container } from "@/components/ui/Container";
 import { CheckCircle2 } from "lucide-react";
+import { createCmsRoute } from "@/components/cms/createCmsRoute";
 
-export const metadata: Metadata = {
+const baseMetadata: Metadata = {
   title: "E-Commerce Website & App Development Company | Delhi NCR | KASH Technology",
   description: "Custom e-commerce web platforms and mobile shopping applications. High-converting, sub-second storefronts engineered for Indian and global brands.",
   alternates: {
@@ -60,7 +61,7 @@ const FAQS = [
   }
 ];
 
-export default function ServicePage() {
+function ServicePage() {
   return (
     <>
       {/* 1. Hero with Breadcrumbs */}
@@ -245,3 +246,9 @@ export default function ServicePage() {
     </>
   );
 }
+
+// CMS progressive migration: a published CMS page for this path wins; otherwise the page above renders unchanged.
+const cmsRoute = createCmsRoute({ path: "/ecommerce-development", pageType: "service", Fallback: ServicePage, metadata: baseMetadata });
+export const generateMetadata = cmsRoute.generateMetadata;
+export const revalidate = 60;
+export default cmsRoute.Page;

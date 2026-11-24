@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { INSIGHT_ARTICLES, INSIGHT_CATEGORIES } from "@/lib/insights-data";
+import { INSIGHT_CATEGORIES } from "@/lib/insights-data";
+import { getPublishedArticles } from "@/lib/cms";
 import { HeroDiagonal } from "@/components/sections/HeroDiagonal";
 import { CtaBanner } from "@/components/sections/CtaBanner";
 import { Container } from "@/components/ui/Container";
@@ -19,7 +20,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default function InsightsPage() {
+export const revalidate = 60;
+
+export default async function InsightsPage() {
+  const articles = await getPublishedArticles();
+  const categories = Array.from(new Set<string>([...INSIGHT_CATEGORIES, ...articles.map((a) => a.category)]));
   return (
     <>
       <HeroDiagonal
@@ -44,7 +49,7 @@ export default function InsightsPage() {
             <span className="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-[#e86024] text-white shadow-sm">
               All Categories
             </span>
-            {INSIGHT_CATEGORIES.map((cat) => (
+            {categories.map((cat) => (
               <span
                 key={cat}
                 className="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white text-[#6b7280] border border-black/5"
@@ -56,7 +61,7 @@ export default function InsightsPage() {
 
           {/* Articles Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {INSIGHT_ARTICLES.map((article) => (
+            {articles.map((article) => (
               <article
                 key={article.slug}
                 className="bg-white rounded-2xl p-8 border border-black/5 shadow-sm hover:shadow-xl hover:border-[#e86024]/40 transition-all duration-300 flex flex-col justify-between"
@@ -66,10 +71,12 @@ export default function InsightsPage() {
                     <span className="text-[10px] font-mono font-bold tracking-wider px-2.5 py-1 rounded bg-[#0e0e12] text-[#c5a880]">
                       {article.category}
                     </span>
-                    <div className="flex items-center gap-1.5 text-xs text-[#9ca3af] font-mono">
-                      <Clock className="w-3.5 h-3.5" />
-                      <span>{article.readTime}</span>
-                    </div>
+                    {article.readTime && (
+                      <div className="flex items-center gap-1.5 text-xs text-[#9ca3af] font-mono">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>{article.readTime}</span>
+                      </div>
+                    )}
                   </div>
 
                   <h3 className="font-serif-heading text-xl font-bold text-[#111827] mb-3 leading-snug hover:text-[#e86024] transition-colors">

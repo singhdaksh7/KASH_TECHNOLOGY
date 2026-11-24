@@ -13,8 +13,9 @@ import {
   CheckCircle2, 
   Zap 
 } from "lucide-react";
+import { createCmsRoute } from "@/components/cms/createCmsRoute";
 
-export const metadata: Metadata = {
+const baseMetadata: Metadata = {
   title: "Full-Funnel Digital Marketing Services | KASH Technology",
   description: "Digital marketing built around growth. Multi-channel campaign strategy, performance ads, lead funnels, SEO, content marketing, and conversion optimization.",
   alternates: {
@@ -102,7 +103,7 @@ const MARKETING_FAQS = [
   },
 ];
 
-export default function DigitalMarketingPage() {
+function DigitalMarketingPage() {
   return (
     <>
       <HeroDiagonal
@@ -225,3 +226,9 @@ export default function DigitalMarketingPage() {
     </>
   );
 }
+
+// CMS progressive migration: a published CMS page for this path wins; otherwise the page above renders unchanged.
+const cmsRoute = createCmsRoute({ path: "/digital-marketing", pageType: "service", Fallback: DigitalMarketingPage, metadata: baseMetadata });
+export const generateMetadata = cmsRoute.generateMetadata;
+export const revalidate = 60;
+export default cmsRoute.Page;
