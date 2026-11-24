@@ -13,8 +13,9 @@ import {
   CheckCircle2, 
   Video 
 } from "lucide-react";
+import { createCmsRoute } from "@/components/cms/createCmsRoute";
 
-export const metadata: Metadata = {
+const baseMetadata: Metadata = {
   title: "Content Creation Services | KASH Technology",
   description: "High-retention reels, short-form videos, branded social graphics, and product creatives. We design content that captures attention and elevates your brand.",
   alternates: {
@@ -102,7 +103,7 @@ const CREATIVE_FAQS = [
   },
 ];
 
-export default function ContentCreationPage() {
+function ContentCreationPage() {
   return (
     <>
       <HeroDiagonal
@@ -225,3 +226,9 @@ export default function ContentCreationPage() {
     </>
   );
 }
+
+// CMS progressive migration: a published CMS page for this path wins; otherwise the page above renders unchanged.
+const cmsRoute = createCmsRoute({ path: "/content-creation", pageType: "service", Fallback: ContentCreationPage, metadata: baseMetadata });
+export const generateMetadata = cmsRoute.generateMetadata;
+export const revalidate = 60;
+export default cmsRoute.Page;

@@ -8,8 +8,9 @@ import { FaqAccordion } from "@/components/sections/FaqAccordion";
 import { CtaBanner } from "@/components/sections/CtaBanner";
 import { Container } from "@/components/ui/Container";
 import { Code, Zap, Shield, Sparkles, Layers, Globe } from "lucide-react";
+import { createCmsRoute } from "@/components/cms/createCmsRoute";
 
-export const metadata: Metadata = {
+const baseMetadata: Metadata = {
   title: "Website Development Company in Delhi NCR & Western UP | KASH Technology",
   description: "Custom website development, business websites, e-commerce platforms, and performant web applications engineered for businesses across Delhi NCR, Noida, Meerut, Ghaziabad, and Western UP.",
   alternates: {
@@ -55,7 +56,7 @@ const WEB_FEATURES = [
   },
 ];
 
-export default function WebsiteDevelopmentPage() {
+function WebsiteDevelopmentPage() {
   return (
     <>
       <HeroDiagonal
@@ -237,3 +238,9 @@ export default function WebsiteDevelopmentPage() {
     </>
   );
 }
+
+// CMS progressive migration: a published CMS page for this path wins; otherwise the page above renders unchanged.
+const cmsRoute = createCmsRoute({ path: "/website-development", pageType: "service", Fallback: WebsiteDevelopmentPage, metadata: baseMetadata });
+export const generateMetadata = cmsRoute.generateMetadata;
+export const revalidate = 60;
+export default cmsRoute.Page;
