@@ -2,10 +2,9 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { Container } from "@/components/ui/Container";
-import { TechEmblem } from "@/components/branding/TechEmblem";
-import { CircuitBackground } from "@/components/branding/CircuitBackground";
 import { Breadcrumbs, BreadcrumbItem } from "@/components/ui/Breadcrumbs";
 
 interface HeroDiagonalProps {
@@ -38,29 +37,10 @@ export function HeroDiagonal({
   locationChips,
 }: HeroDiagonalProps) {
   return (
-    <section className="relative bg-[#050708] pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden border-b border-white/10">
-      {/* Background Circuit Texture */}
-      <CircuitBackground variant="dark" />
-
-      {/* Diagonal Split Ivory Panel on Right */}
-      <div 
-        className="absolute top-0 right-0 w-full lg:w-[48%] h-full bg-[#fbf8f2] pointer-events-none hidden lg:block"
-        style={{
-          clipPath: "polygon(24% 0, 100% 0, 100% 100%, 0% 100%)",
-        }}
-      >
-        <div className="absolute inset-0 circuit-pattern-ivory opacity-50" />
-      </div>
-
-      {/* Decorative Accent Circuit Line Over Hero */}
-      <svg
-        className="absolute top-1/4 left-1/3 w-1/3 h-1/2 pointer-events-none hidden lg:block opacity-40"
-        viewBox="0 0 300 150"
-        fill="none"
-      >
-        <path d="M 0 50 L 120 50 L 160 10 L 260 10" stroke="#f36b21" strokeWidth="1.5" />
-        <circle cx="260" cy="10" r="3" fill="#f36b21" />
-      </svg>
+    <section className="relative bg-[#FFF9F4] pt-28 pb-16 md:pt-36 md:pb-24 overflow-hidden border-b border-[#E8E5E2]">
+      {/* Diagonal Split Orange Panel on Right */}
+      <div className="hidden lg:block hero-diagonal-bg" />
+      <div className="hidden lg:block hero-diagonal-soft" />
 
       <Container className="relative z-10">
         {breadcrumbs && breadcrumbs.length > 0 && (
@@ -69,29 +49,29 @@ export function HeroDiagonal({
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center min-h-[460px]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center min-h-[420px]">
           
           {/* Left Column: Eyebrow, Heading, Paragraph, Buttons */}
           <div className="lg:col-span-7 space-y-5 text-left max-w-2xl">
             {badge && (
               <div className="inline-block">
-                <span className="text-[11px] font-mono font-bold tracking-[0.25em] text-[#f36b21] uppercase">
+                <span className="text-[11px] font-bold tracking-wider text-[#FF5A00] bg-[#FFF3E9] px-3 py-1 rounded-md uppercase">
                   {badge}
                 </span>
               </div>
             )}
 
-            <h1 className="font-serif-heading text-3xl sm:text-4xl lg:text-[44px] font-bold tracking-tight text-white leading-[1.14]">
+            <h1 className="text-3xl sm:text-4xl lg:text-[44px] font-extrabold tracking-tight text-[#0B0B0F] leading-[1.15]">
               {titlePrimary}{" "}
               {titleSecondary && <span className="block">{titleSecondary}</span>}
               {titleAccent && (
-                <span className="text-[#f36b21] block font-serif-heading">
+                <span className="text-[#FF5A00] block">
                   {titleAccent}
                 </span>
               )}
             </h1>
 
-            <p className="text-sm sm:text-base text-[#9ca3af] leading-relaxed max-w-xl">
+            <p className="text-sm sm:text-base text-[#4B5563] leading-relaxed max-w-xl">
               {description}
             </p>
 
@@ -100,33 +80,33 @@ export function HeroDiagonal({
               {primaryCtaText && (
                 <Link
                   href={primaryCtaHref}
-                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-lg bg-[#f36b21] hover:bg-[#e05b14] text-white text-xs sm:text-sm font-bold tracking-wide transition-all shadow-[0_6px_20px_rgba(243,107,33,0.35)] hover:shadow-[0_8px_25px_rgba(243,107,33,0.5)] active:scale-95"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-[#FF5A00] to-[#FF8A3D] text-white text-xs sm:text-sm font-bold shadow-md shadow-[#FF5A00]/25 hover:brightness-105 active:scale-95 transition-all"
                 >
                   <span>{primaryCtaText}</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               )}
 
-              {/* Secondary Dark Outline Button */}
+              {/* Secondary White Button */}
               {secondaryCtaText && (
                 <Link
                   href={secondaryCtaHref}
-                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-lg bg-[#0e0e12] hover:bg-white/10 text-white text-xs sm:text-sm font-semibold border border-white/20 hover:border-white/40 transition-all active:scale-95"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-white border border-[#E8E5E2] text-[#0B0B0F] text-xs sm:text-sm font-bold hover:border-[#FF5A00] hover:text-[#FF5A00] transition-colors active:scale-95 shadow-2xs"
                 >
                   <span>{secondaryCtaText}</span>
-                  <ArrowRight className="w-4 h-4 opacity-60" />
+                  <ArrowRight className="w-4 h-4 text-[#FF5A00]" />
                 </Link>
               )}
             </div>
 
             {quickLinks && quickLinks.length > 0 && (
-              <div className="pt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-mono text-white/50">
-                <span className="text-[#c5a880] uppercase tracking-wider font-semibold">Services:</span>
+              <div className="pt-2 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-[#4B5563]">
+                <span className="text-[#0B0B0F] uppercase tracking-wider font-bold">Services:</span>
                 {quickLinks.map((link) => (
                   <Link
                     key={link.href}
                     href={link.href}
-                    className="hover:text-[#f36b21] underline underline-offset-4 decoration-white/20 hover:decoration-[#f36b21] transition-colors"
+                    className="hover:text-[#FF5A00] underline underline-offset-4 decoration-[#E8E5E2] hover:decoration-[#FF5A00] transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -136,14 +116,14 @@ export function HeroDiagonal({
 
             {locationChips && locationChips.length > 0 && (
               <div className="pt-3 flex flex-wrap items-center gap-2">
-                <span className="text-[11px] font-mono text-[#c5a880] uppercase tracking-wider font-semibold mr-1">
+                <span className="text-[11px] text-[#0B0B0F] uppercase tracking-wider font-bold mr-1">
                   Locations:
                 </span>
                 {locationChips.map((chip) => (
                   <Link
                     key={chip.href}
                     href={chip.href}
-                    className="px-2.5 py-1 rounded-md bg-white/[0.04] border border-white/10 hover:border-[#f36b21]/50 hover:bg-white/[0.08] text-[11px] font-mono text-white/70 hover:text-white transition-all"
+                    className="px-2.5 py-1 rounded-md bg-white border border-[#E8E5E2] hover:border-[#FF5A00] text-[11px] text-[#4B5563] hover:text-[#FF5A00] transition-all"
                   >
                     {chip.label}
                   </Link>
@@ -152,9 +132,17 @@ export function HeroDiagonal({
             )}
           </div>
 
-          {/* Right Column: Circular Technical Emblem */}
+          {/* Right Column: Hero Laptop Mockup */}
           <div className="lg:col-span-5 flex items-center justify-center relative">
-            <TechEmblem size={460} />
+            <div className="relative w-full max-w-[420px] aspect-4/3 rounded-2xl overflow-hidden shadow-2xl border border-white/40">
+              <Image
+                src="/images/hero/hero-laptop-composition.png"
+                alt="KASH Technology Engineering"
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
           </div>
 
         </div>

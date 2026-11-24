@@ -3,12 +3,10 @@ import Link from "next/link";
 import { 
   Code2, 
   Smartphone, 
-  Laptop, 
-  BrainCircuit, 
-  Users2, 
-  ShoppingCart, 
-  PlugZap, 
-  CloudSun, 
+  Layers, 
+  Sparkles, 
+  TrendingUp, 
+  Cpu, 
   ArrowRight 
 } from "lucide-react";
 import { Container } from "@/components/ui/Container";
@@ -24,59 +22,45 @@ export interface ServiceItem {
 export const ALL_SERVICES: ServiceItem[] = [
   {
     id: "web-dev",
-    title: "Web Development",
-    description: "Fast websites built for growth.",
+    title: "Website Development",
+    description: "Modern, fast and conversion-focused websites.",
     icon: Code2,
-    href: "/services",
+    href: "/website-development",
+  },
+  {
+    id: "software-crm",
+    title: "Software & CRM",
+    description: "Custom software, CRM and ERP solutions tailored for your workflow.",
+    icon: Layers,
+    href: "/custom-software-development",
   },
   {
     id: "mobile-apps",
-    title: "Mobile Apps",
-    description: "Reliable apps for Android and iOS.",
+    title: "Mobile App Development",
+    description: "Android and iOS apps that solve real business needs.",
     icon: Smartphone,
-    href: "/services",
+    href: "/mobile-app-development",
   },
   {
-    id: "custom-software",
-    title: "Custom Software",
-    description: "Software built around your workflow.",
-    icon: Laptop,
-    href: "/services",
+    id: "content-creative",
+    title: "Content & Creative",
+    description: "Reels, videos, graphics and brand creative that connect.",
+    icon: Sparkles,
+    href: "/content-creation",
   },
   {
-    id: "ai-automation",
-    title: "AI Automation",
-    description: "Automate repetitive business tasks.",
-    icon: BrainCircuit,
-    href: "/services",
+    id: "digital-marketing",
+    title: "Digital Marketing",
+    description: "SEO, social media and performance marketing for measurable ROI.",
+    icon: TrendingUp,
+    href: "/digital-marketing",
   },
   {
-    id: "erp-crm",
-    title: "ERP / CRM Systems",
-    description: "Manage operations and customers.",
-    icon: Users2,
-    href: "/services",
-  },
-  {
-    id: "ecommerce",
-    title: "E-commerce Solutions",
-    description: "Scalable online selling platforms.",
-    icon: ShoppingCart,
-    href: "/services",
-  },
-  {
-    id: "api-integrations",
-    title: "API Integrations",
-    description: "Connect your tools and systems.",
-    icon: PlugZap,
-    href: "/services",
-  },
-  {
-    id: "cloud-deployment",
-    title: "Cloud Deployment",
-    description: "Scalable, reliable infrastructure.",
-    icon: CloudSun,
-    href: "/services",
+    id: "business-growth",
+    title: "Business Growth",
+    description: "Lead generation, automation and end-to-end digital support.",
+    icon: Cpu,
+    href: "/ai-automation",
   },
 ];
 
@@ -89,33 +73,30 @@ interface ServiceCardsGridProps {
 }
 
 export function ServiceCardsGrid({
-  badge = "WHAT WE DO",
-  title = "Technology Services",
-  subtitle,
+  badge = "OUR SERVICES",
+  title = "End-to-End Digital Solutions",
+  subtitle = "From technology and branding to marketing and growth, we provide everything you need to take your business online.",
   limit,
   columns,
 }: ServiceCardsGridProps) {
   const items = limit ? ALL_SERVICES.slice(0, limit) : ALL_SERVICES;
-  const colCount = columns || (limit === 6 ? 3 : 4);
+  const colCount = columns || (items.length <= 6 ? 3 : 4);
 
   return (
-    <section className="py-16 md:py-20 bg-[#fbf8f2] text-[#111827] relative overflow-hidden border-b border-black/5">
-      {/* Subtle Circuit Pattern Overlay */}
-      <div className="absolute inset-0 circuit-pattern-ivory opacity-35 pointer-events-none" />
-
+    <section className="py-16 md:py-20 bg-[#FFF9F4] text-[#0B0B0F] relative overflow-hidden border-b border-[#E8E5E2]">
       <Container className="relative z-10">
         {/* Section Header */}
         <div className="max-w-3xl mx-auto text-center mb-12 space-y-2">
           {badge && (
-            <span className="text-[11px] font-mono font-bold tracking-[0.25em] text-[#f36b21] uppercase block">
+            <span className="inline-block text-[11px] font-bold tracking-wider text-[#FF5A00] bg-[#FFF3E9] px-3 py-1 rounded-md uppercase">
               {badge}
             </span>
           )}
-          <h2 className="font-serif-heading text-2xl sm:text-3xl md:text-[34px] font-bold tracking-tight text-[#111827]">
+          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#0B0B0F]">
             {title}
           </h2>
           {subtitle && (
-            <p className="text-sm text-[#6b7280] max-w-xl mx-auto pt-1">
+            <p className="text-xs sm:text-sm text-[#4B5563] max-w-xl mx-auto pt-1">
               {subtitle}
             </p>
           )}
@@ -135,27 +116,28 @@ export function ServiceCardsGrid({
               <Link
                 key={service.id}
                 href={service.href}
-                className="group bg-white rounded-2xl p-6 border border-black/5 shadow-[0_4px_16px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(243,107,33,0.1)] hover:border-[#f36b21]/40 transition-all duration-200 flex flex-col justify-between hover:-translate-y-0.5"
+                className="group bg-white rounded-2xl p-6 border border-[#E8E5E2] hover:border-[#FF5A00]/40 hover:shadow-md transition-all duration-200 flex flex-col justify-between hover:-translate-y-0.5"
               >
-                <div>
+                <div className="space-y-3">
                   {/* Circular Orange Outline Icon */}
-                  <div className="w-11 h-11 rounded-xl bg-[#f36b21]/10 border border-[#f36b21]/20 flex items-center justify-center text-[#f36b21] mb-4 group-hover:bg-[#f36b21] group-hover:text-white transition-all duration-200">
+                  <div className="w-10 h-10 rounded-xl bg-[#FFF3E9] flex items-center justify-center text-[#FF5A00] group-hover:bg-[#FF5A00] group-hover:text-white transition-all duration-200">
                     <IconComponent className="w-5 h-5" />
                   </div>
 
                   {/* Card Title */}
-                  <h3 className="font-serif-heading text-lg font-bold text-[#111827] mb-1.5 group-hover:text-[#f36b21] transition-colors duration-200">
+                  <h3 className="text-base font-bold text-[#0B0B0F] group-hover:text-[#FF5A00] transition-colors duration-200">
                     {service.title}
                   </h3>
 
                   {/* Card Description */}
-                  <p className="text-xs sm:text-sm text-[#6b7280] leading-normal mb-4">
+                  <p className="text-xs text-[#4B5563] leading-relaxed">
                     {service.description}
                   </p>
                 </div>
 
                 {/* Bottom Arrow */}
-                <div className="pt-1 flex items-center text-[#f36b21] group-hover:translate-x-1 transition-transform duration-200">
+                <div className="pt-4 flex items-center gap-1 text-xs font-bold text-[#FF5A00] group-hover:translate-x-1 transition-transform duration-200">
+                  <span>Learn More</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </div>
               </Link>

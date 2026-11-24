@@ -12,27 +12,27 @@ export interface FaqItem {
 export const SERVICES_FAQS: FaqItem[] = [
   {
     question: "How do you ensure project quality?",
-    answer: "We enforce strict type-safety, automated testing, continuous integration, and dedicated QA verification on every milestone before deployment.",
+    answer: "We enforce strict testing, clean code architectures, agile review cycles, and dedicated QA verification before every production launch.",
   },
   {
     question: "Can you work with our existing team?",
-    answer: "Yes. We can integrate seamlessly with your existing designers, engineers, and product managers to accelerate roadmap delivery.",
+    answer: "Yes. We integrate seamlessly with your internal developers, designers, or marketing teams to accelerate execution.",
   },
   {
     question: "What is your typical project timeline?",
-    answer: "MVP products generally take 3 to 6 weeks, while enterprise software platforms and custom ERPs range between 2 to 4 months.",
+    answer: "Websites and MVPs generally take 2 to 4 weeks, while complex software and custom ERPs range between 6 to 12 weeks.",
   },
   {
     question: "What information do you need to start?",
-    answer: "A high-level summary of your project goals, target audience, and key features. We will help refine the technical roadmap together.",
+    answer: "A high-level overview of your business goals, target audience and key requirements. We will help scope the project together.",
   },
   {
     question: "Do you provide post-launch support?",
-    answer: "Yes, we offer ongoing maintenance, monitoring, security updates, and feature enhancement support after product launch.",
+    answer: "Yes, we offer ongoing maintenance, server monitoring, security updates and growth iterations after launch.",
   },
   {
     question: "How do you handle project pricing?",
-    answer: "We offer transparent, milestone-based fixed pricing and dedicated sprint models with zero hidden surprises.",
+    answer: "We offer transparent milestone-based pricing and clear deliverables with zero hidden costs.",
   },
 ];
 
@@ -45,32 +45,28 @@ interface FaqAccordionProps {
 }
 
 export function FaqAccordion({
-  variant = "ivory",
   faqs = SERVICES_FAQS,
   title = "Frequently Asked Questions",
   badge = "FREQUENTLY ASKED QUESTIONS",
   columns = 2,
 }: FaqAccordionProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
-  const isIvory = variant === "ivory";
 
   const toggle = (idx: number) => {
     setOpenIndex(openIndex === idx ? null : idx);
   };
 
   return (
-    <section className={`py-20 md:py-28 relative overflow-hidden border-b ${isIvory ? 'bg-[#fbf8f2] border-black/5 text-[#111827]' : 'bg-[#050708] border-white/10 text-white'}`}>
-      <div className={`absolute inset-0 ${isIvory ? 'circuit-pattern-ivory opacity-35' : 'circuit-pattern-dark opacity-20'} pointer-events-none`} />
-
+    <section className="py-16 md:py-24 relative overflow-hidden border-b bg-[#FFF9F4] border-[#E8E5E2] text-[#0B0B0F]">
       <Container className="relative z-10 max-w-5xl">
         {/* Header */}
-        <div className="text-center mb-16 space-y-2">
+        <div className="text-center mb-14 space-y-2">
           {badge && (
-            <span className="text-[11px] font-mono font-bold tracking-[0.25em] text-[#f36b21] uppercase block">
+            <span className="inline-block text-[11px] font-bold tracking-wider text-[#FF5A00] bg-[#FFF3E9] px-3 py-1 rounded-md uppercase">
               {badge}
             </span>
           )}
-          <h2 className={`font-serif-heading text-3xl sm:text-4xl md:text-[44px] font-bold tracking-tight ${isIvory ? 'text-[#111827]' : 'text-white'}`}>
+          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#0B0B0F]">
             {title}
           </h2>
         </div>
@@ -82,31 +78,25 @@ export function FaqAccordion({
             return (
               <div
                 key={faq.question}
-                className={`rounded-xl border transition-all duration-200 overflow-hidden ${
-                  isIvory 
-                    ? 'bg-white border-black/5 shadow-xs hover:border-[#f36b21]/30' 
-                    : 'bg-[#0e0e12] border-white/5 shadow-md hover:border-[#f36b21]/30'
-                }`}
+                className="rounded-2xl border border-[#E8E5E2] bg-white transition-all duration-200 overflow-hidden hover:border-[#FF5A00]/40 shadow-xs"
               >
                 <button
                   type="button"
                   onClick={() => toggle(idx)}
-                  className="w-full py-4 px-5 flex items-center justify-between text-left gap-4 select-none focus:outline-none focus:ring-1 focus:ring-[#f36b21] cursor-pointer"
+                  className="w-full py-4 px-5 flex items-center justify-between text-left gap-4 select-none focus:outline-none cursor-pointer"
                   aria-expanded={isOpen}
                 >
-                  <span className={`text-sm sm:text-base font-semibold ${isIvory ? 'text-[#111827]' : 'text-white'}`}>
+                  <span className="text-sm font-bold text-[#0B0B0F]">
                     {faq.question}
                   </span>
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-colors ${
-                    isOpen ? 'text-[#f36b21]' : 'text-[#f36b21]'
-                  }`}>
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-[#FF5A00]">
                     {isOpen ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                   </div>
                 </button>
 
                 {isOpen && (
-                  <div className="px-5 pb-5 pt-1 border-t border-black/5">
-                    <p className={`text-xs sm:text-sm leading-relaxed ${isIvory ? 'text-[#6b7280]' : 'text-[#9ca3af]'}`}>
+                  <div className="px-5 pb-5 pt-1 border-t border-[#E8E5E2]">
+                    <p className="text-xs text-[#4B5563] leading-relaxed">
                       {faq.answer}
                     </p>
                   </div>

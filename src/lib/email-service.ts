@@ -209,7 +209,7 @@ Dear ${data.fullName},
 
 Thank you for reaching out to KASH Technology. We have received your enquiry regarding ${data.serviceInterested}.
 
-Our engineering team will review your specifications and get back to you within 24 hours.
+Our engineering team will review your specifications and get back to you as soon as possible.
 
 Warm regards,
 KASH Technology Team

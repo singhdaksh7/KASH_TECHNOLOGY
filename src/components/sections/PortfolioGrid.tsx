@@ -2,125 +2,85 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, BarChart3, Smartphone, Activity, GraduationCap, Truck, Home, Stethoscope, Sprout } from "lucide-react";
+import Image from "next/image";
+import { ArrowRight } from "lucide-react";
 import { Container } from "@/components/ui/Container";
-import { ALL_PORTFOLIO_PROJECTS, PORTFOLIO_FILTERS, PortfolioFilter, ProjectItem } from "@/data/portfolioData";
 
-function MockupIllustration({ type }: { type: ProjectItem["previewType"] }) {
-  if (type === "mobile" || type === "medicare") {
-    return (
-      <div className="relative w-full h-full bg-[#0a0c10] flex items-center justify-center gap-2 p-3 overflow-hidden">
-        {/* Left phone screen */}
-        <div className="w-[28%] h-[92%] rounded-xl bg-[#161922] border border-white/10 p-1.5 flex flex-col justify-between shadow-lg">
-          <div className="w-6 h-1 rounded-full bg-white/20 mx-auto mb-1" />
-          <div className="space-y-1">
-            <div className="w-full h-8 rounded-lg bg-[#f36b21]/20 border border-[#f36b21]/30 flex items-center justify-center">
-              {type === "medicare" ? <Stethoscope className="w-3.5 h-3.5 text-[#f36b21]" /> : <Smartphone className="w-3.5 h-3.5 text-[#f36b21]" />}
-            </div>
-            <div className="w-3/4 h-1 rounded bg-white/20" />
-            <div className="w-1/2 h-1 rounded bg-white/10" />
-          </div>
-          <div className="w-full h-4 rounded bg-white/5 flex items-center justify-between px-1 text-[6px] text-white/40">
-            <span>Home</span>
-            <span>Profile</span>
-          </div>
-        </div>
-
-        {/* Center phone screen (featured) */}
-        <div className="w-[34%] h-[98%] rounded-xl bg-[#1e222e] border-2 border-[#f36b21]/50 p-2 flex flex-col justify-between shadow-2xl z-10 scale-105">
-          <div className="flex items-center justify-between pb-1 border-b border-white/10">
-            <div className="w-8 h-1 rounded-full bg-white/20" />
-            <div className="w-1.5 h-1.5 rounded-full bg-[#f36b21]" />
-          </div>
-          <div className="space-y-1.5 my-auto">
-            <div className="w-full h-12 rounded-lg bg-gradient-to-br from-[#f36b21]/30 to-[#1e222e] border border-[#f36b21]/40 flex items-center justify-center">
-              <span className="text-[8px] font-mono text-white font-bold">KASH UI</span>
-            </div>
-            <div className="flex gap-1">
-              <div className="w-1/2 h-6 rounded bg-white/10" />
-              <div className="w-1/2 h-6 rounded bg-white/10" />
-            </div>
-          </div>
-          <div className="w-full h-3 rounded bg-[#f36b21] flex items-center justify-center text-[7px] font-bold text-white">
-            EXPLORE
-          </div>
-        </div>
-
-        {/* Right phone screen */}
-        <div className="w-[28%] h-[92%] rounded-xl bg-[#161922] border border-white/10 p-1.5 flex flex-col justify-between shadow-lg">
-          <div className="w-6 h-1 rounded-full bg-white/20 mx-auto mb-1" />
-          <div className="space-y-1">
-            <div className="w-full h-6 rounded bg-white/10" />
-            <div className="w-full h-6 rounded bg-white/10" />
-          </div>
-          <div className="w-full h-2 rounded bg-white/20" />
-        </div>
-      </div>
-    );
-  }
-
-  // Dashboard / Web App Layout
-  return (
-    <div className="relative w-full h-full bg-[#0a0c10] p-3 flex flex-col justify-between overflow-hidden">
-      {/* Top Header Bar */}
-      <div className="flex items-center justify-between border-b border-white/10 pb-1.5">
-        <div className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-red-500/70" />
-          <span className="w-2 h-2 rounded-full bg-yellow-500/70" />
-          <span className="w-2 h-2 rounded-full bg-green-500/70" />
-        </div>
-        <div className="px-2 py-0.5 rounded bg-white/5 text-[8px] font-mono text-white/50 border border-white/5">
-          {type === "erp" ? "FinTrack ERP Pro" : type === "health" ? "HealthPlus Care" : type === "edulearn" ? "EduLearn Portal" : type === "logistics" ? "LogiMove Fleet" : type === "realestate" ? "PropertyHub MLS" : "AgriSmart AI"}
-        </div>
-        <div className="w-2 h-2 rounded-full bg-[#f36b21]" />
-      </div>
-
-      {/* Main simulated dashboard widgets */}
-      <div className="grid grid-cols-3 gap-2 my-auto">
-        {/* Left Metric Widget */}
-        <div className="rounded-lg bg-[#14161f] border border-white/10 p-2 flex flex-col justify-between h-20">
-          <div className="flex items-center justify-between">
-            <span className="text-[7px] font-mono text-white/40">ANALYTICS</span>
-            {type === "erp" && <BarChart3 className="w-3 h-3 text-[#f36b21]" />}
-            {type === "health" && <Activity className="w-3 h-3 text-[#f36b21]" />}
-            {type === "edulearn" && <GraduationCap className="w-3 h-3 text-[#f36b21]" />}
-            {type === "logistics" && <Truck className="w-3 h-3 text-[#f36b21]" />}
-            {type === "realestate" && <Home className="w-3 h-3 text-[#f36b21]" />}
-            {type === "agriculture" && <Sprout className="w-3 h-3 text-[#f36b21]" />}
-          </div>
-          <div className="text-[12px] font-bold text-white font-mono">+94.2%</div>
-          <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
-            <div className="w-3/4 h-full bg-[#f36b21]" />
-          </div>
-        </div>
-
-        {/* Center / Chart Widget */}
-        <div className="col-span-2 rounded-lg bg-[#14161f] border border-white/10 p-2 flex flex-col justify-between h-20">
-          <div className="flex justify-between text-[7px] font-mono text-white/40">
-            <span>REAL-TIME STREAM</span>
-            <span className="text-emerald-400">ACTIVE</span>
-          </div>
-          <div className="flex items-end justify-between h-10 gap-1 px-1">
-            <div className="w-2 h-4 rounded-t bg-white/20" />
-            <div className="w-2 h-6 rounded-t bg-white/20" />
-            <div className="w-2 h-8 rounded-t bg-[#f36b21]/70" />
-            <div className="w-2 h-5 rounded-t bg-white/20" />
-            <div className="w-2 h-10 rounded-t bg-[#f36b21]" />
-            <div className="w-2 h-7 rounded-t bg-white/20" />
-            <div className="w-2 h-9 rounded-t bg-[#f36b21]" />
-          </div>
-          <div className="text-[7px] font-mono text-white/30 text-right">Updated 2s ago</div>
-        </div>
-      </div>
-
-      {/* Bottom status bar */}
-      <div className="flex items-center justify-between pt-1 border-t border-white/5 text-[7.5px] font-mono text-white/30">
-        <span>SECURITY: ENCRYPTED</span>
-        <span className="text-[#f36b21]">v3.2 PROD</span>
-      </div>
-    </div>
-  );
+export interface ProjectCardItem {
+  id: string;
+  title: string;
+  category: string;
+  tag: string;
+  statusType: "REAL PROJECT" | "PROTOTYPE" | "CONCEPT";
+  description: string;
+  image: string;
+  href: string;
 }
+
+const REAL_PROJECTS: ProjectCardItem[] = [
+  {
+    id: "exora",
+    title: "Exora",
+    category: "Web Platform",
+    tag: "Websites",
+    statusType: "PROTOTYPE",
+    description: "Business management platform with CRM, operations and analytics.",
+    image: "/images/projects/exora-preview.png",
+    href: "/work/exora",
+  },
+  {
+    id: "schoolsync",
+    title: "SchoolSync",
+    category: "ERP / SaaS",
+    tag: "Software / SaaS",
+    statusType: "PROTOTYPE",
+    description: "Multi-tenant school ERP prototype to manage admissions, attendance and fees.",
+    image: "/images/projects/schoolsync-mockup.png",
+    href: "/work/schoolsync",
+  },
+  {
+    id: "launchpad",
+    title: "Launchpad X",
+    category: "Blockchain",
+    tag: "Software / SaaS",
+    statusType: "PROTOTYPE",
+    description: "Token presale deployment and smart contract infrastructure prototype.",
+    image: "/images/projects/launchpad-preview.png",
+    href: "/work/crypto-launchpad",
+  },
+  {
+    id: "kasba",
+    title: "Kasba Express",
+    category: "Mobile App",
+    tag: "Mobile Apps",
+    statusType: "CONCEPT",
+    description: "On-demand delivery platform concept with customer and merchant mobile workflows.",
+    image: "/images/projects/kasba-preview.png",
+    href: "/contact",
+  },
+  {
+    id: "fuelops",
+    title: "FuelOps",
+    category: "ERP",
+    tag: "Software / SaaS",
+    statusType: "CONCEPT",
+    description: "Fuel station enterprise platform concept for nozzle sales and shift settlement.",
+    image: "/images/projects/fuelops-preview.png",
+    href: "/contact",
+  },
+  {
+    id: "taxisegrator",
+    title: "TaxiSegrator",
+    category: "Mobile App",
+    tag: "Mobile Apps",
+    statusType: "CONCEPT",
+    description: "B2B taxi marketplace concept connecting travel operators and drivers.",
+    image: "/images/projects/taxisegrator-mockup.png",
+    href: "/contact",
+  },
+];
+
+const FILTERS = ["All Projects", "Websites", "Software / SaaS", "Mobile Apps"];
 
 interface PortfolioGridProps {
   limit?: number;
@@ -128,42 +88,30 @@ interface PortfolioGridProps {
 }
 
 export function PortfolioGrid({ limit, showFilters = true }: PortfolioGridProps) {
-  const [activeCategory, setActiveCategory] = useState<PortfolioFilter>("All");
+  const [activeFilter, setActiveFilter] = useState("All Projects");
 
-  const filtered = ALL_PORTFOLIO_PROJECTS.filter((proj) => {
-    if (activeCategory === "All") return true;
-    if (activeCategory === "Technology") return proj.pillar === "Technology";
-    if (activeCategory === "Websites") return proj.filterTags.includes("Websites");
-    if (activeCategory === "Apps") return proj.filterTags.includes("Apps");
-    if (activeCategory === "Software") return proj.filterTags.includes("Software");
-    if (activeCategory === "Social Media") return proj.filterTags.includes("Social Media");
-    if (activeCategory === "Creative") return proj.pillar === "Creative" || proj.filterTags.includes("Creative");
-    if (activeCategory === "Video") return proj.filterTags.includes("Video");
-    if (activeCategory === "Marketing") return proj.pillar === "Marketing" || proj.filterTags.includes("Marketing");
-    return true;
-  });
+  const items = activeFilter === "All Projects"
+    ? REAL_PROJECTS
+    : REAL_PROJECTS.filter((p) => p.tag === activeFilter || p.category.includes(activeFilter));
 
-  const displayItems = limit ? filtered.slice(0, limit) : filtered;
+  const displayItems = limit ? items.slice(0, limit) : items;
 
   return (
-    <section className="py-16 md:py-20 bg-[#fbf8f2] text-[#111827] relative overflow-hidden border-b border-black/5">
-      <div className="absolute inset-0 circuit-pattern-ivory opacity-35 pointer-events-none" />
-
+    <section className="py-16 md:py-20 bg-[#FFF9F4] text-[#0B0B0F] relative overflow-hidden border-b border-[#E8E5E2]">
       <Container className="relative z-10">
-        {/* Filter Tabs */}
+        {/* Filter Pills */}
         {showFilters && (
           <div className="flex flex-wrap items-center justify-center gap-2 mb-10 max-w-4xl mx-auto">
-            {PORTFOLIO_FILTERS.map((cat) => {
-              const isActive = activeCategory === cat;
+            {FILTERS.map((cat) => {
+              const isActive = activeFilter === cat;
               return (
                 <button
                   key={cat}
-                  type="button"
-                  onClick={() => setActiveCategory(cat)}
-                  className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                  onClick={() => setActiveFilter(cat)}
+                  className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                     isActive
-                      ? "bg-[#f36b21] text-white shadow-[0_4px_12px_rgba(243,107,33,0.35)]"
-                      : "bg-white text-[#6b7280] border border-black/5 hover:border-[#f36b21]/40 hover:text-[#111827]"
+                      ? "bg-[#FF5A00] text-white shadow-xs"
+                      : "bg-white text-[#4B5563] border border-[#E8E5E2] hover:border-[#FF5A00]"
                   }`}
                 >
                   {cat}
@@ -173,74 +121,54 @@ export function PortfolioGrid({ limit, showFilters = true }: PortfolioGridProps)
           </div>
         )}
 
-        {/* Empty state for categories where work is not yet publicly published */}
-        {displayItems.length === 0 && (
-          <div className="max-w-xl mx-auto bg-white rounded-2xl p-8 border border-black/5 text-center shadow-lg my-8 space-y-3">
-            <span className="text-[11px] font-mono font-bold tracking-widest text-[#f36b21] uppercase block">
-              PORTFOLIO ARCHIVE // {activeCategory.toUpperCase()}
-            </span>
-            <h4 className="font-serif-heading text-xl font-bold text-[#111827]">
-              Case Studies Under Active Production
-            </h4>
-            <p className="text-xs sm:text-sm text-[#6b7280] leading-relaxed">
-              Client campaigns and creative productions in this category are currently active or under non-disclosure. Contact our team to review private portfolio samples and customized strategy decks.
-            </p>
-            <div className="pt-2">
-              <Link
-                href="/contact"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#f36b21] hover:bg-[#e05b14] text-white text-xs font-bold transition-all shadow-md"
-              >
-                <span>Request Case Studies</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-          </div>
-        )}
-
-        {/* Projects 4-column / 3-column Grid */}
+        {/* Projects Grid */}
         <div 
           className={
             limit === 3 
-              ? "grid grid-cols-1 md:grid-cols-3 gap-5 max-w-5xl mx-auto" 
-              : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
+              ? "grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto" 
+              : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
           }
         >
           {displayItems.map((project) => (
             <div
               key={project.id}
-              className="group bg-[#0b0d0e] text-white rounded-2xl overflow-hidden border border-white/10 hover:border-[#f36b21]/50 shadow-xl hover:shadow-2xl transition-all duration-200 flex flex-col justify-between hover:-translate-y-0.5"
+              className="group bg-white rounded-2xl overflow-hidden border border-[#E8E5E2] hover:border-[#FF5A00]/40 shadow-xs hover:shadow-lg transition-all duration-200 flex flex-col justify-between hover:-translate-y-0.5"
             >
               {/* Mockup Header Container */}
-              <div className="aspect-[16/10] bg-[#14161f] border-b border-white/10 relative overflow-hidden">
-                <MockupIllustration type={project.previewType} />
-                {project.status === "concept" && (
-                  <div className="absolute top-2 right-2 z-20 px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-sm border border-white/10 text-[9px] font-mono font-medium text-white/70">
-                    Concept Project
-                  </div>
-                )}
+              <div className="aspect-[16/10] bg-[#FFF9F4] border-b border-[#E8E5E2] relative overflow-hidden flex items-center justify-center p-3">
+                <Image
+                  src={project.image}
+                  alt={project.title}
+                  fill
+                  className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
+                />
               </div>
 
               {/* Content Body */}
               <div className="p-5 flex flex-col flex-1 justify-between gap-3">
-                <div>
-                  <h3 className="font-serif-heading text-base sm:text-lg font-bold text-white mb-1 group-hover:text-[#f36b21] transition-colors">
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] font-bold uppercase text-[#FF5A00] bg-[#FFF3E9] px-2 py-0.5 rounded">
+                      {project.category}
+                    </span>
+                    <span className="text-[9px] font-mono font-semibold px-2 py-0.5 rounded bg-gray-100 text-[#4B5563] border border-gray-200">
+                      {project.statusType}
+                    </span>
+                  </div>
+                  <h3 className="text-base font-bold text-[#0B0B0F] group-hover:text-[#FF5A00] transition-colors">
                     {project.title}
                   </h3>
-                  <p className="text-xs text-[#9ca3af] leading-normal mb-2">
+                  <p className="text-xs text-[#4B5563] leading-relaxed">
                     {project.description}
                   </p>
                 </div>
 
-                <div className="flex items-center justify-between pt-2.5 border-t border-white/5">
-                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-white/5 text-[#c5a880] border border-[#c5a880]/20">
-                    {project.tag}
-                  </span>
+                <div className="flex items-center justify-between pt-3 border-t border-[#E8E5E2]">
                   <Link
                     href={project.href}
-                    aria-label={`View ${project.title}`}
-                    className="w-7 h-7 rounded-full bg-white/5 group-hover:bg-[#f36b21] flex items-center justify-center text-white/60 group-hover:text-white transition-all"
+                    className="text-xs font-bold text-[#FF5A00] hover:underline flex items-center gap-1"
                   >
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    <span>View Project</span> &rarr;
                   </Link>
                 </div>
               </div>
@@ -248,15 +176,14 @@ export function PortfolioGrid({ limit, showFilters = true }: PortfolioGridProps)
           ))}
         </div>
 
-        {/* View More Projects button if on Home page */}
         {limit === 3 && (
           <div className="mt-10 text-center">
             <Link
               href="/portfolio"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-white hover:bg-[#f36b21] text-[#111827] hover:text-white text-xs sm:text-sm font-bold border border-black/10 hover:border-[#f36b21] transition-all shadow-sm hover:shadow-md"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg bg-white border border-[#E8E5E2] hover:border-[#FF5A00] text-[#0B0B0F] hover:text-[#FF5A00] text-xs font-bold transition-all shadow-2xs"
             >
-              <span>View More Projects</span>
-              <ArrowRight className="w-4 h-4" />
+              <span>View All Projects</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         )}
