@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { contactFormSchema, sanitizeString } from "@/lib/contact-schema";
-import { sendContactEmails } from "@/lib/email-service";
+import { persistLegacyContact } from "@/lib/forms/legacy-contact";
 
 // In-memory rate limiting map (IP -> { count, expiresAt })
 const rateLimitMap = new Map<string, { count: number; expiresAt: number }>();
@@ -85,18 +85,8 @@ export async function POST(request: Request) {
 
     const validData = parseResult.data;
 
-    // Send emails via abstraction
-    const emailResult = await sendContactEmails(validData);
-
-    if (!emailResult.success) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Unable to deliver message automatically. Please contact founder@kash-technology.com directly.",
-        },
-        { status: 500 }
-      );
-    }
+    // Persistence is primary: a notification outage must never lose a lead.
+    await persistLegacyContact(validData, request);
 
     return NextResponse.json({
       success: true,

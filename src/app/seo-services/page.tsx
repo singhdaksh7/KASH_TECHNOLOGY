@@ -13,8 +13,9 @@ import {
   Zap, 
   CheckCircle2 
 } from "lucide-react";
+import { createCmsRoute } from "@/components/cms/createCmsRoute";
 
-export const metadata: Metadata = {
+const baseMetadata: Metadata = {
   title: "Technical & Local SEO Services | KASH Technology",
   description: "Improve search visibility and organic discovery. Technical SEO audits, local Google Business optimization, schema markup, Core Web Vitals, and content planning.",
   alternates: {
@@ -102,7 +103,7 @@ const SEO_FAQS = [
   },
 ];
 
-export default function SeoServicesPage() {
+function SeoServicesPage() {
   return (
     <>
       <HeroDiagonal
@@ -225,3 +226,9 @@ export default function SeoServicesPage() {
     </>
   );
 }
+
+// CMS progressive migration: a published CMS page for this path wins; otherwise the page above renders unchanged.
+const cmsRoute = createCmsRoute({ path: "/seo-services", pageType: "service", Fallback: SeoServicesPage, metadata: baseMetadata });
+export const generateMetadata = cmsRoute.generateMetadata;
+export const revalidate = 60;
+export default cmsRoute.Page;

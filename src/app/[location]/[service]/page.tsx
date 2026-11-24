@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CURATED_LOCAL_SERVICES } from "@/lib/curated-local-services";
+import { cms, getSettings } from "@/lib/cms";
+import { buildMetadata } from "@/lib/seo/metadata";
+import { buildPageSchemas } from "@/lib/seo/schema";
+import { CmsPageRenderer } from "@/components/cms/CmsPageRenderer";
+import { JsonLd } from "@/components/cms/JsonLd";
 import { HeroDiagonal } from "@/components/sections/HeroDiagonal";
 import { FaqAccordion } from "@/components/sections/FaqAccordion";
 import { CtaBanner } from "@/components/sections/CtaBanner";
@@ -15,11 +20,19 @@ interface Props {
   }>;
 }
 
+export const revalidate = 60;
+
 export async function generateStaticParams() {
+  const cmsPages = await cms.listPublishedPages();
+  const cmsParams = cmsPages.flatMap((p) => {
+    const parts = p.slug.replace(/^\/+|\/+$/g, "").split("/");
+    return parts.length === 2 ? [{ location: parts[0], service: parts[1] }] : [];
+  });
   return [
     { location: "baghpat", service: "website-development" },
     { location: "noida", service: "custom-software-development" },
     { location: "meerut", service: "erp-development" },
+    ...cmsParams.filter((c) => !CURATED_LOCAL_SERVICES[`${c.location}/${c.service}`]),
   ];
 }
 
@@ -27,20 +40,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { location, service } = await params;
   const key = `${location}/${service}`;
   const data = CURATED_LOCAL_SERVICES[key];
-  if (!data) return {};
+  const cmsPage = await cms.getPageBySlug(key);
+  if (!data && !cmsPage) return {};
 
-  return {
-    title: data.metaTitle,
-    description: data.metaDescription,
-    alternates: {
-      canonical: `/${location}/${service}`,
-    },
-    openGraph: {
+  const settings = await getSettings();
+  return buildMetadata({
+    path: `/${location}/${service}`,
+    seo: cmsPage?.seo ?? (cmsPage ? { title: cmsPage.title } : undefined),
+    fallback: !data ? undefined : {
       title: data.metaTitle,
       description: data.metaDescription,
-      url: `https://kash-technology.com/${location}/${service}`,
+      openGraph: { title: data.metaTitle, description: data.metaDescription },
     },
-  };
+    settings,
+  });
 }
 
 export default async function CuratedLocalServicePage({ params }: Props) {
@@ -48,9 +61,23 @@ export default async function CuratedLocalServicePage({ params }: Props) {
   const key = `${location}/${service}`;
   const data = CURATED_LOCAL_SERVICES[key];
 
-  if (!data) {
+  // CMS override (hero / copy / sections / FAQ / CTA / SEO): a published CMS page for this path wins,
+  // and CMS-only location/service combinations are served too. Unknown + no CMS page → 404.
+  const cmsPage = await cms.getPageBySlug(key);
+  if (!data && !cmsPage) {
     notFound();
   }
+  if (cmsPage) {
+    const settings = await getSettings();
+    return (
+      <>
+        <JsonLd data={buildPageSchemas(cmsPage, `/${key}`, settings)} />
+        <CmsPageRenderer page={cmsPage} />
+      </>
+    );
+  }
+
+  if (!data) notFound(); // unreachable (typing guard)
 
   return (
     <>

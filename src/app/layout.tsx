@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import Script from "next/script";
-import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -10,6 +10,9 @@ import { ConsultationProvider } from "@/components/conversion/ConsultationContex
 import { FloatingContactButton } from "@/components/conversion/FloatingContactButton";
 import { LeadTracker } from "@/components/conversion/LeadTracker";
 import { Analytics } from "@vercel/analytics/next";
+import { ThemeStyle } from "@/components/cms/ThemeStyle";
+import { getFooterConfig, getHeaderConfig, getSettings } from "@/lib/cms";
+import { serializeJsonLd, siteGraph } from "@/lib/seo/schema";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,12 +22,6 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
-});
-
-const playfair = Playfair_Display({
-  variable: "--font-playfair",
-  subsets: ["latin"],
-  display: "swap",
 });
 
 const gaId = process.env.NEXT_PUBLIC_GA_ID;
@@ -85,71 +82,35 @@ export const metadata: Metadata = {
   }
 };
 
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Organization",
-      "@id": `${SITE_CONFIG.websiteUrl}/#organization`,
-      "name": SITE_CONFIG.companyName,
-      "url": SITE_CONFIG.websiteUrl,
-      "logo": `${SITE_CONFIG.websiteUrl}/images/logo/kash-logo-emblem.jpg`,
-      "email": SITE_CONFIG.contactEmail,
-      "telephone": SITE_CONFIG.contactPhonePrimary,
-      "slogan": SITE_CONFIG.tagline,
-      "description": "Full-service digital agency delivering tailored, affordable, and scalable web platforms, mobile apps, video content, social media management, and performance marketing automation.",
-      "contactPoint": [
-        {
-          "@type": "ContactPoint",
-          "telephone": SITE_CONFIG.contactPhonePrimary,
-          "contactType": "sales",
-          "email": SITE_CONFIG.contactEmail,
-          "areaServed": ["IN", "Worldwide"],
-          "availableLanguage": ["English", "Hindi"]
-        }
-      ],
-      "sameAs": [
-        SITE_CONFIG.social.github,
-        SITE_CONFIG.social.linkedin
-      ].filter(Boolean)
-    },
-    {
-      "@type": "WebSite",
-      "@id": `${SITE_CONFIG.websiteUrl}/#website`,
-      "url": SITE_CONFIG.websiteUrl,
-      "name": SITE_CONFIG.companyName,
-      "description": "We Build. We Create. We Grow. — Technology • Creative • Growth",
-      "publisher": {
-        "@id": `${SITE_CONFIG.websiteUrl}/#organization`
-      }
-    }
-  ]
-};
-
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const [header, footer, settings] = await Promise.all([getHeaderConfig(), getFooterConfig(), getSettings()]);
+  const jsonLd = siteGraph(settings, "Build. Create. Grow. with KASH Technology");
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[#080808] text-white">
+      <head>
+        <ThemeStyle />
+      </head>
+      <body className="min-h-full flex flex-col bg-[#FFF9F4] text-[#0B0B0F]">
         <ConsultationProvider>
           <Suspense fallback={null}>
             <LeadTracker />
           </Suspense>
           <a 
             href="#main-content" 
-            className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 bg-[#e86024] text-white px-4 py-2 rounded-lg font-bold"
+            className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 bg-[#FF5A00] text-white px-4 py-2 rounded-lg font-bold"
           >
             Skip to main content
           </a>
           <script
             type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
           />
           {gaId && (
             <>
@@ -169,9 +130,9 @@ export default function RootLayout({
               </Script>
             </>
           )}
-          <Navbar />
+          <Navbar config={header} />
           <main id="main-content" className="flex-1">{children}</main>
-          <Footer />
+          <Footer config={footer} />
           <FloatingContactButton />
           <Analytics />
         </ConsultationProvider>

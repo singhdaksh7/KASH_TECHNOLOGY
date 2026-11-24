@@ -3,22 +3,32 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, Calendar, ChevronDown } from "lucide-react";
+import { Menu, ChevronDown, ArrowRight, X } from "lucide-react";
 import { Container } from "@/components/ui/Container";
-import { MobileNavigation } from "@/components/layout/MobileNavigation";
 import { KashLogo } from "@/components/branding/KashLogo";
-import { SITE_CONFIG } from "@/lib/constants";
-import { trackEvent } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
+import type { HeaderConfig } from "@/lib/cms/types";
+import { FALLBACK_HEADER } from "@/lib/cms/fallback-content";
+import { safeHref } from "@/lib/cms/url-safety";
 
-export function Navbar() {
+interface NavbarProps {
+  /** CMS header config. Omitted → approved static header (FALLBACK_HEADER). */
+  config?: HeaderConfig;
+}
+
+export function Navbar({ config = FALLBACK_HEADER }: NavbarProps) {
+  const NAV_ITEMS = config.menu;
+  const primaryCta = config.primaryCta ?? FALLBACK_HEADER.primaryCta!;
+  const secondaryCta = config.secondaryCta;
+  const announcement = config.announcement;
+  const announcementHref = announcement?.href ? safeHref(announcement.href) : null;
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+      setScrolled(window.scrollY > 15);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
@@ -27,63 +37,63 @@ export function Navbar() {
   return (
     <header
       className={cn(
-        "fixed top-0 w-full z-50 transition-all duration-200 border-b",
-        scrolled 
-          ? "bg-[#050708]/95 backdrop-blur-md border-[#f36b21]/20 py-3 shadow-2xl" 
-          : "bg-[#050708] border-white/5 py-4"
+        config.sticky === false ? "absolute" : "fixed",
+        "top-0 left-0 right-0 w-full z-50 transition-all duration-200 border-b",
+        scrolled
+          ? "bg-[#FFF9F4]/95 backdrop-blur-md border-[#E8E5E2] py-2.5 shadow-sm"
+          : "bg-[#FFF9F4] border-[#E8E5E2] py-3.5"
       )}
     >
+      {announcement?.text && (
+        <div className="-mt-3.5 mb-2.5 bg-gradient-to-r from-[#FF5A00] to-[#FF8A3D] px-4 py-1.5 text-center text-xs font-semibold text-white">
+          {announcementHref ? (
+            <Link href={announcementHref} className="hover:underline">{announcement.text}</Link>
+          ) : (
+            announcement.text
+          )}
+        </div>
+      )}
       <Container className="flex items-center justify-between">
         {/* Brand Logo */}
         <KashLogo variant="header" />
 
-        {/* Desktop Navigation Links */}
-        <nav className="hidden lg:flex items-center gap-6 xl:gap-8" aria-label="Primary">
-          {SITE_CONFIG.navLinks.map((link) => {
-            const hasChildren = "children" in link && Boolean(link.children?.length);
-            const isChildActive = hasChildren && link.children?.some((c) => pathname === c.href);
-            const isActive = pathname === link.href || isChildActive;
+        {/* Center Navigation Links */}
+        <nav className="hidden lg:flex items-center gap-7" aria-label="Primary">
+          {NAV_ITEMS.map((item) => {
+            const isActive =
+              item.href === "/"
+                ? pathname === "/"
+                : pathname === item.href || (item.children && pathname.startsWith(item.href));
 
-            if (hasChildren && link.children) {
+            if (item.children?.length) {
               return (
-                <div key={link.label} className="relative group py-2">
+                <div
+                  key={item.label}
+                  className="relative group py-1"
+                >
                   <Link
-                    href={link.href}
+                    href={item.href}
                     className={cn(
-                      "flex items-center gap-1 text-sm font-medium transition-all duration-200 py-1 focus:outline-none",
-                      isActive
-                        ? "text-[#f36b21] font-semibold"
-                        : "text-[#d1d5db] group-hover:text-white"
+                      "flex items-center gap-1 text-[13.5px] font-medium transition-colors hover:text-[#FF5A00]",
+                      isActive ? "text-[#FF5A00] font-semibold" : "text-[#0B0B0F]"
                     )}
                   >
-                    <span>{link.label}</span>
-                    <ChevronDown className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 group-hover:rotate-180 transition-transform duration-200 text-[#f36b21]" />
-                    {isActive && (
-                      <span className="absolute bottom-0 left-0 w-full h-[2px] bg-[#f36b21] rounded-full shadow-[0_0_8px_#f36b21]" />
-                    )}
+                    <span>{item.label}</span>
+                    <ChevronDown className="w-3.5 h-3.5 text-[#4B5563] group-hover:text-[#FF5A00] group-hover:rotate-180 transition-transform duration-200" />
                   </Link>
 
-                  {/* Desktop Dropdown Flyout */}
-                  <div className="absolute top-full left-0 pt-2 w-64 opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:translate-y-0 group-focus-within:pointer-events-auto transition-all duration-200 z-50">
-                    <div className="bg-[#0b0e14]/98 backdrop-blur-xl border border-white/10 rounded-2xl p-2 shadow-[0_12px_40px_rgba(0,0,0,0.85)] space-y-1">
-                      {link.children.map((child) => {
-                        const isCurrent = pathname === child.href;
-                        return (
-                          <Link
-                            key={child.href}
-                            href={child.href}
-                            className={cn(
-                              "flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all duration-150 group/item",
-                              isCurrent
-                                ? "bg-[#f36b21]/15 text-[#f36b21] font-semibold border border-[#f36b21]/30"
-                                : "text-white/80 hover:bg-white/5 hover:text-white"
-                            )}
-                          >
-                            <span>{child.label}</span>
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#f36b21] opacity-0 group-hover/item:opacity-100 transition-opacity" />
-                          </Link>
-                        );
-                      })}
+                  {/* Dropdown Menu */}
+                  <div className="absolute top-full -left-4 pt-2 w-64 opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-200 z-50">
+                    <div className="bg-[#FFFFFF] border border-[#E8E5E2] rounded-xl p-2 shadow-xl space-y-0.5">
+                      {item.children.map((child) => (
+                        <Link
+                          key={child.href}
+                          href={child.href}
+                          className="block px-3 py-2 text-xs font-medium text-[#4B5563] hover:text-[#FF5A00] hover:bg-[#FFF3E9] rounded-lg transition-colors"
+                        >
+                          {child.label}
+                        </Link>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -92,48 +102,84 @@ export function Navbar() {
 
             return (
               <Link
-                key={link.href}
-                href={link.href}
+                key={item.label}
+                href={item.href}
                 className={cn(
-                  "text-sm font-medium transition-all duration-200 relative py-1",
-                  isActive
-                    ? "text-[#f36b21] font-semibold"
-                    : "text-[#d1d5db] hover:text-white"
+                  "text-[13.5px] font-medium transition-colors hover:text-[#FF5A00]",
+                  isActive ? "text-[#FF5A00] font-semibold" : "text-[#0B0B0F]"
                 )}
               >
-                {link.label}
-                {isActive && (
-                  <span className="absolute bottom-0 left-0 w-full h-[2px] bg-[#f36b21] rounded-full shadow-[0_0_8px_#f36b21]" />
-                )}
+                {item.label}
               </Link>
             );
           })}
         </nav>
 
-        {/* Right CTA Button */}
-        <div className="hidden lg:flex items-center gap-4">
+        {/* Right Action Buttons */}
+        <div className="hidden lg:flex items-center gap-3">
+          {secondaryCta && (
+            <Link
+              href={safeHref(secondaryCta.href) ?? "/contact"}
+              className="px-4 py-2 rounded-lg bg-[#FFFFFF] border border-[#E8E5E2] text-xs font-semibold text-[#0B0B0F] hover:border-[#FF5A00] hover:text-[#FF5A00] transition-colors shadow-2xs"
+            >
+              {secondaryCta.label}
+            </Link>
+          )}
           <Link
-            href={SITE_CONFIG.bookingUrl}
-            onClick={() => trackEvent("book_call_click", { location: "navbar" })}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#f36b21] hover:bg-[#e05b14] text-white text-xs font-bold tracking-wide transition-all shadow-[0_4px_14px_rgba(243,107,33,0.35)] hover:shadow-[0_6px_20px_rgba(243,107,33,0.5)] active:scale-95"
+            href={safeHref(primaryCta.href) ?? "/contact"}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gradient-to-r from-[#FF5A00] to-[#FF8A3D] text-xs font-semibold text-white hover:brightness-105 transition-all shadow-sm shadow-[#FF5A00]/25"
           >
-            <Calendar className="w-3.5 h-3.5" />
-            <span>Start Your Project</span>
+            <span>{primaryCta.label}</span>
+            <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
-        {/* Mobile Menu Button */}
+        {/* Mobile Hamburger Button */}
         <button
           type="button"
-          onClick={() => setMobileOpen(true)}
-          aria-label="Open menu"
-          className="rounded-lg p-2 text-white hover:bg-white/10 lg:hidden focus:outline-none focus:ring-2 focus:ring-[#f36b21]"
+          onClick={() => setMobileOpen(!mobileOpen)}
+          aria-label="Toggle Navigation"
+          className="lg:hidden p-2 text-[#0B0B0F] hover:text-[#FF5A00] focus:outline-none"
         >
-          <Menu className="h-6 w-6 text-white" aria-hidden="true" />
+          {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
       </Container>
 
-      <MobileNavigation open={mobileOpen} onClose={() => setMobileOpen(false)} />
+      {/* Mobile Drawer */}
+      {mobileOpen && (
+        <div className="lg:hidden bg-[#FFFFFF] border-b border-[#E8E5E2] px-6 py-6 shadow-xl space-y-4">
+          <nav className="flex flex-col space-y-3">
+            {NAV_ITEMS.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                onClick={() => setMobileOpen(false)}
+                className="text-base font-semibold text-[#0B0B0F] hover:text-[#FF5A00]"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+          <div className="pt-4 border-t border-[#E8E5E2] flex flex-col gap-2.5">
+            {secondaryCta && (
+              <Link
+                href={safeHref(secondaryCta.href) ?? "/contact"}
+                onClick={() => setMobileOpen(false)}
+                className="w-full text-center py-2.5 rounded-lg border border-[#E8E5E2] text-sm font-semibold text-[#0B0B0F]"
+              >
+                {secondaryCta.label}
+              </Link>
+            )}
+            <Link
+              href={safeHref(primaryCta.href) ?? "/contact"}
+              onClick={() => setMobileOpen(false)}
+              className="w-full text-center py-2.5 rounded-lg bg-gradient-to-r from-[#FF5A00] to-[#FF8A3D] text-sm font-semibold text-white"
+            >
+              {primaryCta.label}
+            </Link>
+          </div>
+        </div>
+      )}
     </header>
   );
 }

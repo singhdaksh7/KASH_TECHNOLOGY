@@ -1,55 +1,41 @@
 @import "tailwindcss";
 
 :root {
-  /* Core Dark surfaces matching screenshots */
-  --bg-dark: #050708;
-  --bg-dark-surface: #0b0d0e;
-  --bg-dark-elevated: #121418;
-  --text-dark-primary: #ffffff;
-  --text-dark-muted: #9ca3af;
-  --border-dark: rgba(255, 255, 255, 0.1);
+  /* Approved Final Design System Tokens */
+  --primary-orange: #FF5A00;
+  --secondary-orange: #FF8A3D;
+  --soft-peach: #FFF3E9;
+  --warm-bg: #FFF9F4;
+  --white: #FFFFFF;
+  --primary-text: #0B0B0F;
+  --secondary-text: #4B5563;
+  --border-color: #E8E5E2;
+  --dark-color: #090A0D;
 
-  /* Core Ivory / Light surfaces */
-  --bg-ivory: #fbf8f2;
-  --bg-ivory-surface: #ffffff;
-  --bg-ivory-elevated: #f5f1e8;
-  --text-ivory-primary: #111827;
-  --text-ivory-muted: #6b7280;
-  --border-ivory: rgba(0, 0, 0, 0.06);
+  --primary-gradient: linear-gradient(135deg, #FF5A00 0%, #FF8A3D 100%);
+  --orange-radial: radial-gradient(circle at top right, rgba(255, 90, 0, 0.15), transparent 70%);
 
-  /* Brand Accents */
-  --accent-orange: #f36b21;
-  --accent-orange-hover: #e05b14;
-  --accent-orange-light: rgba(243, 107, 33, 0.12);
-  --accent-gold: #c5a880;
-  --accent-gold-light: rgba(197, 168, 128, 0.15);
+  --background: var(--warm-bg);
+  --foreground: var(--primary-text);
 
-  /* System tokens */
-  --background: var(--bg-dark);
-  --foreground: var(--text-dark-primary);
-  --primary: var(--accent-orange);
-  --primary-foreground: #ffffff;
-
-  /* Radii */
-  --radius-sm: 6px;
-  --radius-md: 10px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 24px;
 }
 
 @theme inline {
-  --color-bg-dark: var(--bg-dark);
-  --color-bg-dark-surface: var(--bg-dark-surface);
-  --color-bg-dark-elevated: var(--bg-dark-elevated);
-  --color-bg-ivory: var(--bg-ivory);
-  --color-bg-ivory-surface: var(--bg-ivory-surface);
-  --color-bg-ivory-elevated: var(--bg-ivory-elevated);
-  --color-accent-orange: var(--accent-orange);
-  --color-accent-gold: var(--accent-gold);
+  --color-primary-orange: #FF5A00;
+  --color-secondary-orange: #FF8A3D;
+  --color-soft-peach: #FFF3E9;
+  --color-warm-bg: #FFF9F4;
+  --color-primary-text: #0B0B0F;
+  --color-secondary-text: #4B5563;
+  --color-border-subtle: #E8E5E2;
+  --color-dark: #090A0D;
 
-  --font-serif: var(--font-playfair);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-geist-sans), Inter, system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
 }
 
 * {
@@ -58,22 +44,84 @@
 
 html {
   scroll-behavior: smooth;
+  background-color: var(--warm-bg);
 }
 
 body {
-  background: var(--bg-dark);
-  color: var(--text-dark-primary);
-  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--warm-bg);
+  color: var(--primary-text);
+  font-family: var(--font-geist-sans), Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   overflow-x: hidden;
-}
-
-.font-serif-heading {
-  font-family: var(--font-playfair), "Cormorant Garamond", Georgia, serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 ::selection {
-  background: var(--accent-orange);
-  color: #ffffff;
+  background: var(--primary-orange);
+  color: #FFFFFF;
+}
+
+/* Subtle diagonal hero geometry and backgrounds */
+.hero-diagonal-bg {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 55%;
+  height: 100%;
+  background: linear-gradient(135deg, #FF5A00 0%, #FF8A3D 100%);
+  clip-path: polygon(25% 0, 100% 0, 100% 100%, 0% 100%);
+  z-index: 0;
+}
+
+.hero-diagonal-soft {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 65%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(255, 90, 0, 0.08) 0%, rgba(255, 138, 61, 0.02) 100%);
+  clip-path: polygon(20% 0, 100% 0, 100% 100%, 0% 100%);
+  z-index: 0;
+}
+
+.btn-primary-orange {
+  background: linear-gradient(135deg, #FF5A00 0%, #FF8A3D 100%);
+  color: #FFFFFF;
+  transition: all 0.2s ease;
+  font-weight: 600;
+}
+
+.btn-primary-orange:hover {
+  filter: brightness(1.05);
+  box-shadow: 0 4px 14px rgba(255, 90, 0, 0.35);
+}
+
+.btn-secondary-white {
+  background: #FFFFFF;
+  color: #0B0B0F;
+  border: 1px solid #E8E5E2;
+  transition: all 0.2s ease;
+  font-weight: 600;
+}
+
+.btn-secondary-white:hover {
+  border-color: #FF5A00;
+  color: #FF5A00;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #FFF9F4;
+}
+::-webkit-scrollbar-thumb {
+  background: #E8E5E2;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #FF5A00;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -89,71 +137,4 @@ body {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-}
-
-/* Circuit lines & glowing geometric accents */
-.circuit-pattern-dark {
-  background-image: 
-    radial-gradient(circle at 50% 50%, rgba(243, 107, 33, 0.07) 0%, transparent 60%),
-    linear-gradient(rgba(243, 107, 33, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(243, 107, 33, 0.035) 1px, transparent 1px);
-  background-size: 100% 100%, 48px 48px, 48px 48px;
-}
-
-.circuit-pattern-ivory {
-  background-image: 
-    linear-gradient(rgba(243, 107, 33, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(243, 107, 33, 0.04) 1px, transparent 1px);
-  background-size: 40px 40px, 40px 40px;
-}
-
-/* Diagonal split angle utility */
-.clip-diagonal-hero {
-  clip-path: polygon(0 0, 100% 0, 100% 88%, 0 100%);
-}
-
-.clip-diagonal-inverted {
-  clip-path: polygon(0 12%, 100% 0, 100% 100%, 0 100%);
-}
-
-/* Rotating technical ring animations */
-@keyframes spinSlow {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes spinReverseSlow {
-  from {
-    transform: rotate(360deg);
-  }
-  to {
-    transform: rotate(0deg);
-  }
-}
-
-.animate-spin-slow {
-  animation: spinSlow 35s linear infinite;
-}
-
-.animate-spin-reverse-slow {
-  animation: spinReverseSlow 45s linear infinite;
-}
-
-/* Custom scrollbars */
-::-webkit-scrollbar {
-  width: 8px;
-}
-::-webkit-scrollbar-track {
-  background: #050708;
-}
-::-webkit-scrollbar-thumb {
-  background: #23262d;
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #f36b21;
 }

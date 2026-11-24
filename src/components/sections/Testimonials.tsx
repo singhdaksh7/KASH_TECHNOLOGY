@@ -1,111 +1,79 @@
 import React from "react";
 import { Container } from "@/components/ui/Container";
-import { Star, ChevronLeft, ChevronRight, User } from "lucide-react";
+import { ShieldCheck, Target, Handshake } from "lucide-react";
 
-export interface TestimonialItem {
-  name: string;
-  role: string;
-  company: string;
-  quote: string;
-  stars: number;
+export interface BenefitItem {
+  title: string;
+  description: string;
+  tag: string;
+  icon: React.ComponentType<{ className?: string }>;
 }
 
-export const TESTIMONIALS: TestimonialItem[] = [
+export const BENEFITS: BenefitItem[] = [
   {
-    name: "Rahul Mehta",
-    role: "CFO",
-    company: "FinServe Ltd. (FinTrack ERP)",
-    quote: "Delivered our ERP on schedule with exceptional engineering quality.",
-    stars: 5,
+    title: "One Digital Partner",
+    description: "Technology, creative and growth services under one coordinated team. No scattered vendors, zero misaligned deliverables.",
+    tag: "Coordinated Team",
+    icon: ShieldCheck,
   },
   {
-    name: "Neha Sharma",
-    role: "Founder",
-    company: "ShopEase (Mobile App)",
-    quote: "Fast, reliable execution with great communication throughout.",
-    stars: 5,
+    title: "Built Around Your Business",
+    description: "Solutions are designed around actual business workflows instead of forcing businesses into generic off-the-shelf software.",
+    tag: "Custom Solutions",
+    icon: Target,
   },
   {
-    name: "Dr. Amit Verma",
-    role: "Director",
-    company: "HealthPlus (CRM System)",
-    quote: "Streamlined our operations and patient workflows seamlessly.",
-    stars: 5,
+    title: "Long-Term Support",
+    description: "KASH supports businesses beyond launch as their operational needs evolve with direct engineering and marketing support.",
+    tag: "Ongoing Partnership",
+    icon: Handshake,
   },
 ];
 
 export function Testimonials() {
   return (
-    <section className="py-16 md:py-20 bg-[#fbf8f2] text-[#111827] relative overflow-hidden border-b border-black/5">
-      <div className="absolute inset-0 circuit-pattern-ivory opacity-35 pointer-events-none" />
-
+    <section className="py-16 md:py-24 bg-white text-[#0B0B0F] relative overflow-hidden border-b border-[#E8E5E2]">
       <Container className="relative z-10">
-        <div className="max-w-3xl mx-auto text-center mb-12 space-y-2">
-          <span className="text-[11px] font-mono font-bold tracking-[0.25em] text-[#f36b21] uppercase block">
-            CASE STUDY FEEDBACK
+        <div className="max-w-3xl mx-auto text-center mb-14 space-y-2">
+          <span className="inline-block text-[11px] font-bold tracking-wider text-[#FF5A00] bg-[#FFF3E9] px-3 py-1 rounded-md uppercase">
+            WHY BUSINESSES CHOOSE KASH
           </span>
-          <h2 className="font-serif-heading text-2xl sm:text-3xl md:text-[34px] font-bold tracking-tight text-[#111827]">
-            Project Stakeholder Reviews
+          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#0B0B0F]">
+            One Digital Partner for Your Business
           </h2>
+          <p className="text-xs sm:text-sm text-[#4B5563]">
+            From custom software to branding and performance marketing — built around your real operational needs.
+          </p>
         </div>
 
-        <div className="relative max-w-5xl mx-auto">
-          {/* Left Arrow */}
-          <button 
-            type="button"
-            aria-label="Previous Testimonial"
-            className="hidden lg:flex absolute -left-5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white border border-black/10 items-center justify-center text-[#6b7280] hover:text-[#f36b21] hover:border-[#f36b21] transition-all shadow-sm z-20 cursor-pointer"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-
-          {/* Testimonial Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {TESTIMONIALS.map((item) => (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          {BENEFITS.map((item) => {
+            const Icon = item.icon;
+            return (
               <div
-                key={item.name}
-                className="bg-white rounded-2xl p-6 border border-black/5 shadow-[0_4px_16px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(243,107,33,0.1)] transition-all duration-200 flex flex-col justify-between"
+                key={item.title}
+                className="bg-[#FFF9F4] rounded-2xl p-6 border border-[#E8E5E2] hover:border-[#FF5A00]/40 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between space-y-4"
               >
-                <div>
-                  {/* Avatar & User Info */}
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-full bg-[#0e0e12] border border-[#f36b21]/30 flex items-center justify-center text-white shrink-0 overflow-hidden shadow-inner">
-                      <User className="w-4 h-4 text-[#c5a880]" />
-                    </div>
-                    <div>
-                      <h3 className="font-serif-heading text-sm sm:text-base font-bold text-[#111827]">
-                        {item.name}
-                      </h3>
-                      <p className="text-[11px] text-[#6b7280]">
-                        {item.role}, {item.company}
-                      </p>
-                    </div>
+                <div className="space-y-3">
+                  <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#FF5A00] shadow-2xs">
+                    <Icon className="w-5 h-5" />
                   </div>
 
-                  {/* Quote */}
-                  <p className="text-xs sm:text-sm text-[#4b5563] leading-normal italic mb-4">
-                    &ldquo;{item.quote}&rdquo;
+                  <h3 className="text-base font-bold text-[#0B0B0F]">
+                    {item.title}
+                  </h3>
+
+                  <p className="text-xs sm:text-sm text-[#4B5563] leading-relaxed">
+                    {item.description}
                   </p>
                 </div>
 
-                {/* Stars */}
-                <div className="flex items-center gap-1 pt-2.5 border-t border-black/5 text-[#f36b21]">
-                  {[...Array(item.stars)].map((_, i) => (
-                    <Star key={i} className="w-3.5 h-3.5 fill-[#f36b21]" />
-                  ))}
+                <div className="pt-3 border-t border-[#E8E5E2] text-xs font-semibold text-[#FF5A00]">
+                  {item.tag}
                 </div>
               </div>
-            ))}
-          </div>
-
-          {/* Right Arrow */}
-          <button 
-            type="button"
-            aria-label="Next Testimonial"
-            className="hidden lg:flex absolute -right-6 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white border border-black/10 items-center justify-center text-[#6b7280] hover:text-[#f36b21] hover:border-[#f36b21] transition-all shadow-sm z-20 cursor-pointer"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
+            );
+          })}
         </div>
       </Container>
     </section>

@@ -1,0 +1,2 @@
+import { prisma } from "@/lib/db/prisma"; import { ok,fail } from "@/lib/server/http";
+export async function GET(_:Request,{params}:{params:Promise<{slug:string}>}){const slug=(await params).slug.startsWith("/")?(await params).slug:`/${(await params).slug}`;const page=await prisma.page.findFirst({where:{slug,status:"PUBLISHED",publishedAt:{lte:new Date()},deletedAt:null},include:{sections:{where:{enabled:true},orderBy:{order:"asc"}},seo:true}});return page?ok(page):fail("NOT_FOUND","Page not found",404);}

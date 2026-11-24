@@ -5,12 +5,10 @@ import { HeroDiagonal } from "@/components/sections/HeroDiagonal";
 import { FaqAccordion } from "@/components/sections/FaqAccordion";
 import { CtaBanner } from "@/components/sections/CtaBanner";
 import { Container } from "@/components/ui/Container";
-import { CircuitBackground } from "@/components/branding/CircuitBackground";
 import { 
   Building2, 
   CheckCircle2, 
   AlertCircle, 
-  ArrowRight, 
   ExternalLink 
 } from "lucide-react";
 
@@ -20,7 +18,7 @@ interface LocationPageTemplateProps {
 
 export function LocationPageTemplate({ location }: LocationPageTemplateProps) {
   return (
-    <>
+    <div className="bg-[#FFF9F4] text-[#0B0B0F]">
       {/* 1. Hero with Location Focus, Breadcrumbs, & Quick Nearby Links */}
       <HeroDiagonal
         badge={location.badge}
@@ -38,41 +36,39 @@ export function LocationPageTemplate({ location }: LocationPageTemplateProps) {
         quickLinks={location.nearbyAreas.map((a) => ({ label: a.name, href: a.href }))}
       />
 
-      {/* 2. Local Industries on Ivory Surface */}
-      <section className="py-20 md:py-28 bg-[#f7f4ee] text-[#111827] relative overflow-hidden border-b border-black/5">
-        <div className="absolute inset-0 circuit-pattern-ivory opacity-30 pointer-events-none" />
-
+      {/* 2. Local Industries */}
+      <section className="py-16 md:py-24 bg-white text-[#0B0B0F] relative overflow-hidden border-b border-[#E8E5E2]">
         <Container className="relative z-10">
-          <div className="max-w-3xl mx-auto text-center mb-16 space-y-3">
-            <span className="text-xs font-mono font-bold tracking-[0.25em] text-[#e86024] uppercase block">
+          <div className="max-w-3xl mx-auto text-center mb-14 space-y-3">
+            <span className="inline-block text-[11px] font-bold tracking-wider text-[#FF5A00] bg-[#FFF3E9] px-3 py-1 rounded-md uppercase">
               LOCAL ECONOMIC FOCUS
             </span>
-            <h2 className="font-serif-heading text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-[#111827]">
+            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#0B0B0F]">
               Industries We Serve in {location.name}
             </h2>
-            <p className="text-sm sm:text-base text-[#6b7280] max-w-xl mx-auto pt-2">
+            <p className="text-xs sm:text-sm text-[#4B5563] max-w-xl mx-auto">
               Bespoke digital architecture engineered to solve the operational realities of {location.name}&apos;s key business sectors.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
             {location.localIndustries.map((ind) => (
               <div
                 key={ind.title}
-                className="bg-white rounded-2xl p-8 border border-black/5 shadow-sm hover:shadow-xl hover:border-[#e86024]/30 transition-all duration-300 flex flex-col justify-between"
+                className="bg-[#FFF9F4] rounded-2xl p-7 border border-[#E8E5E2] hover:border-[#FF5A00]/40 hover:shadow-md transition-all flex flex-col justify-between"
               >
                 <div>
-                  <div className="w-12 h-12 rounded-xl bg-[#e86024]/10 border border-[#e86024]/20 flex items-center justify-center text-[#e86024] mb-5">
-                    <Building2 className="w-6 h-6" />
+                  <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#FF5A00] mb-4 shadow-2xs">
+                    <Building2 className="w-5 h-5" />
                   </div>
-                  <h3 className="font-serif-heading text-xl font-bold text-[#111827] mb-3">
+                  <h3 className="text-base font-bold text-[#0B0B0F] mb-2">
                     {ind.title}
                   </h3>
-                  <p className="text-sm text-[#6b7280] leading-relaxed">
+                  <p className="text-xs text-[#4B5563] leading-relaxed">
                     {ind.description}
                   </p>
                 </div>
-                <div className="pt-6 mt-6 border-t border-black/5 flex items-center justify-between text-xs font-mono text-[#e86024] font-semibold">
+                <div className="pt-4 mt-5 border-t border-[#E8E5E2] flex items-center justify-between text-[11px] text-[#FF5A00] font-bold">
                   <span>SPECIALIZED WORKFLOWS</span>
                   <span>ENGINEERED</span>
                 </div>
@@ -82,242 +78,118 @@ export function LocationPageTemplate({ location }: LocationPageTemplateProps) {
         </Container>
       </section>
 
-      {/* 3. Real Business Problems vs Engineered Solutions on Dark */}
-      <section className="py-20 md:py-28 bg-[#080808] text-white relative overflow-hidden border-b border-white/10">
-        <CircuitBackground variant="dark" />
-
+      {/* 3. Real Business Problems vs Engineered Solutions */}
+      <section className="py-16 md:py-24 bg-[#FFF9F4] text-[#0B0B0F] relative overflow-hidden border-b border-[#E8E5E2]">
         <Container className="relative z-10">
-          <div className="max-w-3xl mx-auto text-center mb-16 space-y-3">
-            <span className="text-xs font-mono font-bold tracking-[0.25em] text-[#e86024] uppercase block">
+          <div className="max-w-3xl mx-auto text-center mb-14 space-y-3">
+            <span className="inline-block text-[11px] font-bold tracking-wider text-[#FF5A00] bg-[#FFF3E9] px-3 py-1 rounded-md uppercase">
               CHALLENGES & SOLUTIONS
             </span>
-            <h2 className="font-serif-heading text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-white">
+            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#0B0B0F]">
               Solving Bottlenecks for {location.name} Businesses
             </h2>
-            <p className="text-sm text-[#9ca3af] max-w-xl mx-auto pt-2">
-              We replace spreadsheet limitations, manual paperwork, and outdated websites with type-safe software.
+            <p className="text-xs sm:text-sm text-[#4B5563] max-w-xl mx-auto">
+              We replace spreadsheet limitations, manual paperwork, and outdated websites with modern software.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {location.businessProblems.map((item, idx) => (
               <div
                 key={idx}
-                className="bg-[#0e0e12] rounded-2xl p-8 border border-white/5 flex flex-col justify-between shadow-lg hover:border-[#e86024]/30 transition-colors"
+                className="bg-white rounded-2xl p-6 border border-[#E8E5E2] flex flex-col justify-between hover:shadow-md transition-all"
               >
-                <div className="space-y-6">
-                  {/* Problem */}
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-red-400 text-xs font-mono font-bold uppercase tracking-wider">
-                      <AlertCircle className="w-3.5 h-3.5" />
-                      <span>The Challenge</span>
+                <div className="space-y-4">
+                  <div className="p-3.5 rounded-xl bg-red-50/60 border border-red-100">
+                    <div className="flex items-center gap-2 text-xs font-bold text-red-600 mb-1">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      <span>THE BOTTLENECK</span>
                     </div>
-                    <p className="text-xs sm:text-sm text-[#9ca3af] leading-relaxed">
+                    <p className="text-xs text-[#4B5563] leading-relaxed">
                       {item.problem}
                     </p>
                   </div>
 
-                  <div className="h-px bg-white/5" />
-
-                  {/* Solution */}
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-[#e86024] text-xs font-mono font-bold uppercase tracking-wider">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      <span>KASH Solution</span>
+                  <div className="p-3.5 rounded-xl bg-[#FFF3E9]/80 border border-[#FF5A00]/20">
+                    <div className="flex items-center gap-2 text-xs font-bold text-[#FF5A00] mb-1">
+                      <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                      <span>THE SOLUTION</span>
                     </div>
-                    <p className="text-xs sm:text-sm text-white leading-relaxed">
+                    <p className="text-xs text-[#0B0B0F] leading-relaxed">
                       {item.solution}
                     </p>
                   </div>
                 </div>
 
-                <div className="pt-6 mt-6 border-t border-white/5 text-[10px] font-mono text-[#c5a880]">
-                  OUTCOME: AUTOMATED & AUDITABLE
-                </div>
+                {"impact" in item && (
+                  <div className="pt-4 mt-4 border-t border-[#E8E5E2]">
+                    <span className="text-[11px] font-bold text-[#FF5A00]">
+                      Impact: {(item as unknown as { impact: string }).impact}
+                    </span>
+                  </div>
+                )}
               </div>
             ))}
           </div>
         </Container>
       </section>
 
-      {/* 4. Software Use Cases on Ivory */}
-      <section className="py-20 md:py-28 bg-[#f7f4ee] text-[#111827] relative overflow-hidden border-b border-black/5">
-        <Container className="relative z-10">
-          <div className="max-w-3xl mx-auto text-center mb-16 space-y-3">
-            <span className="text-xs font-mono font-bold tracking-[0.25em] text-[#e86024] uppercase block">
-              SOFTWARE ARCHITECTURE
-            </span>
-            <h2 className="font-serif-heading text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-[#111827]">
-              Tailored Systems for {location.name}
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {location.softwareUseCases.map((uc) => (
-              <div
-                key={uc.title}
-                className="bg-white rounded-2xl p-8 border border-black/5 shadow-sm hover:shadow-xl hover:border-[#e86024]/40 transition-all duration-300 flex flex-col justify-between"
-              >
-                <div>
-                  <span className="text-[10px] font-mono font-bold px-2.5 py-1 rounded bg-[#0e0e12] text-[#c5a880] inline-block mb-4">
-                    {uc.tag}
-                  </span>
-                  <h3 className="font-serif-heading text-xl font-bold text-[#111827] mb-3">
-                    {uc.title}
-                  </h3>
-                  <p className="text-xs sm:text-sm text-[#6b7280] leading-relaxed mb-6">
-                    {uc.description}
-                  </p>
-                </div>
-
-                <div className="pt-4 border-t border-black/5 flex items-center justify-between">
-                  <span className="text-xs font-mono text-[#9ca3af]">Bespoke Architecture</span>
-                  <Link
-                    href="/contact"
-                    className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-[#e86024] hover:text-[#d35219]"
-                  >
-                    <span>Inquire</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Container>
-      </section>
-
-      {/* 5. Verified Case Studies Strip */}
-      <section className="py-16 bg-[#0a0a0d] border-b border-white/10 text-white">
+      {/* 4. Integrated Capabilities for Location */}
+      <section className="py-14 bg-white border-b border-[#E8E5E2]">
         <Container>
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-10 border-b border-white/10">
-            <div>
-              <span className="text-xs font-mono font-bold text-[#e86024] uppercase tracking-wider block mb-1">
-                PROVEN CODE IN PRODUCTION
-              </span>
-              <h3 className="font-serif-heading text-2xl font-bold text-white">
-                Verified Engineering Case Studies
-              </h3>
-            </div>
-            <Link
-              href="/portfolio"
-              className="inline-flex items-center gap-2 text-xs font-mono font-bold px-4 py-2 rounded-lg bg-white/5 border border-white/10 hover:border-[#e86024]/40 text-white transition-colors"
-            >
-              <span>View All Projects</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-10">
-            <Link
-              href="/work/schoolsync"
-              className="group bg-[#0e0e12] rounded-xl p-6 border border-white/5 hover:border-[#e86024]/40 transition-colors"
-            >
-              <span className="text-[10px] font-mono text-[#c5a880] uppercase tracking-wider block mb-2">
-                Education & ERP
-              </span>
-              <h4 className="font-serif-heading text-lg font-bold text-white group-hover:text-[#e86024] transition-colors mb-2">
-                SchoolSync Multi-Tenant ERP
-              </h4>
-              <p className="text-xs text-[#9ca3af] leading-relaxed">
-                Multi-tenant educational management system with isolated database schemas, automated fee ledgers, and real-time roll call.
-              </p>
-            </Link>
-
-            <Link
-              href="/work/exora"
-              className="group bg-[#0e0e12] rounded-xl p-6 border border-white/5 hover:border-[#e86024]/40 transition-colors"
-            >
-              <span className="text-[10px] font-mono text-[#c5a880] uppercase tracking-wider block mb-2">
-                Fintech & Trading
-              </span>
-              <h4 className="font-serif-heading text-lg font-bold text-white group-hover:text-[#e86024] transition-colors mb-2">
-                Exora Crypto Exchange
-              </h4>
-              <p className="text-xs text-[#9ca3af] leading-relaxed">
-                High-throughput crypto trading interface with live order-book depth, encrypted wallet management, and sub-second execution.
-              </p>
-            </Link>
-
-            <Link
-              href="/work/crypto-launchpad"
-              className="group bg-[#0e0e12] rounded-xl p-6 border border-white/5 hover:border-[#e86024]/40 transition-colors"
-            >
-              <span className="text-[10px] font-mono text-[#c5a880] uppercase tracking-wider block mb-2">
-                Web3 & Smart Contracts
-              </span>
-              <h4 className="font-serif-heading text-lg font-bold text-white group-hover:text-[#e86024] transition-colors mb-2">
-                BSC Crypto Launchpad
-              </h4>
-              <p className="text-xs text-[#9ca3af] leading-relaxed">
-                Decentralized token launchpad with automated factory contract deployment, liquidity lock workflows, and presale tiers.
-              </p>
-            </Link>
-          </div>
-        </Container>
-      </section>
-
-      {/* 5. Full-Service Capabilities for Location */}
-      <section className="py-16 bg-[#0c0e14] border-b border-white/10 text-white">
-        <Container>
-          <div className="max-w-4xl mx-auto text-center space-y-3 mb-10">
-            <span className="text-[11px] font-mono font-bold text-[#f36b21] uppercase tracking-[0.25em]">
+          <div className="text-center space-y-2 mb-8">
+            <span className="text-[11px] font-bold text-[#FF5A00] uppercase tracking-wider">
               FULL-SERVICE DIGITAL PARTNER
             </span>
-            <h3 className="font-serif-heading text-2xl sm:text-3xl font-bold text-white">
+            <h3 className="text-2xl font-bold text-[#0B0B0F]">
               Integrated Capabilities for {location.name}
             </h3>
-            <p className="text-xs sm:text-sm text-[#9ca3af] max-w-xl mx-auto">
-              From web and software development to content creation, social media management, and digital marketing — everything required to build and grow in {location.name}.
-            </p>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 max-w-5xl mx-auto text-center">
-            <Link href="/website-development" className="p-4 rounded-xl bg-white/[0.03] border border-white/10 hover:border-[#f36b21]/40 hover:bg-white/[0.06] transition-all group">
-              <span className="text-xs font-mono font-bold text-white block group-hover:text-[#f36b21] mb-1">Websites</span>
-              <span className="text-[11px] text-white/50">Next.js &amp; E-commerce</span>
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 max-w-4xl mx-auto text-center">
+            <Link href="/website-development" className="p-4 rounded-xl bg-[#FFF9F4] border border-[#E8E5E2] hover:border-[#FF5A00] transition-colors">
+              <span className="text-xs font-bold text-[#0B0B0F] block mb-1">Websites</span>
+              <span className="text-[10px] text-[#4B5563]">Next.js &amp; E-commerce</span>
             </Link>
-            <Link href="/custom-software-development" className="p-4 rounded-xl bg-white/[0.03] border border-white/10 hover:border-[#f36b21]/40 hover:bg-white/[0.06] transition-all group">
-              <span className="text-xs font-mono font-bold text-white block group-hover:text-[#f36b21] mb-1">Software</span>
-              <span className="text-[11px] text-white/50">ERP, CRM &amp; Mobile</span>
+            <Link href="/custom-software-development" className="p-4 rounded-xl bg-[#FFF9F4] border border-[#E8E5E2] hover:border-[#FF5A00] transition-colors">
+              <span className="text-xs font-bold text-[#0B0B0F] block mb-1">Software</span>
+              <span className="text-[10px] text-[#4B5563]">ERP, CRM &amp; Mobile</span>
             </Link>
-            <Link href="/social-media-management" className="p-4 rounded-xl bg-white/[0.03] border border-white/10 hover:border-[#f36b21]/40 hover:bg-white/[0.06] transition-all group">
-              <span className="text-xs font-mono font-bold text-white block group-hover:text-[#f36b21] mb-1">Social Media</span>
-              <span className="text-[11px] text-white/50">Instagram &amp; LinkedIn</span>
+            <Link href="/social-media-management" className="p-4 rounded-xl bg-[#FFF9F4] border border-[#E8E5E2] hover:border-[#FF5A00] transition-colors">
+              <span className="text-xs font-bold text-[#0B0B0F] block mb-1">Social Media</span>
+              <span className="text-[10px] text-[#4B5563]">Instagram &amp; LinkedIn</span>
             </Link>
-            <Link href="/content-creation" className="p-4 rounded-xl bg-white/[0.03] border border-white/10 hover:border-[#f36b21]/40 hover:bg-white/[0.06] transition-all group">
-              <span className="text-xs font-mono font-bold text-white block group-hover:text-[#f36b21] mb-1">Video &amp; Creative</span>
-              <span className="text-[11px] text-white/50">Reels &amp; Brand GFX</span>
+            <Link href="/content-creation" className="p-4 rounded-xl bg-[#FFF9F4] border border-[#E8E5E2] hover:border-[#FF5A00] transition-colors">
+              <span className="text-xs font-bold text-[#0B0B0F] block mb-1">Video &amp; Creative</span>
+              <span className="text-[10px] text-[#4B5563]">Reels &amp; Brand GFX</span>
             </Link>
-            <Link href="/digital-marketing" className="p-4 rounded-xl bg-white/[0.03] border border-white/10 hover:border-[#f36b21]/40 hover:bg-white/[0.06] transition-all group col-span-2 sm:col-span-1">
-              <span className="text-xs font-mono font-bold text-white block group-hover:text-[#f36b21] mb-1">Marketing</span>
-              <span className="text-[11px] text-white/50">Leads &amp; Meta Ads</span>
+            <Link href="/digital-marketing" className="p-4 rounded-xl bg-[#FFF9F4] border border-[#E8E5E2] hover:border-[#FF5A00] transition-colors col-span-2 sm:col-span-1">
+              <span className="text-xs font-bold text-[#0B0B0F] block mb-1">Marketing</span>
+              <span className="text-[10px] text-[#4B5563]">Leads &amp; Meta Ads</span>
             </Link>
           </div>
         </Container>
       </section>
 
-      {/* 6. Nearby Service Areas */}
-      <section className="py-16 bg-[#080808] border-b border-white/10 text-white">
+      {/* 5. Nearby Service Areas */}
+      <section className="py-12 bg-[#FFF9F4] border-b border-[#E8E5E2]">
         <Container>
-          <div className="max-w-4xl mx-auto text-center space-y-4">
-            <span className="text-xs font-mono font-bold text-[#c5a880] uppercase tracking-wider">
-              REGIONAL COVERAGE
-            </span>
-            <h3 className="font-serif-heading text-2xl font-bold text-white">
+          <div className="max-w-4xl mx-auto text-center space-y-3">
+            <h3 className="text-lg font-bold text-[#0B0B0F]">
               Nearby Areas We Serve
             </h3>
-            <p className="text-xs text-[#9ca3af] max-w-xl mx-auto">
+            <p className="text-xs text-[#4B5563]">
               In addition to {location.name}, KASH Technology serves enterprises throughout Delhi NCR and Western Uttar Pradesh.
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-3 pt-4">
+            <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
               {location.nearbyAreas.map((area) => (
                 <Link
                   key={area.href}
                   href={area.href}
-                  className="px-4 py-2 rounded-lg bg-[#0e0e12] border border-white/10 hover:border-[#e86024]/40 text-xs font-mono text-white/80 hover:text-[#e86024] transition-colors flex items-center gap-1.5"
+                  className="px-3 py-1.5 rounded-lg bg-white border border-[#E8E5E2] hover:border-[#FF5A00] text-xs text-[#4B5563] hover:text-[#FF5A00] transition-colors flex items-center gap-1"
                 >
                   <span>{area.name}</span>
-                  <ExternalLink className="w-3 h-3 opacity-40" />
+                  <ExternalLink className="w-3 h-3 opacity-50" />
                 </Link>
               ))}
             </div>
@@ -325,7 +197,7 @@ export function LocationPageTemplate({ location }: LocationPageTemplateProps) {
         </Container>
       </section>
 
-      {/* 7. Localized FAQs */}
+      {/* 6. Localized FAQs */}
       <FaqAccordion
         variant="ivory"
         faqs={location.faqs}
@@ -333,14 +205,13 @@ export function LocationPageTemplate({ location }: LocationPageTemplateProps) {
         badge={`FAQS FOR ${location.name.toUpperCase()}`}
       />
 
-      {/* 8. Conversion Banner */}
+      {/* 7. Conversion Banner */}
       <CtaBanner
-        variant="dark"
-        title={`Serving Businesses in ${location.name}`}
-        subtitle="Schedule a direct technical consultation with our lead engineers today."
-        buttonText="Discuss Your Project"
-        buttonHref="/contact"
+        headline={`Serving Businesses in ${location.name}`}
+        subtext="Schedule a direct technical consultation with our team today."
+        primaryButtonText="Discuss Your Project"
+        primaryButtonHref="/contact"
       />
-    </>
+    </div>
   );
 }

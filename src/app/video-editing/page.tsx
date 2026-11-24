@@ -12,6 +12,7 @@ import {
   Subtitles, 
   CheckCircle2 
 } from "lucide-react";
+import { createCmsRoute } from "@/components/cms/createCmsRoute";
 
 function YoutubeIcon({ className = "w-6 h-6" }: { className?: string }) {
   return (
@@ -21,7 +22,7 @@ function YoutubeIcon({ className = "w-6 h-6" }: { className?: string }) {
   );
 }
 
-export const metadata: Metadata = {
+const baseMetadata: Metadata = {
   title: "Professional Video Editing Services | KASH Technology",
   description: "High-retention video editing built for attention. Short-form reels, YouTube production, ad creatives, motion graphics, and sound design. Engineered for brands that care about quality.",
   alternates: {
@@ -109,7 +110,7 @@ const VIDEO_FAQS = [
   },
 ];
 
-export default function VideoEditingPage() {
+function VideoEditingPage() {
   return (
     <>
       <HeroDiagonal
@@ -232,3 +233,9 @@ export default function VideoEditingPage() {
     </>
   );
 }
+
+// CMS progressive migration: a published CMS page for this path wins; otherwise the page above renders unchanged.
+const cmsRoute = createCmsRoute({ path: "/video-editing", pageType: "service", Fallback: VideoEditingPage, metadata: baseMetadata });
+export const generateMetadata = cmsRoute.generateMetadata;
+export const revalidate = 60;
+export default cmsRoute.Page;

@@ -1,8 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { INSIGHT_ARTICLES } from "@/lib/insights-data";
-import { SITE_CONFIG } from "@/lib/constants";
+import { cms, getPublishedArticles, getSettings } from "@/lib/cms";
+import { isValidSlugSegment } from "@/lib/cms/reserved-slugs";
+import { buildMetadata } from "@/lib/seo/metadata";
+import { articleSchema } from "@/lib/seo/schema";
+import { JsonLd } from "@/components/cms/JsonLd";
+import { RichText } from "@/components/cms/RichText";
+import { SafeImage } from "@/components/cms/SafeImage";
+import { safeImageSrc } from "@/lib/cms/url-safety";
 import { HeroDiagonal } from "@/components/sections/HeroDiagonal";
 import { CtaBanner } from "@/components/sections/CtaBanner";
 import { Container } from "@/components/ui/Container";
@@ -14,70 +20,60 @@ interface Props {
   }>;
 }
 
+export const revalidate = 60;
+export const dynamicParams = true;
+
+async function loadArticle(slug: string) {
+  if (!isValidSlugSegment(slug)) return null;
+  const article = await cms.getArticle(slug);
+  return article && article.status === "published" ? article : null;
+}
+
 export async function generateStaticParams() {
-  return INSIGHT_ARTICLES.map((article) => ({
+  const articles = await getPublishedArticles();
+  return articles.map((article) => ({
     slug: article.slug,
   }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const article = INSIGHT_ARTICLES.find((a) => a.slug === slug);
+  const article = await loadArticle(slug);
   if (!article) return {};
+  const settings = await getSettings();
 
-  return {
-    title: `${article.title} | KASH Technology`,
-    description: article.excerpt,
-    alternates: {
-      canonical: `/insights/${article.slug}`,
-    },
-    openGraph: {
-      title: article.title,
+  return buildMetadata({
+    path: `/insights/${article.slug}`,
+    seo: article.seo ? { ogImage: article.cover, ...article.seo } : article.cover ? { ogImage: article.cover } : undefined,
+    // Existing static metadata is the second tier.
+    fallback: {
+      title: `${article.title} | KASH Technology`,
       description: article.excerpt,
-      type: "article",
-      url: `https://kash-technology.com/insights/${article.slug}`,
+      openGraph: { title: article.title, description: article.excerpt },
     },
-  };
+    settings,
+    ogType: "article",
+  });
 }
 
 export default async function InsightArticlePage({ params }: Props) {
   const { slug } = await params;
-  const article = INSIGHT_ARTICLES.find((a) => a.slug === slug);
+  const article = await loadArticle(slug);
 
   if (!article) {
     notFound();
   }
 
-  const articleJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    headline: article.title,
-    description: article.excerpt,
-    author: {
-      "@type": "Organization",
-      name: article.author.name,
-      url: SITE_CONFIG.websiteUrl,
-    },
-    publisher: {
-      "@type": "Organization",
-      name: SITE_CONFIG.companyName,
-      logo: {
-        "@type": "ImageObject",
-        url: `${SITE_CONFIG.websiteUrl}/images/logo/kash-logo-emblem.jpg`,
-      },
-    },
-    mainEntityOfPage: {
-      "@type": "WebPage",
-      "@id": `${SITE_CONFIG.websiteUrl}/insights/${article.slug}`,
-    },
-  };
+  const settings = await getSettings();
+  const all = await getPublishedArticles();
+  const related = (article.relatedSlugs?.length
+    ? article.relatedSlugs.map((s) => all.find((a) => a.slug === s)).filter((a): a is NonNullable<typeof a> => !!a)
+    : all.filter((a) => a.slug !== article.slug && a.category === article.category)
+  ).slice(0, 3);
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
-      />
+      <JsonLd data={articleSchema(article, `/insights/${article.slug}`, settings)} />
 
       {/* Hero Header */}
       <HeroDiagonal
@@ -106,8 +102,12 @@ export default async function InsightArticlePage({ params }: Props) {
               <div className="flex items-center gap-2">
                 <User className="w-4 h-4 text-[#e86024]" />
                 <span className="font-semibold text-[#111827]">{article.author.name}</span>
-                <span className="text-black/30">•</span>
-                <span>{article.author.role}</span>
+                {article.author.role && (
+                  <>
+                    <span className="text-black/30">•</span>
+                    <span>{article.author.role}</span>
+                  </>
+                )}
               </div>
             </div>
 
@@ -116,21 +116,22 @@ export default async function InsightArticlePage({ params }: Props) {
                 <Calendar className="w-3.5 h-3.5" />
                 <span>{article.publishedAt}</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5" />
-                <span>{article.readTime}</span>
-              </div>
+              {article.readTime && (
+                <div className="flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>{article.readTime}</span>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Article Body */}
-          <div className="space-y-6 text-base sm:text-lg text-[#374151] leading-relaxed">
-            {article.contentHtml.map((paragraph, idx) => (
-              <p key={idx} className="leading-relaxed">
-                {paragraph}
-              </p>
-            ))}
-          </div>
+          {article.cover && safeImageSrc(article.cover) && (
+            <SafeImage src={safeImageSrc(article.cover)} alt="" priority wrapperClassName="mb-10 aspect-[16/9] w-full rounded-2xl" />
+          )}
+
+          {/* Article Body (structured rich text, sanitised) */}
+          <RichText value={article.content} gap="space-y-6" className="text-[#374151] leading-relaxed" />
 
           {/* Engineering Key Takeaways Card */}
           <div className="mt-12 p-8 rounded-2xl bg-[#0e0e12] text-white border border-white/5 space-y-4 shadow-xl">
@@ -142,6 +143,21 @@ export default async function InsightArticlePage({ params }: Props) {
               Software scalability is not an accident—it is the direct outcome of disciplined architecture, schema normalization, and removing communication latency between business leaders and engineers.
             </p>
           </div>
+
+          {related.length > 0 && (
+            <nav aria-label="Related articles" className="mt-12 pt-8 border-t border-black/10">
+              <h2 className="font-serif-heading text-xl font-bold mb-4">Related reading</h2>
+              <ul className="space-y-2">
+                {related.map((r) => (
+                  <li key={r.slug}>
+                    <Link href={`/insights/${r.slug}`} className="text-[#e86024] font-semibold hover:underline">
+                      {r.title}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          )}
 
           {/* Back Navigation & Share */}
           <div className="mt-12 pt-8 border-t border-black/10 flex items-center justify-between">

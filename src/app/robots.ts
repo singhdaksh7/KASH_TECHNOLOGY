@@ -8,7 +8,9 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: '/api/',
+      // Public site stays open. Admin, API and draft preview are excluded
+      // (preview pages additionally send noindex via metadata).
+      disallow: ['/api/', '/admin', '/admin/', '/preview'],
     },
     sitemap: `${baseUrl}/sitemap.xml`,
   };

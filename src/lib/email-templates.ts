@@ -172,7 +172,7 @@ export function buildAcknowledgementText(data: ContactFormValues): string {
 
 Thank you for contacting ${BRAND.company}!
 
-We have received your inquiry and a member of our team will get back to you within 24 hours.
+We have received your inquiry and a member of our team will get back to you as soon as possible.
 
 Reference ID: ${data.referenceId || "N/A"}
 
@@ -231,7 +231,7 @@ export function buildAcknowledgementHtml(data: ContactFormValues): string {
         <tr><td style="padding:32px 32px 0;">
           <h2 style="margin:0 0 16px;font-size:20px;font-weight:800;color:#ffffff;">Thank you, ${escapeHtml(data.fullName)}!</h2>
           <p style="margin:0 0 8px;font-size:15px;line-height:1.7;color:#c0c0c0;">
-            We have received your inquiry and appreciate you reaching out. A member of our team will review your request and respond within <strong style="color:#ffffff;">24 hours</strong>.
+            We have received your inquiry and appreciate you reaching out. A member of our team will review your request and respond <strong style="color:#ffffff;">as soon as possible</strong>.
           </p>
         </td></tr>
 
