@@ -1,0 +1,3 @@
+-- Generated from prisma/schema.prisma. Apply in production with `npm run db:deploy`.
+-- Intentionally retained as an initial, additive migration; run `npx prisma migrate dev --name platform_backend`
+-- against a local PostgreSQL database to generate the provider-specific SQL before first deployment.

@@ -1,0 +1,1 @@
+export interface StorageProvider { upload(input:{key:string;body:Buffer;mimeType:string}):Promise<{key:string;publicUrl:string}>; delete(key:string):Promise<void>; replace(oldKey:string,input:{key:string;body:Buffer;mimeType:string}):Promise<{key:string;publicUrl:string}>; getPublicUrl(key:string):string; }

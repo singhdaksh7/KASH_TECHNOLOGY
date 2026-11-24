@@ -1,0 +1,3 @@
+import fs from "fs/promises"; import path from "path"; import { StorageProvider } from "./provider";
+const root=path.join(process.cwd(),"public","uploads");
+export const localStorage:StorageProvider={async upload({key,body}){const target=path.join(root,key);if(!target.startsWith(root))throw new Error("Invalid key");await fs.mkdir(path.dirname(target),{recursive:true});await fs.writeFile(target,body);return {key,publicUrl:this.getPublicUrl(key)};},async delete(key){await fs.unlink(path.join(root,key)).catch(()=>undefined);},async replace(oldKey,input){await this.delete(oldKey);return this.upload(input);},getPublicUrl(key){return `/uploads/${encodeURIComponent(key)}`;}};
