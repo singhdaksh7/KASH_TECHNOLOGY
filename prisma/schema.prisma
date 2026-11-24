@@ -218,16 +218,17 @@ model Page {
 }
 
 model PageSection {
-  id        String   @id @default(cuid())
-  pageId    String
-  page      Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
-  type      String
-  order     Int
-  enabled   Boolean  @default(true)
-  content   Json
-  style     Json?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(cuid())
+  pageId        String
+  page          Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  type          String
+  order         Int
+  enabled       Boolean  @default(true)
+  content       Json
+  style         Json?
+  globalBlockId String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@unique([pageId, order])
   @@index([pageId, enabled])
@@ -278,6 +279,8 @@ model MediaAsset {
   caption     String?
   storageKey  String    @unique
   publicUrl   String
+  folderId    String?
+  tags        String[]  @default([])
   createdById String?
   createdBy   User?     @relation(fields: [createdById], references: [id], onDelete: SetNull)
   deletedAt   DateTime?
@@ -369,30 +372,38 @@ model NavigationItem {
 }
 
 model Form {
-  id          String           @id @default(cuid())
-  name        String
-  slug        String           @unique
-  active      Boolean          @default(true)
-  settings    Json?
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  fields      FormField[]
-  submissions FormSubmission[]
+  id                 String           @id @default(cuid())
+  name               String
+  slug               String           @unique
+  active             Boolean          @default(true)
+  settings           Json?
+  successMessage     String?
+  successRedirectUrl String?
+  createLead         Boolean          @default(true)
+  sendNotification   Boolean          @default(true)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  fields             FormField[]
+  submissions        FormSubmission[]
 }
 
 model FormField {
-  id         String        @id @default(cuid())
-  formId     String
-  form       Form          @relation(fields: [formId], references: [id], onDelete: Cascade)
-  name       String
-  label      String
-  type       FormFieldType
-  required   Boolean       @default(false)
-  options    Json?
-  validation Json?
-  order      Int
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
+  id               String        @id @default(cuid())
+  formId           String
+  form             Form          @relation(fields: [formId], references: [id], onDelete: Cascade)
+  name             String
+  label            String
+  type             FormFieldType
+  required         Boolean       @default(false)
+  options          Json?
+  validation       Json?
+  order            Int
+  step             Int           @default(1)
+  section          String?
+  description      String?
+  conditionalRules Json?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 
   @@unique([formId, name])
   @@unique([formId, order])
@@ -536,4 +547,55 @@ model Notification {
   title     String
   message   String
   createdAt DateTime         @default(now())
+}
+
+model MediaFolder {
+  id          String   @id @default(cuid())
+  name        String
+  parentId    String?
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([parentId, name])
+}
+
+model LeadActivity {
+  id        String   @id @default(cuid())
+  leadId    String
+  type      String
+  actorId   String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([leadId, createdAt])
+}
+
+model EmailTemplate {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  name      String
+  subject   String
+  body      String
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FormTemplate {
+  id         String   @id @default(cuid())
+  name       String
+  key        String   @unique
+  definition Json
+  isSystem   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
+
+model PortfolioTemplate {
+  id         String   @id @default(cuid())
+  name       String
+  category   String
+  definition Json
+  isSystem   Boolean  @default(false)
+  createdAt  DateTime @default(now())
 }
