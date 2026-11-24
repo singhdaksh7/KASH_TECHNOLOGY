@@ -1,54 +1,48 @@
 import React from "react";
-import Image from "next/image";
 import Link from "next/link";
-import { SITE_CONFIG } from "@/lib/constants";
 
 interface KashLogoProps {
-  variant?: "header" | "footer" | "badge" | "emblem";
   className?: string;
-  showTagline?: boolean;
+  variant?: "header" | "footer";
 }
 
-export function KashLogo({ variant = "header", className = "", showTagline = true }: KashLogoProps) {
-  if (variant === "badge" || variant === "emblem") {
-    return (
-      <div className={`relative flex items-center justify-center ${className}`}>
-        <Image
-          src="/images/logo/kash-logo-emblem.jpg"
-          alt="KASH Technology Official Logo"
-          width={variant === "emblem" ? 420 : 180}
-          height={variant === "emblem" ? 420 : 180}
-          className="object-contain rounded-full shadow-2xl"
-          priority
-        />
-      </div>
-    );
-  }
-
+export function KashLogo({ className = "" }: KashLogoProps) {
   return (
-    <Link href="/" className={`group flex items-center gap-3 select-none ${className}`}>
-      {/* Monogram emblem icon */}
-      <div className="relative w-10 h-10 rounded-lg bg-[#0b0d0e] border border-[#c5a880]/40 p-0.5 flex items-center justify-center overflow-hidden shadow-[0_0_12px_rgba(197,168,128,0.2)] group-hover:border-[#f36b21]/80 transition-all duration-300 shrink-0">
-        <Image
-          src="/images/logo/kash-logo-emblem.jpg"
-          alt="KASH Emblem"
-          width={40}
-          height={40}
-          className="object-cover scale-110"
-          priority
-        />
+    <Link href="/" className={`inline-flex items-center gap-2.5 select-none ${className}`}>
+      {/* Precision Modern Orange Hex / Geometric Ribbon Icon */}
+      <div className="relative w-8 h-8 shrink-0 flex items-center justify-center">
+        <svg
+          viewBox="0 0 36 36"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-8 h-8"
+        >
+          {/* Black left bracket/polygon */}
+          <path
+            d="M6 5L15 5L9 31L0 31L6 5Z"
+            fill="#0B0B0F"
+          />
+          {/* Top orange wing */}
+          <path
+            d="M16 5L28 5L20 17L11 17L16 5Z"
+            fill="#FF5A00"
+          />
+          {/* Bottom orange wing */}
+          <path
+            d="M18 19L27 19L36 31L25 31L18 19Z"
+            fill="#FF8A3D"
+          />
+        </svg>
       </div>
 
       {/* Brand Text */}
-      <div className="flex flex-col text-left">
-        <span className="font-serif-heading text-lg sm:text-xl font-bold tracking-wider text-[#c5a880] group-hover:text-white transition-colors duration-200 leading-tight">
-          KASH TECHNOLOGY
+      <div className="flex flex-col justify-center leading-none text-left">
+        <span className="font-extrabold text-[17px] tracking-tight text-[#0B0B0F] uppercase">
+          KASH
         </span>
-        {showTagline && (
-          <span className="text-[7.5px] sm:text-[8px] font-mono tracking-[0.25em] text-[#c5a880]/85 uppercase font-semibold mt-0.5">
-            {SITE_CONFIG.tagline}
-          </span>
-        )}
+        <span className="text-[11px] font-semibold text-[#4B5563] tracking-normal -mt-0.5">
+          Technology
+        </span>
       </div>
     </Link>
   );

@@ -1,97 +1,114 @@
-import type { Metadata } from "next";
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { INSIGHT_ARTICLES, INSIGHT_CATEGORIES } from "@/lib/insights-data";
-import { HeroDiagonal } from "@/components/sections/HeroDiagonal";
-import { CtaBanner } from "@/components/sections/CtaBanner";
 import { Container } from "@/components/ui/Container";
+import { CtaBanner } from "@/components/sections/CtaBanner";
 import { ArrowRight, Clock, Calendar } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "Insights & Engineering Perspectives | KASH Technology",
-  description: "Practical engineering blueprints, software architecture insights, and technology strategy for growing businesses in Delhi NCR and Western UP.",
-  alternates: {
-    canonical: "/insights",
-  },
-  openGraph: {
-    title: "Insights & Engineering Perspectives | KASH Technology",
-    description: "Practical engineering blueprints, software architecture insights, and technology strategy for growing businesses.",
-    url: "https://kash-technology.com/insights",
-  },
-};
-
 export default function InsightsPage() {
-  return (
-    <>
-      <HeroDiagonal
-        badge="ENGINEERING & TECH INSIGHTS"
-        titlePrimary="Insights, Architecture &"
-        titleAccent="Engineering Strategy"
-        description="Practical blueprints, database architecture insights, and technical guides designed for founders and business leaders scaling their operations."
-        primaryCtaText="Explore Services"
-        primaryCtaHref="/services"
-        secondaryCtaText="View Portfolio"
-        secondaryCtaHref="/portfolio"
-        breadcrumbs={[{ label: "Insights" }]}
-      />
+  const [selectedCat, setSelectedCat] = useState("All");
 
-      {/* Categories & Articles List on Ivory */}
-      <section className="py-20 md:py-28 bg-[#f7f4ee] text-[#111827] relative overflow-hidden border-b border-black/5">
-        <div className="absolute inset-0 circuit-pattern-ivory opacity-30 pointer-events-none" />
+  const filtered = selectedCat === "All"
+    ? INSIGHT_ARTICLES
+    : INSIGHT_ARTICLES.filter((a) => a.category.toLowerCase().includes(selectedCat.toLowerCase()));
+
+  return (
+    <div className="bg-[#FFF9F4] text-[#0B0B0F] overflow-hidden pt-16">
+      
+      {/* Hero */}
+      <section className="relative pt-10 pb-12 lg:pt-14 lg:pb-16 overflow-hidden">
+        <div className="hidden lg:block hero-diagonal-bg" />
+        <div className="hidden lg:block hero-diagonal-soft" />
 
         <Container className="relative z-10">
-          {/* Category Filter Pills */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mb-16 max-w-4xl mx-auto">
-            <span className="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-[#e86024] text-white shadow-sm">
-              All Categories
-            </span>
+          <div className="max-w-2xl space-y-4">
+            <div className="inline-block text-[11px] font-bold uppercase tracking-wider text-[#FF5A00] bg-[#FFF3E9] px-3.5 py-1.5 rounded-md">
+              Insights & Engineering
+            </div>
+
+            <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-[1.15] text-[#0B0B0F]">
+              Insights, Architecture &<br />
+              <span className="text-[#FF5A00]">Digital Growth</span>
+            </h1>
+
+            <p className="text-sm sm:text-base text-[#4B5563] leading-relaxed">
+              Practical guides, engineering blueprints and growth strategies designed for founders and business leaders building modern companies.
+            </p>
+          </div>
+        </Container>
+      </section>
+
+      {/* Categories & Articles List */}
+      <section className="py-14 bg-white border-y border-[#E8E5E2]">
+        <Container>
+          
+          {/* Filter Pills */}
+          <div className="flex flex-wrap items-center gap-2 mb-10">
+            <button
+              onClick={() => setSelectedCat("All")}
+              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                selectedCat === "All"
+                  ? "bg-[#FF5A00] text-white shadow-xs"
+                  : "bg-[#FFF9F4] text-[#4B5563] border border-[#E8E5E2] hover:border-[#FF5A00]"
+              }`}
+            >
+              All Articles
+            </button>
             {INSIGHT_CATEGORIES.map((cat) => (
-              <span
+              <button
                 key={cat}
-                className="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white text-[#6b7280] border border-black/5"
+                onClick={() => setSelectedCat(cat)}
+                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                  selectedCat === cat
+                    ? "bg-[#FF5A00] text-white shadow-xs"
+                    : "bg-[#FFF9F4] text-[#4B5563] border border-[#E8E5E2] hover:border-[#FF5A00]"
+                }`}
               >
                 {cat}
-              </span>
+              </button>
             ))}
           </div>
 
-          {/* Articles Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {INSIGHT_ARTICLES.map((article) => (
+          {/* Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {filtered.map((article) => (
               <article
                 key={article.slug}
-                className="bg-white rounded-2xl p-8 border border-black/5 shadow-sm hover:shadow-xl hover:border-[#e86024]/40 transition-all duration-300 flex flex-col justify-between"
+                className="bg-[#FFF9F4] rounded-2xl p-6 border border-[#E8E5E2] hover:border-[#FF5A00]/50 hover:shadow-lg transition-all flex flex-col justify-between space-y-4"
               >
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-4">
-                    <span className="text-[10px] font-mono font-bold tracking-wider px-2.5 py-1 rounded bg-[#0e0e12] text-[#c5a880]">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-md bg-[#FFF3E9] text-[#FF5A00]">
                       {article.category}
                     </span>
-                    <div className="flex items-center gap-1.5 text-xs text-[#9ca3af] font-mono">
+                    <div className="flex items-center gap-1.5 text-[11px] text-[#4B5563]">
                       <Clock className="w-3.5 h-3.5" />
                       <span>{article.readTime}</span>
                     </div>
                   </div>
 
-                  <h3 className="font-serif-heading text-xl font-bold text-[#111827] mb-3 leading-snug hover:text-[#e86024] transition-colors">
+                  <h2 className="text-base font-bold text-[#0B0B0F] hover:text-[#FF5A00] transition-colors leading-snug">
                     <Link href={`/insights/${article.slug}`}>
                       {article.title}
                     </Link>
-                  </h3>
+                  </h2>
 
-                  <p className="text-xs sm:text-sm text-[#6b7280] leading-relaxed mb-6">
+                  <p className="text-xs text-[#4B5563] leading-relaxed line-clamp-3">
                     {article.excerpt}
                   </p>
                 </div>
 
-                <div className="pt-4 border-t border-black/5 flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-xs text-[#9ca3af] font-mono">
+                <div className="pt-3 border-t border-[#E8E5E2] flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-[11px] text-[#4B5563]">
                     <Calendar className="w-3.5 h-3.5" />
                     <span>{article.publishedAt}</span>
                   </div>
 
                   <Link
                     href={`/insights/${article.slug}`}
-                    className="inline-flex items-center gap-1 text-xs font-mono font-bold text-[#e86024] hover:text-[#d35219] transition-colors"
+                    className="inline-flex items-center gap-1 text-xs font-bold text-[#FF5A00] hover:underline"
                   >
                     <span>Read Article</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -100,17 +117,17 @@ export default function InsightsPage() {
               </article>
             ))}
           </div>
+
         </Container>
       </section>
 
-      {/* Conversion Banner */}
+      {/* CTA */}
       <CtaBanner
-        variant="dark"
-        title="Have a Software Challenge to Solve?"
-        subtitle="Schedule a direct technical consultation with our lead engineering team."
-        buttonText="Discuss Your Architecture"
-        buttonHref="/contact"
+        headline="Ready to Build, Create
+and Grow Your Business?"
+        subtext="Let's discuss your goals and create a digital plan that actually works for your business."
       />
-    </>
+
+    </div>
   );
 }

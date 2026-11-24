@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import Script from "next/script";
-import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -19,12 +19,6 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
-});
-
-const playfair = Playfair_Display({
-  variable: "--font-playfair",
-  subsets: ["latin"],
-  display: "swap",
 });
 
 const gaId = process.env.NEXT_PUBLIC_GA_ID;
@@ -118,7 +112,7 @@ const jsonLd = {
       "@id": `${SITE_CONFIG.websiteUrl}/#website`,
       "url": SITE_CONFIG.websiteUrl,
       "name": SITE_CONFIG.companyName,
-      "description": "We Build. We Create. We Grow. — Technology • Creative • Growth",
+      "description": "Build. Create. Grow. with KASH Technology",
       "publisher": {
         "@id": `${SITE_CONFIG.websiteUrl}/#organization`
       }
@@ -134,16 +128,16 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[#080808] text-white">
+      <body className="min-h-full flex flex-col bg-[#FFF9F4] text-[#0B0B0F]">
         <ConsultationProvider>
           <Suspense fallback={null}>
             <LeadTracker />
           </Suspense>
           <a 
             href="#main-content" 
-            className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 bg-[#e86024] text-white px-4 py-2 rounded-lg font-bold"
+            className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 bg-[#FF5A00] text-white px-4 py-2 rounded-lg font-bold"
           >
             Skip to main content
           </a>
