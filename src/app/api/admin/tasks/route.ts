@@ -13,7 +13,7 @@ export const taskSchema = z.object({
 });
 export const GET = admin(null, async ({ request, session }) => {
   const sp = new URL(request.url).searchParams;
-  return ok(await t.listTasks(actorFromSession(session), { status: list(sp, "status")?.map((s) => s.toUpperCase()) as TaskStatus[] | undefined, priority: list(sp, "priority")?.map((s) => s.toUpperCase()) as LeadPriority[] | undefined,
-    assignee: sp.get("assignee") ?? undefined, relatedType: (sp.get("relatedType")?.toUpperCase() as TaskRelationType | undefined), relatedId: sp.get("relatedId") ?? undefined, overdue: flag(sp, "overdue"), q: sp.get("q") ?? undefined, limit: int(sp, "limit", 200) }));
+  return ok(await t.enrichTasks(await t.listTasks(actorFromSession(session), { status: list(sp, "status")?.map((s) => s.toUpperCase()) as TaskStatus[] | undefined, priority: list(sp, "priority")?.map((s) => s.toUpperCase()) as LeadPriority[] | undefined,
+    assignee: sp.get("assignee") ?? undefined, relatedType: (sp.get("relatedType")?.toUpperCase() as TaskRelationType | undefined), relatedId: sp.get("relatedId") ?? undefined, overdue: flag(sp, "overdue"), q: sp.get("q") ?? undefined, limit: int(sp, "limit", 200) })));
 });
 export const POST = admin(null, async ({ request, session }) => ok(await t.createTask(actorFromSession(session), await body(request, taskSchema)), 201));

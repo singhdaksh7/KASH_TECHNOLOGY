@@ -84,5 +84,5 @@ export async function saveSubmission(formSlug: string, raw: Record<string, unkno
     if (lead && mail.sent) await logEmailSent(lead.id, { template: "lead_internal", form: formSlug });
   }
   const updated = await prisma.formSubmission.update({ where: { id: submission.id }, data: { emailStatus: !form.sendNotification ? "PENDING" : mail.sent ? "SENT" : "FAILED", emailError: mail.error?.slice(0, 500) } });
-  return { lead, submission: updated, successMessage: form.successMessage ?? null, successRedirectUrl: form.successRedirectUrl ?? null };
+  return { lead, submission: updated, successMessage: form.successMessage ?? ((form.settings ?? {}) as { successMessage?: string }).successMessage ?? null, successRedirectUrl: form.successRedirectUrl ?? null };
 }

@@ -6,6 +6,7 @@ import { HttpError, refreshPublicSite } from "@/lib/server/api";
 import { auditTx } from "@/lib/server/audit-tx";
 import { assertCan, type Actor } from "@/lib/rbac/actor";
 import { templateSlug } from "./templates";
+import { RESET_ON_EDIT, resetToDraftAfterEdit } from "./page-workflow";
 import { loadPage, workingCopy, type StoredSection, type WorkingCopy } from "./working-copy";
 
 const json = (v: unknown) => v as Prisma.InputJsonValue;
@@ -70,13 +71,20 @@ export async function createBlock(actor: Actor, input: z.infer<typeof blockSchem
 
 export async function updateBlock(actor: Actor, id: string, input: z.infer<typeof blockUpdateSchema>) {
   assertCan(actor, "global_blocks.manage");
-  await mustBlock(id);
+  const before = await mustBlock(id);
   const b = await prisma.$transaction(async (tx) => {
     const u = await tx.globalBlock.update({
       where: { id },
       data: { name: input.name, slug: input.slug, type: input.type, description: input.description, content: input.content ? json(input.content) : undefined, style: input.style === undefined ? undefined : input.style ? json(input.style) : Prisma.JsonNull, updatedById: actor.id },
     });
     await auditTx(tx, { actorId: actor.id, action: "global_block.update", entity: "GlobalBlock", entityId: id, metadata: { fields: Object.keys(input) } });
+    // Draft-reset rule: pages that inherit this block and are in review / approved / scheduled no longer match what was approved.
+    const material = JSON.stringify([before.type, before.content, before.style]) !== JSON.stringify([u.type, u.content, u.style]);
+    if (material) {
+      const users = await tx.page.findMany({ where: { deletedAt: null, status: { in: RESET_ON_EDIT }, OR: [{ sections: { some: { globalBlockId: id } } }] }, select: { id: true } });
+      const drafts = await tx.$queryRaw<Array<{ id: string }>>(Prisma.sql`SELECT id FROM "Page" WHERE "deletedAt" IS NULL AND draft->'sections' @> ${JSON.stringify([{ globalBlockId: id }])}::jsonb`);
+      for (const pid of new Set([...users.map((x) => x.id), ...drafts.map((x) => x.id)])) await resetToDraftAfterEdit(tx, pid, actor.id, `global block "${u.name}" changed`);
+    }
     return u;
   }).catch((e) => {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") throw new HttpError(409, "CONFLICT", "A global block with that slug already exists");

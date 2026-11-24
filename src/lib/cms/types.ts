@@ -260,6 +260,11 @@ export interface FormFieldDefinition {
   required: boolean;
   placeholder?: string;
   options?: string[];
+  /** Advanced forms (all optional; absent = single step, always visible). */
+  step?: number;
+  section?: string;
+  description?: string;
+  conditionalRules?: unknown;
 }
 export interface FormDefinition {
   slug: string;
@@ -267,5 +272,8 @@ export interface FormDefinition {
   description?: string;
   submitButtonText: string;
   successMessage: string;
+  successRedirectUrl?: string;
+  /** Titles for multi-step forms (index 0 = step 1). */
+  steps?: string[];
   fields: FormFieldDefinition[];
 }

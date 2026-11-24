@@ -3,8 +3,10 @@ import { prisma } from "@/lib/db/prisma";
 import { admin, body, HttpError } from "@/lib/server/api";
 import { ok } from "@/lib/server/http";
 import { audit } from "@/lib/server/audit";
+import { actorFromSession } from "@/lib/rbac/actor";
+import { deleteMediaAsset } from "@/lib/cms/media";
 import { storage } from "@/lib/storage/local";
-import { toMediaItem, usageCounts } from "@/lib/server/dto-media";
+import { toMediaItem } from "@/lib/server/dto-media";
 import { readUpload } from "../route";
 
 const meta = z.object({ altText: z.string().max(500).optional(), title: z.string().max(300).optional(), caption: z.string().max(1000).optional() });
@@ -54,16 +56,14 @@ async function rewriteReferences(from: string, to: string) {
   await prisma.seoMetadata.updateMany({ where: { twitterImage: from }, data: { twitterImage: to } });
 }
 
-/** Refuses to delete media that is still referenced unless `?force=true` (UI shows the usage warning first). */
-export const DELETE = admin<{ id: string }>("media.delete", async ({ request, session, params }) => {
+/**
+ * Refuses to delete media that is still referenced (pages, drafts, global blocks, portfolio, articles, header/footer, theme, SEO images).
+ * `?force=true` additionally requires `media.force_delete` and is audited. The stored file is removed after the record is soft-deleted.
+ */
+export const DELETE = admin<{ id: string }>(null, async ({ request, session, params }) => {
   const row = await prisma.mediaAsset.findFirst({ where: { id: params.id, deletedAt: null } });
   if (!row) throw new HttpError(404, "NOT_FOUND", "Media not found");
-  const usage = (await usageCounts([row.publicUrl])).get(row.publicUrl) ?? 0;
-  if (usage > 0 && new URL(request.url).searchParams.get("force") !== "true") {
-    throw new HttpError(409, "IN_USE", `This file is used in ${usage} place(s). Remove it from content first, or confirm deletion.`, { usage });
-  }
-  await prisma.mediaAsset.update({ where: { id: row.id }, data: { deletedAt: new Date() } });
+  const result = await deleteMediaAsset(actorFromSession(session), params.id, { force: new URL(request.url).searchParams.get("force") === "true" });
   await storage.delete(row.storageKey);
-  await audit({ actorId: session.userId, action: "media.delete", entity: "MediaAsset", entityId: row.id, metadata: { usage } });
-  return ok({ deleted: true });
+  return ok(result);
 });

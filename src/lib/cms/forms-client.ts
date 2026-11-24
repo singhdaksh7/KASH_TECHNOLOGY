@@ -7,6 +7,8 @@
 export interface FormSubmitResult {
   ok: boolean;
   message: string;
+  /** Same-site path or https URL to go to after success (validated server-side when the form is saved). */
+  redirectUrl?: string;
 }
 
 function attribution(): Record<string, string> {
@@ -29,8 +31,12 @@ export async function submitCmsForm(formSlug: string, fields: Record<string, str
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...rest, honeypot: website ?? "", landingPage: window.location.pathname, ...attribution() }),
     });
-    const json = (await res.json().catch(() => ({}))) as { error?: { message?: string } };
-    if (res.ok) return { ok: true, message: successMessage ?? "Thank you — we'll be in touch shortly." };
+    const json = (await res.json().catch(() => ({}))) as { error?: { message?: string }; data?: { successMessage?: string | null; successRedirectUrl?: string | null } };
+    if (res.ok) {
+      const r = json.data?.successRedirectUrl;
+      const safe = r && ((r.startsWith("/") && !r.startsWith("//")) || /^https:\/\//i.test(r)) ? r : undefined;
+      return { ok: true, message: json.data?.successMessage ?? successMessage ?? "Thank you — we'll be in touch shortly.", redirectUrl: safe };
+    }
     return { ok: false, message: json.error?.message ?? "We couldn't submit the form right now. Please email or call us instead." };
   } catch {
     return { ok: false, message: "Network error. Please try again, or email or call us." };

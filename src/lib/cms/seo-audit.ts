@@ -1,4 +1,7 @@
-import type { StoredSection, StoredSeo } from "./working-copy";
+import type { StoredSeo } from "./working-copy";
+
+/** The parts of a page section the audit reads (a StoredSection satisfies this). */
+export interface StoredSection { type: string; order: number; enabled: boolean; content: unknown }
 
 /**
  * SEO audit engine. Pure: takes plain data, returns findings. Nothing here fabricates traffic, rankings or
@@ -16,6 +19,8 @@ export const ALL_CHECKS: SeoCheck[] = [
 
 export interface SeoIssue {
   id: string; type: SeoCheck; severity: Exclude<Severity, "PASSED">; entityType: "Page" | "Redirect" | "MediaAsset"; entityId: string;
+  /** Human label: page title, redirect source or media filename. */
+  entityLabel: string;
   url: string; message: string; recommendation: string;
 }
 export interface AuditPage { id: string; title: string; slug: string; status: string; seo: StoredSeo; sections: StoredSection[] }
@@ -160,7 +165,7 @@ export function runSeoAudit(input: AuditInput, now = new Date()): AuditReport {
   /** Problems on pages nobody can see yet are downgraded: CRITICAL only matters for live pages. */
   const sev = (s: Exclude<Severity, "PASSED">, p: AuditPage): SeoIssue["severity"] => (s === "CRITICAL" && !live(p) ? "WARNING" : s);
   const add = (type: SeoCheck, severity: SeoIssue["severity"], p: AuditPage, message: string, recommendation: string, suffix = "") =>
-    issues.push({ id: `${type}:Page:${p.id}${suffix}`, type, severity, entityType: "Page", entityId: p.id, url: urlOf(p.slug), message, recommendation });
+    issues.push({ id: `${type}:Page:${p.id}${suffix}`, type, severity, entityType: "Page", entityId: p.id, entityLabel: p.title, url: urlOf(p.slug), message, recommendation });
 
   const titleGroups = new Map<string, AuditPage[]>(), descGroups = new Map<string, AuditPage[]>();
   const norm = (s: string) => s.trim().replace(/\s+/g, " ").toLowerCase();
@@ -239,12 +244,12 @@ export function runSeoAudit(input: AuditInput, now = new Date()): AuditReport {
   for (const f of analyzeRedirects(input.redirects).values()) {
     const r = input.redirects.find((x) => x.sourcePath === f.sourcePath && x.active)!;
     issues.push(f.kind === "loop"
-      ? { id: `REDIRECT_LOOP:Redirect:${r.id}`, type: "REDIRECT_LOOP", severity: "CRITICAL", entityType: "Redirect", entityId: r.id, url: urlOf(r.sourcePath), message: `Redirect loop: ${f.path.join(" → ")}.`, recommendation: "Break the loop by pointing one redirect at a real page." }
-      : { id: `REDIRECT_CHAIN:Redirect:${r.id}`, type: "REDIRECT_CHAIN", severity: "WARNING", entityType: "Redirect", entityId: r.id, url: urlOf(r.sourcePath), message: `Redirect chain (${f.path.length - 1} hops): ${f.path.join(" → ")}.`, recommendation: `Point ${f.sourcePath} directly at ${f.path[f.path.length - 1]}.` });
+      ? { id: `REDIRECT_LOOP:Redirect:${r.id}`, type: "REDIRECT_LOOP", severity: "CRITICAL", entityType: "Redirect", entityId: r.id, entityLabel: r.sourcePath, url: urlOf(r.sourcePath), message: `Redirect loop: ${f.path.join(" → ")}.`, recommendation: "Break the loop by pointing one redirect at a real page." }
+      : { id: `REDIRECT_CHAIN:Redirect:${r.id}`, type: "REDIRECT_CHAIN", severity: "WARNING", entityType: "Redirect", entityId: r.id, entityLabel: r.sourcePath, url: urlOf(r.sourcePath), message: `Redirect chain (${f.path.length - 1} hops): ${f.path.join(" → ")}.`, recommendation: `Point ${f.sourcePath} directly at ${f.path[f.path.length - 1]}.` });
   }
 
   for (const m of input.media) {
-    if (blank(m.alt)) issues.push({ id: `MISSING_IMAGE_ALT:MediaAsset:${m.id}`, type: "MISSING_IMAGE_ALT", severity: "RECOMMENDATION", entityType: "MediaAsset", entityId: m.id, url: m.publicUrl, message: `Media file "${m.filename}" has no alt text.`, recommendation: "Add alt text in the Media Library." });
+    if (blank(m.alt)) issues.push({ id: `MISSING_IMAGE_ALT:MediaAsset:${m.id}`, type: "MISSING_IMAGE_ALT", severity: "RECOMMENDATION", entityType: "MediaAsset", entityId: m.id, entityLabel: m.filename, url: m.publicUrl, message: `Media file "${m.filename}" has no alt text.`, recommendation: "Add alt text in the Media Library." });
   }
 
   const order = { CRITICAL: 0, WARNING: 1, RECOMMENDATION: 2 } as const;

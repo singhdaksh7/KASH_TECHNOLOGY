@@ -32,6 +32,23 @@ const visibility = (actor: Actor): Prisma.TaskWhereInput => (can(actor, "tasks.m
 
 export interface TaskFilters { status?: TaskStatus[]; priority?: LeadPriority[]; assignee?: string; relatedType?: TaskRelationType; relatedId?: string; overdue?: boolean; q?: string; limit?: number }
 
+export const ENTITY_LINK: Record<TaskRelationType, (id: string) => string> = {
+  LEAD: () => "/admin/leads", PAGE: (id) => `/admin/pages/${id}/edit`, ARTICLE: () => "/admin/insights", PORTFOLIO: (id) => `/admin/portfolio/${id}`,
+};
+
+/** Adds the related entity's title and admin link so clients can show "Lead: Jane Doe" without extra requests. */
+export async function enrichTasks<T extends { relatedType: TaskRelationType | null; relatedId: string | null }>(tasks: T[]) {
+  const ids = (t: TaskRelationType) => [...new Set(tasks.filter((x) => x.relatedType === t && x.relatedId).map((x) => x.relatedId!))];
+  const [leads, pages, articles, projects] = await Promise.all([
+    ids("LEAD").length ? prisma.lead.findMany({ where: { id: { in: ids("LEAD") } }, select: { id: true, name: true, email: true } }) : [],
+    ids("PAGE").length ? prisma.page.findMany({ where: { id: { in: ids("PAGE") } }, select: { id: true, title: true } }) : [],
+    ids("ARTICLE").length ? prisma.article.findMany({ where: { id: { in: ids("ARTICLE") } }, select: { id: true, title: true } }) : [],
+    ids("PORTFOLIO").length ? prisma.portfolioProject.findMany({ where: { id: { in: ids("PORTFOLIO") } }, select: { id: true, title: true } }) : [],
+  ]);
+  const title = new Map<string, string>([...leads.map((l) => [l.id, l.name || l.email || "Lead"] as const), ...pages.map((p) => [p.id, p.title] as const), ...articles.map((a) => [a.id, a.title] as const), ...projects.map((p) => [p.id, p.title] as const)]);
+  return tasks.map((t) => ({ ...t, entityTitle: t.relatedId ? title.get(t.relatedId) : undefined, entityUrl: t.relatedType && t.relatedId ? ENTITY_LINK[t.relatedType](t.relatedId) : undefined }));
+}
+
 export async function listTasks(actor: Actor, f: TaskFilters) {
   assertCan(actor, "tasks.view", "tasks.manage");
   const and: Prisma.TaskWhereInput[] = [visibility(actor)];

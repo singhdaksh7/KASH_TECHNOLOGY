@@ -15,7 +15,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
   const { slug } = await params;
   try {
     const result = await saveSubmission(slug, body.data, request);
-    return ok({ accepted: true, emailStatus: result.submission.emailStatus }, 201);
+    return ok({ accepted: true, emailStatus: result.submission.emailStatus, successMessage: result.successMessage, successRedirectUrl: result.successRedirectUrl }, 201);
   } catch (e) {
     const m = e instanceof Error ? e.message : "Submission failed";
     if (m === "FORM_NOT_FOUND") return fail("NOT_FOUND", "Form not found", 404);

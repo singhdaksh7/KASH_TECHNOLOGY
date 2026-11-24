@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { CommandPalette } from "@/components/admin/CommandPalette";
 import { ToastProvider } from "@/components/admin/ToastContext";
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
@@ -26,6 +27,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   return (
     <ToastProvider>
+      <CommandPalette />
       <div className="min-h-screen bg-[#FFF9F4] text-[#0B0B0F] flex flex-col font-sans">
         <AdminSidebar mobileOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 

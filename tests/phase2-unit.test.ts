@@ -284,3 +284,22 @@ test("global blocks: linked sections inherit, unlinked unchanged", () => {
   assert.deepEqual(out[0], { type: "cta", content: { t: "block" }, style: { s: 1 }, globalBlockId: "b1" });
   assert.equal(out[1].type, "hero");
 });
+
+// ── Timezone-safe scheduling ──
+import { zonedToUtc, utcToZoned, isValidTimezone } from "../src/lib/cms/schedule-time";
+test("schedule time: IST, UTC, DST zones convert to the right UTC instant", () => {
+  assert.equal(zonedToUtc("2026-12-01", "09:30", "Asia/Kolkata").toISOString(), "2026-12-01T04:00:00.000Z");
+  assert.equal(zonedToUtc("2026-12-01", "00:00", "UTC").toISOString(), "2026-12-01T00:00:00.000Z");
+  assert.equal(zonedToUtc("2026-07-01", "12:00", "America/New_York").toISOString(), "2026-07-01T16:00:00.000Z"); // EDT
+  assert.equal(zonedToUtc("2026-12-01", "12:00", "America/New_York").toISOString(), "2026-12-01T17:00:00.000Z"); // EST
+  assert.equal(zonedToUtc("2026-01-01", "03:00", "Asia/Kolkata").toISOString(), "2025-12-31T21:30:00.000Z"); // crosses the date line
+  assert.deepEqual(utcToZoned(new Date("2026-12-01T04:00:00Z"), "Asia/Kolkata"), { date: "2026-12-01", time: "09:30" });
+  assert.deepEqual(utcToZoned(zonedToUtc("2026-03-08", "10:15", "America/New_York"), "America/New_York"), { date: "2026-03-08", time: "10:15" });
+});
+test("schedule time: rejects bad dates, times and zones", () => {
+  assert.throws(() => zonedToUtc("2026-13-01", "10:00", "UTC"), RangeError);
+  assert.throws(() => zonedToUtc("2026-02-30", "10:00", "UTC"), RangeError);
+  assert.throws(() => zonedToUtc("2026-12-01", "25:00", "UTC"), RangeError);
+  assert.throws(() => zonedToUtc("2026-12-01", "10:00", "Mars/Olympus"), RangeError);
+  assert.equal(isValidTimezone("Asia/Kolkata"), true); assert.equal(isValidTimezone("nope"), false);
+});

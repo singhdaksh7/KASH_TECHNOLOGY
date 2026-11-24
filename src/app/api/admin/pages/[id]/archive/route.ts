@@ -1,5 +1,8 @@
 import { admin } from "@/lib/server/api";
 import { ok } from "@/lib/server/http";
+import { pageInclude } from "@/lib/cms/pages";
+import { prisma } from "@/lib/db/prisma";
+import { toAdminPageDetail } from "@/lib/server/dto-pages";
 import { actorFromSession } from "@/lib/rbac/actor";
 import * as wf from "@/lib/cms/page-workflow";
-export const POST = admin<{ id: string }>(null, async ({ session, params }) => ok(await wf.archivePage(actorFromSession(session), params.id)));
+export const POST = admin<{ id: string }>(null, async ({ session, params }) => { await wf.archivePage(actorFromSession(session), params.id); return ok(await toAdminPageDetail(await prisma.page.findUniqueOrThrow({ where: { id: params.id }, include: pageInclude }))); });

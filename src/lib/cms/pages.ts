@@ -10,6 +10,8 @@ export interface StoredSection {
   enabled: boolean;
   content: Record<string, unknown>;
   style?: Record<string, unknown> | null;
+  /** Phase 2: set when the section is linked to a GlobalBlock (content/style are then inherited at read time). */
+  globalBlockId?: string | null;
 }
 export interface StoredSeo {
   title?: string | null;
@@ -22,6 +24,7 @@ export interface StoredSeo {
   twitterImage?: string | null;
   focusKeyword?: string | null;
   secondaryKeywords?: string | null;
+  structuredData?: unknown;
 }
 export interface WorkingCopy {
   title: string;
@@ -39,7 +42,7 @@ const seoOf = (s: PageWithRelations["seo"]): StoredSeo =>
     ? {
         title: s.title, description: s.description, canonicalUrl: s.canonicalUrl, robots: s.robots, ogImage: s.ogImage,
         ogTitle: s.ogTitle, ogDescription: s.ogDescription, twitterImage: s.twitterImage,
-        focusKeyword: s.focusKeyword, secondaryKeywords: s.secondaryKeywords,
+        focusKeyword: s.focusKeyword, secondaryKeywords: s.secondaryKeywords, structuredData: s.structuredData,
       }
     : {};
 
@@ -54,7 +57,7 @@ export function workingCopy(p: PageWithRelations): WorkingCopy {
     seo: seoOf(p.seo),
     sections: p.sections.map((s) => ({
       id: s.id, type: s.type, order: s.order, enabled: s.enabled,
-      content: (s.content ?? {}) as Record<string, unknown>, style: (s.style ?? null) as Record<string, unknown> | null,
+      content: (s.content ?? {}) as Record<string, unknown>, style: (s.style ?? null) as Record<string, unknown> | null, globalBlockId: s.globalBlockId,
     })),
   };
 }
@@ -85,7 +88,7 @@ export async function applyToLive(
   tx: Prisma.TransactionClient,
   pageId: string,
   w: WorkingCopy,
-  userId: string,
+  userId: string | null,
   extra: Prisma.PageUpdateInput = {},
 ) {
   await tx.pageSection.deleteMany({ where: { pageId } });
@@ -93,13 +96,13 @@ export async function applyToLive(
   await tx.pageSection.createMany({
     data: sorted.map((s, i) => ({
       pageId, type: s.type, order: i, enabled: s.enabled, content: toInputJson(s.content ?? {}),
-      style: s.style ? toInputJson(s.style) : Prisma.JsonNull,
+      style: s.style ? toInputJson(s.style) : Prisma.JsonNull, globalBlockId: s.globalBlockId ?? null,
     })),
   });
   await tx.seoMetadata.upsert({ where: { pageId }, update: seoData(w.seo), create: { pageId, ...seoData(w.seo) } });
   await tx.page.update({
     where: { id: pageId },
-    data: { title: w.title, slug: w.slug, ...(w.pageType ? { pageType: w.pageType } : {}), updatedBy: { connect: { id: userId } }, draft: Prisma.JsonNull, ...extra },
+    data: { title: w.title, slug: w.slug, ...(w.pageType ? { pageType: w.pageType } : {}), ...(userId ? { updatedBy: { connect: { id: userId } } } : {}), draft: Prisma.JsonNull, ...extra },
   });
 }
 

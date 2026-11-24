@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
 import { ok, fail } from "@/lib/server/http";
-import { resolveSections } from "@/lib/cms/working-copy";
+import { resolveSections } from "@/lib/cms/global-block-resolve";
 
 export async function GET(_: Request, { params }: { params: Promise<{ slug: string }> }) {
   const raw = (await params).slug;

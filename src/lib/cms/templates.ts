@@ -106,7 +106,7 @@ export async function createPageFromTemplate(actor: Actor, templateId: string, i
   if (!def.success) throw new HttpError(422, "INVALID_TEMPLATE", "This template's definition is invalid");
   const d = structuredClone(def.data);
   const draftWc = { title: input.title, slug: input.slug, pageType: input.pageType ?? d.pageType, seo: {}, sections: d.sections.map((s, i) => ({ ...s, order: i, enabled: s.enabled ?? true, style: s.style ?? null })) };
-  const problem = validateWorkingCopy({ ...draftWc, sections: draftWc.sections });
+  const problem = validateWorkingCopy({ ...draftWc, sections: draftWc.sections.map((x, i) => ({ ...x, id: `tpl-${i}` })) });
   if (problem) throw new HttpError(400, "VALIDATION_ERROR", problem);
   try {
     return await prisma.$transaction(async (tx) => {

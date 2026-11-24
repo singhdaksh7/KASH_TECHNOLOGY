@@ -29,6 +29,7 @@ export function toMediaItem(m: MediaAsset, usage = 0): MediaItem {
     id: m.id, filename: m.filename, url: m.publicUrl,
     type: m.mimeType.startsWith("image/") ? "image" : m.mimeType.startsWith("video/") ? "video" : "pdf",
     altText: m.alt ?? "", title: m.title ?? "", caption: m.caption ?? "",
+    folder: m.folderId ?? undefined, tags: m.tags,
     dimensions: m.width && m.height ? `${m.width}×${m.height}` : undefined, fileSize: humanSize(m.size),
     uploadedAt: m.createdAt.toISOString().slice(0, 10), usageCount: usage,
   };

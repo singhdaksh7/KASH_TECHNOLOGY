@@ -1,7 +1,10 @@
 import { z } from "zod";
 import { admin, body } from "@/lib/server/api";
 import { ok } from "@/lib/server/http";
+import { pageInclude } from "@/lib/cms/pages";
+import { prisma } from "@/lib/db/prisma";
+import { toAdminPageDetail } from "@/lib/server/dto-pages";
 import { actorFromSession } from "@/lib/rbac/actor";
 import * as wf from "@/lib/cms/page-workflow";
 const schema = z.object({ note: z.string().max(2000).optional() });
-export const POST = admin<{ id: string }>(null, async ({ request, session, params }) => ok(await wf.submitForReview(actorFromSession(session), params.id, (await body(request, schema.default({}))).note)));
+export const POST = admin<{ id: string }>(null, async ({ request, session, params }) => { await wf.submitForReview(actorFromSession(session), params.id, (await body(request, schema.default({}))).note); return ok(await toAdminPageDetail(await prisma.page.findUniqueOrThrow({ where: { id: params.id }, include: pageInclude }))); });

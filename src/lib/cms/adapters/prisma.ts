@@ -4,6 +4,7 @@ import { logOnce } from "../log";
 import { normalizeRichText } from "../richtext";
 import { FALLBACK_FOOTER, FALLBACK_HEADER } from "../fallback-content";
 import { workingCopy, pageInclude, type StoredSeo } from "../pages";
+import { resolveSections } from "../global-block-resolve";
 import type {
   ArticleDocument, FooterConfig, FormDefinition, GlobalSettings, HeaderConfig, NavItem, PageDocument, PageType, ProjectDocument, ProjectStatus, SeoFields, ThemeConfig,
 } from "../types";
@@ -53,6 +54,14 @@ function toPageDocument(p: PublishedRow, status: "published" | "draft" = "publis
   };
 }
 
+/** Phase 2: sections linked to a GlobalBlock inherit the block's CURRENT type/content/style. */
+async function withBlocks<S extends { type: string; content: unknown; style: unknown; globalBlockId: string | null }>(sections: S[]): Promise<S[]> {
+  const ids = [...new Set(sections.map((s) => s.globalBlockId).filter((x): x is string => !!x))];
+  if (!ids.length) return sections;
+  const blocks = new Map((await prisma.globalBlock.findMany({ where: { id: { in: ids } } })).map((b) => [b.id, b]));
+  return resolveSections(sections, blocks);
+}
+
 const livePageWhere = (slug: string) => ({ slug, status: "PUBLISHED" as const, deletedAt: null, OR: [{ publishedAt: null }, { publishedAt: { lte: new Date() } }] });
 
 /* ───────── admin-shaped settings → canonical configs ───────── */
@@ -69,13 +78,13 @@ export class PrismaCmsRepository implements CmsRepository {
   getPageBySlug(slug: string) {
     return safe<PageDocument | null>("page", null, async () => {
       const p = await prisma.page.findFirst({ where: livePageWhere(`/${slugOut(slug)}`), include: { sections: true, seo: true } });
-      return p ? toPageDocument(p) : null;
+      return p ? toPageDocument({ ...p, sections: await withBlocks(p.sections) }) : null;
     });
   }
   getHomePage() {
     return safe<PageDocument | null>("home", null, async () => {
       const p = await prisma.page.findFirst({ where: livePageWhere("/"), include: { sections: true, seo: true } });
-      return p ? toPageDocument(p) : null;
+      return p ? toPageDocument({ ...p, sections: await withBlocks(p.sections) }) : null;
     });
   }
   listPublishedPages() {
@@ -173,13 +182,15 @@ export class PrismaCmsRepository implements CmsRepository {
     return safe<FormDefinition | null>("form", null, async () => {
       const f = await prisma.form.findFirst({ where: { slug, active: true }, include: { fields: { orderBy: { order: "asc" } } } });
       if (!f) return null;
-      const s = (f.settings ?? {}) as { description?: string; submitButtonText?: string; successMessage?: string };
+      const s = (f.settings ?? {}) as { description?: string; submitButtonText?: string; successMessage?: string; multiStep?: boolean; steps?: string[] };
       return {
         slug: f.slug, title: f.name, description: s.description, submitButtonText: s.submitButtonText ?? "Submit",
-        successMessage: s.successMessage ?? "Thank you — we'll be in touch shortly.",
+        successMessage: f.successMessage ?? s.successMessage ?? "Thank you — we'll be in touch shortly.",
+        successRedirectUrl: f.successRedirectUrl ?? undefined, steps: s.multiStep ? s.steps : undefined,
         fields: f.fields.map((x) => ({
           name: x.name, label: x.label, type: (x.type === "SELECT" ? "select" : x.type.toLowerCase()) as FormDefinition["fields"][number]["type"], required: x.required,
           placeholder: ((x.validation ?? {}) as { placeholder?: string }).placeholder, options: Array.isArray(x.options) ? (x.options as string[]) : undefined,
+          step: x.step, section: x.section ?? undefined, description: x.description ?? undefined, conditionalRules: x.conditionalRules ?? undefined,
         })),
       };
     });
@@ -190,6 +201,9 @@ export class PrismaCmsRepository implements CmsRepository {
       const p = await prisma.page.findFirst({ where: { id, deletedAt: null }, include: pageInclude });
       if (!p) return null;
       const w = workingCopy(p);
+      const ids = [...new Set(w.sections.map((x) => x.globalBlockId).filter((x): x is string => !!x))];
+      const blocks = new Map((ids.length ? await prisma.globalBlock.findMany({ where: { id: { in: ids } } }) : []).map((b) => [b.id, b]));
+      w.sections = resolveSections(w.sections.map((x) => ({ ...x, globalBlockId: x.globalBlockId ?? null })), blocks) as typeof w.sections;
       return {
         id: p.id, title: w.title, slug: slugOut(w.slug), status: "draft", pageType: PAGE_TYPE[p.pageType] ?? "page", seo: seoFields(w.seo),
         sections: w.sections.map((s) => ({ id: s.id, type: s.type, order: s.order, enabled: s.enabled, content: s.content ?? {}, style: s.style ?? undefined })),

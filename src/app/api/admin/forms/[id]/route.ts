@@ -13,8 +13,7 @@ export const GET = admin<{ id: string }>("forms.view", async ({ params }) => {
 
 export const PUT = admin<{ id: string }>("forms.edit", async ({ request, session, params }) => {
   const d = await body(request, formSchema);
-  const saved = await saveForm(params.id, d);
-  await audit({ actorId: session.userId, action: "form.update", entity: "Form", entityId: saved.id });
+  const saved = await saveForm(params.id, d, session.userId);
   return ok(toFormItem(saved));
 });
 

@@ -110,15 +110,40 @@ export async function publishPageInTx(tx: Prisma.TransactionClient, pageId: stri
 export async function publishPage(actor: Actor, pageId: string) {
   assertCan(actor, ...ACTION_PERMISSIONS.publish);
   const page = await loadPage(prisma, pageId);
-  const fastTrack = fastTrackCheck(actor, page.status);
-  assertTransition(page.status, "PUBLISHED", { fastTrack });
+  // A live page edited since it was published holds its changes in `draft`; publishing again promotes them (V1 behaviour).
+  const republish = page.status === "PUBLISHED";
+  if (republish && !page.draft) throw new HttpError(409, "NOTHING_TO_PUBLISH", "This page is already published and has no unpublished changes");
+  const fastTrack = !republish && FAST_TRACK_FROM.includes(page.status);
+  if (fastTrack) fastTrackCheck(actor, page.status);
+  if (!republish) assertTransition(page.status, "PUBLISHED", { fastTrack });
   const result = await prisma.$transaction(async (tx) => {
-    const r = await publishPageInTx(tx, pageId, page.status, actor.id, fastTrack ? { approvedAt: new Date(), approvedById: actor.id, reviewedAt: new Date(), reviewedById: actor.id } : {});
-    await auditTx(tx, { actorId: actor.id, action: "page.publish_transition", entity: "Page", entityId: pageId, metadata: { from: page.status, fastTrack } });
+    const r = await publishPageInTx(tx, pageId, page.status, actor.id, fastTrack ? { approvedAt: new Date(), approvedById: actor.id, reviewedAt: new Date(), reviewedById: actor.id } : {}, republish ? "publish changes" : "publish");
+    await auditTx(tx, { actorId: actor.id, action: "page.publish_transition", entity: "Page", entityId: pageId, metadata: { from: page.status, fastTrack, republish } });
     return r;
   });
-  await afterContentPublished({ entity: "Page", id: pageId, title: result.title, slug: result.slug, actorId: actor.id, via: "manual", occurrence: String(result.publishedAt.getTime()), metadata: { from: page.status, fastTrack } });
+  await afterContentPublished({ entity: "Page", id: pageId, title: result.title, slug: result.slug, actorId: actor.id, via: "manual", occurrence: String(result.publishedAt.getTime()), metadata: { from: page.status, fastTrack, republish } });
   return prisma.page.findUniqueOrThrow({ where: { id: pageId }, select: PAGE_STATE_SELECT });
+}
+
+/** Statuses whose approval/scheduling no longer describes the content once it has been edited. */
+export const RESET_ON_EDIT: PageStatus[] = ["IN_REVIEW", "CHANGES_REQUESTED", "APPROVED", "SCHEDULED"];
+
+/**
+ * Draft-reset rule: materially editing a page that is under review, approved, or scheduled sends it back to DRAFT
+ * (clearing approval and schedule) so approved content can never change silently. A PUBLISHED page keeps serving its live
+ * content — edits are held in `draft` until published — so it is NOT taken offline; the unpublished changes are flagged instead.
+ * Returns the previous status when a reset happened.
+ */
+export async function resetToDraftAfterEdit(tx: Prisma.TransactionClient, pageId: string, actorId: string | null, reason: string): Promise<PageStatus | null> {
+  const p = await tx.page.findUnique({ where: { id: pageId }, select: { status: true } });
+  if (!p || !RESET_ON_EDIT.includes(p.status)) return null;
+  const res = await tx.page.updateMany({
+    where: { id: pageId, status: p.status },
+    data: { status: "DRAFT", publishAt: null, unpublishAt: null, approvedAt: null, approvedById: null, reviewedAt: null, reviewedById: null, submittedForReviewAt: null },
+  });
+  if (res.count !== 1) return null;
+  await auditTx(tx, { actorId, action: "page.reset_to_draft", entity: "Page", entityId: pageId, metadata: { from: p.status, reason } });
+  return p.status;
 }
 
 export async function schedulePage(actor: Actor, pageId: string, input: { publishAt?: Date | null; unpublishAt?: Date | null }) {

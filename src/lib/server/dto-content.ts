@@ -50,7 +50,11 @@ export const FIELD_TYPE_TO_DB: Record<FormField["type"], "TEXT" | "EMAIL" | "PHO
 export const FIELD_TYPE_FROM_DB = Object.fromEntries(Object.entries(FIELD_TYPE_TO_DB).map(([k, v]) => [v, k])) as Record<string, FormField["type"]>;
 export type FormRow = Prisma.FormGetPayload<{ include: { fields: true; _count: { select: { submissions: true } } } }>;
 export function toFormItem(f: FormRow): FormItem {
-  const s = (f.settings ?? {}) as { description?: string; submitButtonText?: string; successMessage?: string };
+  const s = (f.settings ?? {}) as { description?: string; submitButtonText?: string; successMessage?: string; multiStep?: boolean; steps?: string[] };
+  const simple = (r: unknown) => {
+    const x = r as { action?: string; match?: string; conditions?: Array<{ field: string; operator: string; value?: unknown }> } | null;
+    return x && x.action === "show" && x.conditions?.length === 1 && x.conditions[0].operator === "equals" ? { field: x.conditions[0].field, equals: String(x.conditions[0].value ?? "") } : undefined;
+  };
   return {
     id: f.id, title: f.name, slug: f.slug, description: s.description ?? "",
     fields: [...f.fields].sort((a, b) => a.order - b.order).map((x) => ({
@@ -58,8 +62,12 @@ export function toFormItem(f: FormRow): FormItem {
       placeholder: ((x.validation ?? {}) as { placeholder?: string }).placeholder,
       options: Array.isArray(x.options) ? (x.options as string[]) : undefined,
       validation: ((x.validation ?? {}) as { pattern?: string }).pattern,
+      description: x.description ?? undefined, step: x.step, section: x.section ?? undefined,
+      conditionalRules: (x.conditionalRules ?? null) as never, conditionalOn: simple(x.conditionalRules),
     })),
-    submitButtonText: s.submitButtonText ?? "Submit", successMessage: s.successMessage ?? "Thank you — we'll be in touch shortly.",
+    isMultiStep: !!s.multiStep || f.fields.some((x) => x.step > 1), stepTitles: s.steps ?? [], active: f.active,
+    redirectUrl: f.successRedirectUrl ?? undefined, createCrmLead: f.createLead, sendEmailNotification: f.sendNotification,
+    submitButtonText: s.submitButtonText ?? "Submit", successMessage: f.successMessage ?? s.successMessage ?? "Thank you — we'll be in touch shortly.",
     submissionsCount: f._count.submissions, updatedAt: iso(f.updatedAt),
   };
 }

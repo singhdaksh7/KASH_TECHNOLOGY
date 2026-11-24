@@ -67,6 +67,31 @@ export function AdminHeader({
       <div className="flex items-center gap-2.5 shrink-0">
         {actions}
 
+        {/* Global Quick Search / Command Palette shortcut trigger */}
+        <button
+          onClick={() => {
+            window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }));
+          }}
+          className="hidden sm:flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-[#E8E5E2] bg-white text-xs text-stone-500 hover:border-[#FF5A00] hover:text-[#0B0B0F] transition-colors"
+          title="Command Palette (Cmd+K)"
+        >
+          <Search className="w-3.5 h-3.5 text-stone-400" />
+          <span className="text-[11px]">Search...</span>
+          <kbd className="px-1.5 py-0.2 rounded bg-stone-100 text-[10px] font-mono text-stone-400 border">
+            ⌘K
+          </kbd>
+        </button>
+
+        {/* Notifications Icon Button */}
+        <Link
+          href="/admin/notifications"
+          className="relative p-2 rounded-lg border border-[#E8E5E2] bg-white text-stone-600 hover:text-[#FF5A00] hover:border-[#FF5A00] transition-colors"
+          title="Notification Center"
+        >
+          <Bell className="w-4 h-4" />
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#FF5A00]" />
+        </Link>
+
         <Link
           href="/"
           target="_blank"

@@ -43,7 +43,9 @@ const NAV_GROUPS: NavGroup[] = [
     title: "CONTENT",
     items: [
       { label: "Pages", perm: "pages.view", href: "/admin/pages", icon: FileText },
+      { label: "Page Templates", perm: "templates.view", href: "/admin/templates/pages", icon: Layers },
       { label: "Portfolio", perm: "portfolio.view", href: "/admin/portfolio", icon: Briefcase },
+      { label: "Portfolio Templates", perm: "portfolio.view", href: "/admin/portfolio/templates", icon: Layers },
       { label: "Insights", perm: "articles.view", href: "/admin/insights", icon: BookOpen },
       { label: "Media Library", perm: "media.view", href: "/admin/media", icon: ImageIcon },
     ],
@@ -52,6 +54,7 @@ const NAV_GROUPS: NavGroup[] = [
     title: "DESIGN & THEME",
     items: [
       { label: "Page Builder", perm: "pages.view", href: "/admin/pages", icon: Layers },
+      { label: "Global Blocks", perm: "global_blocks.view", href: "/admin/design/global-blocks", icon: Layers },
       { label: "Navigation", perm: "settings.view", href: "/admin/design/navigation", icon: Compass },
       { label: "Header Editor", perm: "settings.view", href: "/admin/design/header", icon: PanelTop },
       { label: "Footer Editor", perm: "settings.view", href: "/admin/design/footer", icon: PanelBottom },
@@ -63,6 +66,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "SEO Dashboard", perm: "seo.view", href: "/admin/seo", icon: Search },
       { label: "Forms", perm: "forms.view", href: "/admin/forms", icon: CheckSquare },
+      { label: "Form Templates", perm: "forms.view", href: "/admin/forms/templates", icon: CheckSquare },
       { label: "Leads", perm: "leads.view", href: "/admin/leads", icon: Users },
       { label: "Redirects", perm: "seo.view", href: "/admin/redirects", icon: CornerUpRight },
     ],
@@ -70,6 +74,10 @@ const NAV_GROUPS: NavGroup[] = [
   {
     title: "SYSTEM",
     items: [
+      { label: "Tasks", perm: "tasks.view", href: "/admin/tasks", icon: CheckSquare },
+      { label: "Notifications", perm: "notifications.view", href: "/admin/notifications", icon: History },
+      { label: "Email Templates", perm: "email_templates.view", href: "/admin/settings/email-templates", icon: FileText },
+      { label: "Import / Export", perm: "import_export.use", href: "/admin/tools/import-export", icon: CornerUpRight },
       { label: "Team", perm: "users.view", href: "/admin/team", icon: UserCheck },
       { label: "Roles & Permissions", perm: "users.view", href: "/admin/roles", icon: ShieldAlert },
       { label: "Audit Log", perm: "audit.view", href: "/admin/audit-log", icon: History },

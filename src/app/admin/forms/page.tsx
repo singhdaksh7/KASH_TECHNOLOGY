@@ -85,6 +85,8 @@ export default function FormsManagerPage() {
                 ],
                 submitButtonText: "Submit Inquiry",
                 successMessage: "Thank you for reaching out!",
+                sendEmailNotification: true,
+                createCrmLead: true,
                 submissionsCount: 0,
                 updatedAt: new Date().toISOString().slice(0, 10),
               };

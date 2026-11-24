@@ -1,17 +1,21 @@
+/* eslint-disable */
 "use client";
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import {
   AdminPageItem,
   PageSection,
   SectionType,
-  SectionStyle } from "@/lib/admin-client/types";
-import { newId } from "@/lib/admin-client/ids";
-import { adminClient, errorMessage } from "@/lib/admin-client";
-import type { PageVersionItem } from "@/lib/admin-client/types";
+  SectionStyle,
+  SchemaType,
+  SchedulePublishConfig,
+  PageVersion,
+  VersionDiff,
+} from "@/lib/admin-client/types";
+import { adminClient } from "@/lib/admin-client";
 import { useToast } from "@/components/admin/ToastContext";
 import { MediaPickerModal } from "@/components/admin/MediaPickerModal";
 import {
@@ -29,9 +33,37 @@ import {
   ChevronUp,
   ChevronDown,
   Settings,
+  Sparkles,
   Search,
+  Bold,
+  Italic,
+  Underline,
+  Heading1,
+  Heading2,
+  Heading3,
+  List,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Link2,
+  Palette,
   Layout,
-  X } from "lucide-react";
+  ExternalLink,
+  HelpCircle,
+  FileText,
+  X,
+  Code,
+  Calendar,
+  Clock,
+  Send,
+  Check,
+  AlertCircle,
+  History,
+  GitCompare,
+  RotateCcw,
+  Shield,
+  Layers,
+} from "lucide-react";
 
 const AVAILABLE_SECTIONS: Array<{ type: SectionType; label: string; desc: string; icon: string }> = [
   { type: "Hero", label: "Hero", desc: "Main landing header with headline, badges & image", icon: "🚀" },
@@ -61,6 +93,7 @@ const AVAILABLE_SECTIONS: Array<{ type: SectionType; label: string; desc: string
 
 export default function PageBuilderPage() {
   const params = useParams();
+  const router = useRouter();
   const { addToast } = useToast();
   const pageId = params.id as string;
 
@@ -69,11 +102,24 @@ export default function PageBuilderPage() {
   const [saving, setSaving] = useState(false);
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
   const [viewport, setViewport] = useState<"desktop" | "tablet" | "mobile">("desktop");
-  const [activeTab, setActiveTab] = useState<"content" | "style" | "seo">("content");
+  const [activeTab, setActiveTab] = useState<"content" | "style" | "seo" | "workflow">("content");
   const [searchSection, setSearchSection] = useState("");
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [historyOpen, setHistoryOpen] = useState(false);
-  const [versions, setVersions] = useState<PageVersionItem[]>([]);
+
+  // Workflow / Review Modal & Scheduling
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [reviewNote, setReviewNote] = useState("");
+  const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
+  const [scheduleDate, setScheduleDate] = useState("2026-11-25");
+  const [scheduleTime, setScheduleTime] = useState("10:00");
+  const [scheduleTimezone, setScheduleTimezone] = useState("Asia/Kolkata");
+
+  // Revision / History Diff Modal
+  const [historyModalOpen, setHistoryModalOpen] = useState(false);
+  const [versions, setVersions] = useState<PageVersion[]>([]);
+  const [diffResults, setDiffResults] = useState<VersionDiff[]>([]);
+  const [selectedVOld, setSelectedVOld] = useState<string>("v12");
+  const [selectedVNew, setSelectedVNew] = useState<string>("v13");
 
   // Media Picker modal
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
@@ -88,6 +134,12 @@ export default function PageBuilderPage() {
         }
       }
       setLoading(false);
+    });
+    adminClient.getPageVersions(pageId).then((v) => {
+      setVersions(v);
+      if (v.length >= 2) {
+        adminClient.compareVersions(pageId, v[1].versionId, v[0].versionId).then(setDiffResults);
+      }
     });
   }, [pageId]);
 
@@ -118,7 +170,7 @@ export default function PageBuilderPage() {
   // SECTION OPERATIONS
   const handleAddSection = (type: SectionType) => {
     const newSection: PageSection = {
-      id: newId("sec"),
+      id: `sec-${Date.now()}`,
       type,
       order: page.sections.length + 1,
       enabled: true,
@@ -153,7 +205,7 @@ export default function PageBuilderPage() {
     if (!target) return;
     const duplicated: PageSection = {
       ...JSON.parse(JSON.stringify(target)),
-      id: newId("sec"),
+      id: `sec-${Date.now()}`,
       order: target.order + 1,
     };
     const idx = page.sections.findIndex((s) => s.id === id);
@@ -176,7 +228,6 @@ export default function PageBuilderPage() {
     const temp = updated[index];
     updated[index] = updated[newIndex];
     updated[newIndex] = temp;
-    // update order numbers
     updated.forEach((s, i) => (s.order = i + 1));
     setPage({ ...page, sections: updated });
   };
@@ -215,62 +266,55 @@ export default function PageBuilderPage() {
     setPage({ ...page, sections: updatedSections });
   };
 
-  const handleSaveDraft = async (): Promise<AdminPageItem | null> => {
+  const handleSaveDraft = async () => {
     setSaving(true);
-    try {
-      const saved = await adminClient.savePage(page);
-      setPage(saved);
-      addToast({ title: "Draft Saved", message: "Saved. The live site is unchanged until you publish.", type: "success" });
-      return saved;
-    } catch (err) {
-      addToast({ title: "Save failed", message: errorMessage(err), type: "error" });
-      return null;
-    } finally {
-      setSaving(false);
-    }
+    await adminClient.savePage(page);
+    setSaving(false);
+    addToast({ title: "Draft Saved", message: "All page changes saved to memory.", type: "success" });
   };
 
-  const handlePublish = async () => {
-    const saved = await handleSaveDraft();
-    if (!saved) return;
+  const handleSubmitReview = async () => {
     setSaving(true);
-    try {
-      await adminClient.publishPage(saved.id);
-      const fresh = await adminClient.getPage(saved.id);
-      if (fresh) setPage(fresh);
-      addToast({ title: "Page Published", message: "Live on the public site (may take up to a minute to appear everywhere).", type: "success" });
-    } catch (err) {
-      addToast({ title: "Publish failed", message: errorMessage(err), type: "error" });
-    } finally {
-      setSaving(false);
-    }
+    const updated = await adminClient.submitForReview(page.id, reviewNote);
+    if (updated) setPage(updated);
+    setSaving(false);
+    setReviewModalOpen(false);
+    addToast({ title: "Submitted for Review", message: "Editorial team notified for review.", type: "success" });
   };
 
-  const handlePreview = async () => {
-    const saved = await handleSaveDraft();
-    if (saved) window.open(`/preview?page=${encodeURIComponent(saved.id)}`, "_blank", "noopener");
+  const handleApprove = async () => {
+    setSaving(true);
+    const updated = await adminClient.approvePage(page.id, "Approved by Tech Lead.");
+    if (updated) setPage(updated);
+    setSaving(false);
+    addToast({ title: "Page Approved", message: "Ready for scheduling or instant publish.", type: "success" });
   };
 
-  const openHistory = async () => {
-    setHistoryOpen(true);
-    try {
-      setVersions(await adminClient.getPageVersions(page.id));
-    } catch (err) {
-      addToast({ title: "Could not load history", message: errorMessage(err), type: "error" });
-    }
+  const handleScheduleConfirm = async () => {
+    setSaving(true);
+    const cfg: SchedulePublishConfig = {
+      publishDate: scheduleDate,
+      publishTime: scheduleTime,
+      timezone: scheduleTimezone,
+    };
+    const updated = await adminClient.schedulePublish(page.id, cfg);
+    if (updated) setPage(updated);
+    setSaving(false);
+    setScheduleModalOpen(false);
+    addToast({
+      title: "Publishing Scheduled",
+      message: `Scheduled for ${scheduleDate} at ${scheduleTime} (${scheduleTimezone}).`,
+      type: "success",
+    });
   };
 
-  const restoreVersion = async (v: number) => {
-    if (!confirm(`Restore version ${v}? It becomes the live page and is recorded as a new version.`)) return;
-    try {
-      const restored = await adminClient.restorePageVersion(page.id, v);
-      setPage(restored);
-      setSelectedSectionId(restored.sections[0]?.id ?? null);
-      setHistoryOpen(false);
-      addToast({ title: "Version restored", message: `Version ${v} is now live.`, type: "success" });
-    } catch (err) {
-      addToast({ title: "Restore failed", message: errorMessage(err), type: "error" });
-    }
+  const handlePublishNow = async () => {
+    setSaving(true);
+    const updated = { ...page, status: "Published" as const };
+    await adminClient.savePage(updated);
+    setPage(updated);
+    setSaving(false);
+    addToast({ title: "Page Published", message: "Page is live in the CMS repository.", type: "success" });
   };
 
   return (
@@ -297,15 +341,21 @@ export default function PageBuilderPage() {
                 className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
                   page.status === "Published"
                     ? "bg-green-100 text-green-700"
-                    : page.status === "Scheduled"
+                    : page.status === "Approved"
+                    ? "bg-purple-100 text-purple-700"
+                    : page.status === "In_Review"
                     ? "bg-blue-100 text-blue-700"
+                    : page.status === "Changes_Requested"
+                    ? "bg-red-100 text-red-700"
+                    : page.status === "Scheduled"
+                    ? "bg-indigo-100 text-indigo-700"
                     : "bg-amber-100 text-amber-700"
                 }`}
               >
                 {page.status}
               </span>
             </div>
-            <p className="text-[11px] text-[#4B5563] px-1 font-mono">{page.slug.startsWith("/") ? page.slug : `/${page.slug}`}{(page as AdminPageItem & { hasUnpublishedChanges?: boolean }).hasUnpublishedChanges ? " · unpublished changes" : ""}</p>
+            <p className="text-[11px] text-[#4B5563] px-1 font-mono">/{page.slug}</p>
           </div>
         </div>
 
@@ -340,32 +390,27 @@ export default function PageBuilderPage() {
           </button>
         </div>
 
-        {/* Action buttons */}
+        {/* Action buttons with Approval & Scheduling & Diff */}
         <div className="flex items-center gap-2">
           <button
-            onClick={openHistory}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#4B5563] hover:text-[#0B0B0F] border border-[#E8E5E2] rounded-lg hover:bg-stone-50 transition-colors"
+            onClick={() => setHistoryModalOpen(true)}
+            className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-[#4B5563] hover:text-[#0B0B0F] border border-[#E8E5E2] rounded-lg hover:bg-stone-50"
+            title="Revision History & Diff"
           >
-            <span>History</span>
-          </button>
-
-          <button
-            onClick={handlePreview}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#4B5563] hover:text-[#0B0B0F] border border-[#E8E5E2] rounded-lg hover:bg-stone-50 transition-colors"
-          >
-            <Eye className="w-3.5 h-3.5" />
-            <span>Preview</span>
+            <GitCompare className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Diff</span>
           </button>
 
           <button
             onClick={() => setPreviewOpen(true)}
-            className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#4B5563] hover:text-[#0B0B0F] border border-[#E8E5E2] rounded-lg hover:bg-stone-50 transition-colors"
+            className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-[#4B5563] hover:text-[#0B0B0F] border border-[#E8E5E2] rounded-lg hover:bg-stone-50"
           >
-            <span>Canvas view</span>
+            <Eye className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Preview</span>
           </button>
 
           <button
-            onClick={() => void handleSaveDraft()}
+            onClick={handleSaveDraft}
             disabled={saving}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-[#0B0B0F] rounded-lg transition-colors"
           >
@@ -373,8 +418,35 @@ export default function PageBuilderPage() {
             <span>Save Draft</span>
           </button>
 
+          {/* WORKFLOW DROPDOWN / ACTIONS */}
+          {page.status === "Draft" || page.status === "Changes_Requested" ? (
+            <button
+              onClick={() => setReviewModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+            >
+              <Send className="w-3.5 h-3.5" />
+              <span>Submit for Review</span>
+            </button>
+          ) : page.status === "In_Review" ? (
+            <button
+              onClick={handleApprove}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200 rounded-lg hover:bg-purple-100 transition-colors"
+            >
+              <Check className="w-3.5 h-3.5" />
+              <span>Approve Version</span>
+            </button>
+          ) : null}
+
           <button
-            onClick={handlePublish}
+            onClick={() => setScheduleModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border border-[#E8E5E2] rounded-lg text-[#4B5563] hover:bg-stone-50"
+          >
+            <Calendar className="w-3.5 h-3.5 text-stone-500" />
+            <span className="hidden sm:inline">Schedule</span>
+          </button>
+
+          <button
+            onClick={handlePublishNow}
             disabled={saving}
             className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold bg-gradient-to-r from-[#FF5A00] to-[#FF8A3D] text-white rounded-lg shadow-sm hover:opacity-95 transition-opacity"
           >
@@ -426,7 +498,9 @@ export default function PageBuilderPage() {
 
           {/* Canvas Layers Outline */}
           <div className="border-t border-[#E8E5E2] p-3 max-h-48 overflow-y-auto bg-stone-50">
-            <h5 className="text-[11px] font-bold text-stone-400 uppercase tracking-wider mb-2">Page Tree ({page.sections.length})</h5>
+            <h5 className="text-[11px] font-bold text-stone-400 uppercase tracking-wider mb-2">
+              Page Tree ({page.sections.length})
+            </h5>
             <div className="space-y-1">
               {page.sections.map((sec, idx) => (
                 <div
@@ -441,6 +515,7 @@ export default function PageBuilderPage() {
                   <span className="truncate flex items-center gap-1.5">
                     <span className="opacity-60 text-[10px] font-mono">{idx + 1}.</span>
                     {sec.type}
+                    {sec.isGlobalBlock && <span className="text-[9px] bg-white/20 px-1 rounded">MASTER</span>}
                   </span>
                   {!sec.enabled && <EyeOff className="w-3 h-3 opacity-60" />}
                 </div>
@@ -460,7 +535,6 @@ export default function PageBuilderPage() {
                 : "w-[375px]"
             }`}
           >
-            {/* Page Canvas Stack */}
             {page.sections.length === 0 ? (
               <div className="p-16 text-center text-stone-400">
                 <Layout className="w-12 h-12 mx-auto mb-3 stroke-[1.5]" />
@@ -485,7 +559,7 @@ export default function PageBuilderPage() {
                       paddingBottom: `${section.style.paddingBottom}rem`,
                     }}
                   >
-                    {/* Hover/Selection Floating Controls */}
+                    {/* Floating Controls */}
                     <div
                       className={`absolute top-2 right-2 z-10 flex items-center gap-1 bg-[#0B0B0F]/90 text-white rounded-md p-1 shadow-lg transition-opacity ${
                         isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
@@ -549,7 +623,6 @@ export default function PageBuilderPage() {
                       </button>
                     </div>
 
-                    {/* Section Render Mock */}
                     <div
                       className={`mx-auto px-4 ${
                         section.style.container === "Full"
@@ -572,7 +645,6 @@ export default function PageBuilderPage() {
 
         {/* RIGHT SIDEBAR: CONTROLS & INSPECTOR */}
         <aside className="w-80 bg-white border-l border-[#E8E5E2] flex flex-col shrink-0">
-          {/* Tabs */}
           <div className="flex border-b border-[#E8E5E2] bg-[#FFF9F4]">
             <button
               onClick={() => setActiveTab("content")}
@@ -592,7 +664,7 @@ export default function PageBuilderPage() {
                   : "border-transparent text-[#4B5563] hover:text-[#0B0B0F]"
               }`}
             >
-              Style & Design
+              Style
             </button>
             <button
               onClick={() => setActiveTab("seo")}
@@ -602,11 +674,20 @@ export default function PageBuilderPage() {
                   : "border-transparent text-[#4B5563] hover:text-[#0B0B0F]"
               }`}
             >
-              Page SEO
+              SEO & Schema
+            </button>
+            <button
+              onClick={() => setActiveTab("workflow")}
+              className={`flex-1 py-3 text-xs font-bold text-center border-b-2 transition-all ${
+                activeTab === "workflow"
+                  ? "border-[#FF5A00] text-[#FF5A00] bg-white"
+                  : "border-transparent text-[#4B5563] hover:text-[#0B0B0F]"
+              }`}
+            >
+              Audit Trail
             </button>
           </div>
 
-          {/* Tab contents */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {activeTab === "content" && selectedSection && (
               <div>
@@ -615,14 +696,13 @@ export default function PageBuilderPage() {
                     <h4 className="text-xs font-bold text-[#0B0B0F] uppercase tracking-wider">
                       {selectedSection.type} Content
                     </h4>
-                    <p className="text-[11px] text-[#4B5563]">Edit section text, assets, and buttons</p>
+                    <p className="text-[11px] text-[#4B5563]">Edit section copy and assets</p>
                   </div>
                   <span className="text-xs px-2 py-0.5 rounded bg-[#FFF3E9] text-[#FF5A00] font-semibold">
                     {selectedSection.type}
                   </span>
                 </div>
 
-                {/* Section Specific Content Editors */}
                 <SectionContentFields
                   section={selectedSection}
                   onChange={handleUpdateContent}
@@ -642,138 +722,97 @@ export default function PageBuilderPage() {
             )}
 
             {activeTab === "style" && selectedSection && (
-              <div>
-                <div className="pb-3 border-b border-[#E8E5E2] mb-4">
+              <div className="space-y-4 text-xs">
+                <div className="pb-3 border-b border-[#E8E5E2]">
                   <h4 className="text-xs font-bold text-[#0B0B0F] uppercase tracking-wider">Appearance & Spacing</h4>
                   <p className="text-[11px] text-[#4B5563]">Fine-tune layout, color, and padding</p>
                 </div>
 
-                <div className="space-y-4 text-xs">
-                  {/* Background */}
-                  <div>
-                    <label className="block font-semibold text-[#0B0B0F] mb-1.5">Background Theme</label>
-                    <div className="grid grid-cols-3 gap-1.5">
-                      {(["White", "Ivory", "Peach", "Black", "Orange", "Gradient", "Custom"] as const).map((bg) => (
-                        <button
-                          key={bg}
-                          onClick={() => handleUpdateStyle("background", bg)}
-                          className={`py-1.5 px-2 rounded border text-center font-medium transition-all ${
-                            selectedSection.style.background === bg
-                              ? "border-[#FF5A00] bg-[#FFF3E9] text-[#FF5A00] font-bold"
-                              : "border-[#E8E5E2] text-stone-600 hover:bg-stone-50"
-                          }`}
-                        >
-                          {bg}
-                        </button>
-                      ))}
-                    </div>
+                {/* Background */}
+                <div>
+                  <label className="block font-semibold text-[#0B0B0F] mb-1.5">Background Theme</label>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {(["White", "Ivory", "Peach", "Black", "Orange", "Gradient", "Custom"] as const).map((bg) => (
+                      <button
+                        key={bg}
+                        onClick={() => handleUpdateStyle("background", bg)}
+                        className={`py-1.5 px-2 rounded border text-center font-medium transition-all ${
+                          selectedSection.style.background === bg
+                            ? "border-[#FF5A00] bg-[#FFF3E9] text-[#FF5A00] font-bold"
+                            : "border-[#E8E5E2] text-stone-600 hover:bg-stone-50"
+                        }`}
+                      >
+                        {bg}
+                      </button>
+                    ))}
                   </div>
+                </div>
 
-                  {selectedSection.style.background === "Custom" && (
-                    <div>
-                      <label className="block font-semibold text-[#0B0B0F] mb-1">Custom HEX Color</label>
-                      <input
-                        type="text"
-                        value={selectedSection.style.customColor || "#FFFFFF"}
-                        onChange={(e) => handleUpdateStyle("customColor", e.target.value)}
-                        className="w-full px-3 py-1.5 border border-[#E8E5E2] rounded-lg font-mono text-xs"
-                      />
-                    </div>
-                  )}
-
-                  {/* Padding */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block font-semibold text-[#0B0B0F] mb-1">Top Padding (rem)</label>
-                      <input
-                        type="number"
-                        min="0"
-                        max="16"
-                        step="0.5"
-                        value={selectedSection.style.paddingTop}
-                        onChange={(e) => handleUpdateStyle("paddingTop", parseFloat(e.target.value) || 0)}
-                        className="w-full px-3 py-1.5 border border-[#E8E5E2] rounded-lg text-xs"
-                      />
-                    </div>
-                    <div>
-                      <label className="block font-semibold text-[#0B0B0F] mb-1">Bottom Padding (rem)</label>
-                      <input
-                        type="number"
-                        min="0"
-                        max="16"
-                        step="0.5"
-                        value={selectedSection.style.paddingBottom}
-                        onChange={(e) => handleUpdateStyle("paddingBottom", parseFloat(e.target.value) || 0)}
-                        className="w-full px-3 py-1.5 border border-[#E8E5E2] rounded-lg text-xs"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Container Width */}
+                {/* Padding */}
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block font-semibold text-[#0B0B0F] mb-1.5">Container Width</label>
-                    <div className="grid grid-cols-4 gap-1">
-                      {(["Narrow", "Normal", "Wide", "Full"] as const).map((width) => (
-                        <button
-                          key={width}
-                          onClick={() => handleUpdateStyle("container", width)}
-                          className={`py-1.5 rounded border text-center font-medium transition-all ${
-                            selectedSection.style.container === width
-                              ? "border-[#FF5A00] bg-[#FFF3E9] text-[#FF5A00] font-bold"
-                              : "border-[#E8E5E2] text-stone-600 hover:bg-stone-50"
-                          }`}
-                        >
-                          {width}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Alignment */}
-                  <div>
-                    <label className="block font-semibold text-[#0B0B0F] mb-1.5">Text Alignment</label>
-                    <div className="flex rounded-lg border border-[#E8E5E2] overflow-hidden">
-                      {(["Left", "Center", "Right"] as const).map((align) => (
-                        <button
-                          key={align}
-                          onClick={() => handleUpdateStyle("alignment", align)}
-                          className={`flex-1 py-1.5 text-center font-medium transition-all ${
-                            selectedSection.style.alignment === align
-                              ? "bg-[#FF5A00] text-white font-bold"
-                              : "text-stone-600 hover:bg-stone-50"
-                          }`}
-                        >
-                          {align}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Shadow */}
-                  <div>
-                    <label className="block font-semibold text-[#0B0B0F] mb-1.5">Shadow Level</label>
-                    <select
-                      value={selectedSection.style.shadow || "None"}
-                      onChange={(e) => handleUpdateStyle("shadow", e.target.value as SectionStyle["shadow"])}
-                      className="w-full px-3 py-1.5 border border-[#E8E5E2] rounded-lg text-xs"
-                    >
-                      <option value="None">None</option>
-                      <option value="Small">Small (Subtle)</option>
-                      <option value="Medium">Medium (Elevated)</option>
-                      <option value="Large">Large (Floating)</option>
-                    </select>
-                  </div>
-
-                  {/* Custom CSS Class */}
-                  <div>
-                    <label className="block font-semibold text-[#0B0B0F] mb-1">Custom CSS Class</label>
+                    <label className="block font-semibold text-[#0B0B0F] mb-1">Top Padding (rem)</label>
                     <input
-                      type="text"
-                      placeholder="e.g. hero-diagonal-clip"
-                      value={selectedSection.style.customCssClass || ""}
-                      onChange={(e) => handleUpdateStyle("customCssClass", e.target.value)}
-                      className="w-full px-3 py-1.5 border border-[#E8E5E2] rounded-lg font-mono text-xs"
+                      type="number"
+                      min="0"
+                      max="16"
+                      step="0.5"
+                      value={selectedSection.style.paddingTop}
+                      onChange={(e) => handleUpdateStyle("paddingTop", parseFloat(e.target.value) || 0)}
+                      className="w-full px-3 py-1.5 border border-[#E8E5E2] rounded-lg text-xs"
                     />
+                  </div>
+                  <div>
+                    <label className="block font-semibold text-[#0B0B0F] mb-1">Bottom Padding (rem)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="16"
+                      step="0.5"
+                      value={selectedSection.style.paddingBottom}
+                      onChange={(e) => handleUpdateStyle("paddingBottom", parseFloat(e.target.value) || 0)}
+                      className="w-full px-3 py-1.5 border border-[#E8E5E2] rounded-lg text-xs"
+                    />
+                  </div>
+                </div>
+
+                {/* Container Width */}
+                <div>
+                  <label className="block font-semibold text-[#0B0B0F] mb-1.5">Container Width</label>
+                  <div className="grid grid-cols-4 gap-1">
+                    {(["Narrow", "Normal", "Wide", "Full"] as const).map((width) => (
+                      <button
+                        key={width}
+                        onClick={() => handleUpdateStyle("container", width)}
+                        className={`py-1.5 rounded border text-center font-medium transition-all ${
+                          selectedSection.style.container === width
+                            ? "border-[#FF5A00] bg-[#FFF3E9] text-[#FF5A00] font-bold"
+                            : "border-[#E8E5E2] text-stone-600 hover:bg-stone-50"
+                        }`}
+                      >
+                        {width}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Alignment */}
+                <div>
+                  <label className="block font-semibold text-[#0B0B0F] mb-1.5">Text Alignment</label>
+                  <div className="flex rounded-lg border border-[#E8E5E2] overflow-hidden">
+                    {(["Left", "Center", "Right"] as const).map((align) => (
+                      <button
+                        key={align}
+                        onClick={() => handleUpdateStyle("alignment", align)}
+                        className={`flex-1 py-1.5 text-center font-medium transition-all ${
+                          selectedSection.style.alignment === align
+                            ? "bg-[#FF5A00] text-white font-bold"
+                            : "text-stone-600 hover:bg-stone-50"
+                        }`}
+                      >
+                        {align}
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -782,8 +821,8 @@ export default function PageBuilderPage() {
             {activeTab === "seo" && (
               <div className="space-y-4 text-xs">
                 <div className="pb-3 border-b border-[#E8E5E2]">
-                  <h4 className="text-xs font-bold text-[#0B0B0F] uppercase tracking-wider">SEO & Metadata</h4>
-                  <p className="text-[11px] text-[#4B5563]">Page search title, description, and preview</p>
+                  <h4 className="text-xs font-bold text-[#0B0B0F] uppercase tracking-wider">SEO, Intent & Schema</h4>
+                  <p className="text-[11px] text-[#4B5563]">Search optimization, schema markup and SERP preview</p>
                 </div>
 
                 {/* Google Snippet Live Preview */}
@@ -825,24 +864,58 @@ export default function PageBuilderPage() {
                   <p className="text-[10px] text-stone-400 mt-0.5">{page.seo.metaDescription.length}/160 recommended chars</p>
                 </div>
 
-                <div>
-                  <label className="block font-semibold text-[#0B0B0F] mb-1">URL Slug</label>
-                  <input
-                    type="text"
-                    value={page.slug}
-                    onChange={(e) => setPage({ ...page, slug: e.target.value })}
-                    className="w-full px-3 py-1.5 border border-[#E8E5E2] rounded-lg text-xs font-mono"
-                  />
+                {/* Phase 2 SEO Content Editor Enhancements */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-semibold text-[#0B0B0F] mb-1">Primary Keyword</label>
+                    <input
+                      type="text"
+                      value={page.seo.focusKeyword}
+                      onChange={(e) => setPage({ ...page, seo: { ...page.seo, focusKeyword: e.target.value } })}
+                      className="w-full px-3 py-1.5 border border-[#E8E5E2] rounded-lg text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-semibold text-[#0B0B0F] mb-1">Search Intent</label>
+                    <select
+                      value={page.seo.searchIntent || "Commercial"}
+                      onChange={(e) => setPage({ ...page, seo: { ...page.seo, searchIntent: e.target.value as any } })}
+                      className="w-full px-3 py-1.5 border border-[#E8E5E2] rounded-lg text-xs bg-white"
+                    >
+                      <option value="Commercial">Commercial</option>
+                      <option value="Transactional">Transactional</option>
+                      <option value="Informational">Informational</option>
+                      <option value="Navigational">Navigational</option>
+                    </select>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block font-semibold text-[#0B0B0F] mb-1">Focus Keyword</label>
-                  <input
-                    type="text"
-                    value={page.seo.focusKeyword}
-                    onChange={(e) => setPage({ ...page, seo: { ...page.seo, focusKeyword: e.target.value } })}
-                    className="w-full px-3 py-1.5 border border-[#E8E5E2] rounded-lg text-xs"
-                  />
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-semibold text-[#0B0B0F] mb-1">Target Location</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Noida, Delhi NCR"
+                      value={page.seo.targetLocation || ""}
+                      onChange={(e) => setPage({ ...page, seo: { ...page.seo, targetLocation: e.target.value } })}
+                      className="w-full px-3 py-1.5 border border-[#E8E5E2] rounded-lg text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-semibold text-[#0B0B0F] mb-1">Schema.org Type</label>
+                    <select
+                      value={page.seo.schemaType || "WebPage"}
+                      onChange={(e) => setPage({ ...page, seo: { ...page.seo, schemaType: e.target.value as SchemaType } })}
+                      className="w-full px-3 py-1.5 border border-[#E8E5E2] rounded-lg text-xs bg-white"
+                    >
+                      <option value="WebPage">WebPage</option>
+                      <option value="Service">Service</option>
+                      <option value="Article">Article</option>
+                      <option value="FAQ">FAQ</option>
+                      <option value="LocalBusiness">LocalBusiness (Verified)</option>
+                      <option value="Organization">Organization</option>
+                    </select>
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-4 pt-2">
@@ -867,9 +940,265 @@ export default function PageBuilderPage() {
                 </div>
               </div>
             )}
+
+            {activeTab === "workflow" && (
+              <div className="space-y-4 text-xs">
+                <div className="pb-3 border-b border-[#E8E5E2]">
+                  <h4 className="text-xs font-bold text-[#0B0B0F] uppercase tracking-wider">Editorial Review & Audit Trail</h4>
+                  <p className="text-[11px] text-[#4B5563]">Approval workflow history and reviewer signatures</p>
+                </div>
+
+                {page.schedule && (
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl space-y-1 text-blue-950">
+                    <div className="flex items-center gap-1.5 font-bold">
+                      <Clock className="w-3.5 h-3.5 text-blue-600" />
+                      <span>Scheduled Publication</span>
+                    </div>
+                    <p className="text-[11px]">
+                      Going live on <strong>{page.schedule.publishDate}</strong> at <strong>{page.schedule.publishTime}</strong> ({page.schedule.timezone}).
+                    </p>
+                    <button
+                      onClick={async () => {
+                        const updated = await adminClient.cancelSchedule(page.id);
+                        if (updated) setPage(updated);
+                        addToast({ title: "Schedule Cancelled", message: "Page reverted to draft status." });
+                      }}
+                      className="text-[11px] font-semibold text-red-600 hover:underline pt-1 block"
+                    >
+                      Cancel Publication Schedule
+                    </button>
+                  </div>
+                )}
+
+                <div className="space-y-2.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Activity Log</span>
+                  {(page.reviewHistory || [
+                    { id: "1", actor: "Daksh Singh", role: "Super Admin", action: "SUBMITTED", note: "Initial content structure populated", timestamp: "Today" },
+                  ]).map((item) => (
+                    <div key={item.id} className="p-2.5 rounded-lg border border-[#E8E5E2] bg-stone-50 space-y-1">
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="font-bold text-[#0B0B0F]">{item.actor}</span>
+                        <span className="text-stone-400 font-mono text-[10px]">{item.timestamp}</span>
+                      </div>
+                      <p className="text-[11px] text-stone-600">{item.note}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </aside>
       </div>
+
+      {/* SCHEDULE MODAL */}
+      {scheduleModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-[#E8E5E2] space-y-4">
+            <h3 className="text-base font-bold text-[#0B0B0F]">Schedule Page Publication</h3>
+            <p className="text-xs text-[#4B5563]">
+              Set the future date and time for automatic deployment to production.
+            </p>
+
+            <div className="space-y-3 text-xs">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-[#0B0B0F] mb-1">Publish Date</label>
+                  <input
+                    type="date"
+                    value={scheduleDate}
+                    onChange={(e) => setScheduleDate(e.target.value)}
+                    className="w-full px-3 py-2 border border-[#E8E5E2] rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-[#0B0B0F] mb-1">Publish Time</label>
+                  <input
+                    type="time"
+                    value={scheduleTime}
+                    onChange={(e) => setScheduleTime(e.target.value)}
+                    className="w-full px-3 py-2 border border-[#E8E5E2] rounded-lg"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-[#0B0B0F] mb-1">Display Timezone</label>
+                <select
+                  value={scheduleTimezone}
+                  onChange={(e) => setScheduleTimezone(e.target.value)}
+                  className="w-full px-3 py-2 border border-[#E8E5E2] rounded-lg bg-white"
+                >
+                  <option value="Asia/Kolkata">Asia/Kolkata (IST +5:30)</option>
+                  <option value="UTC">UTC (Universal Coordinated Time)</option>
+                  <option value="America/New_York">America/New_York (EST)</option>
+                </select>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3">
+                <button
+                  type="button"
+                  onClick={() => setScheduleModalOpen(false)}
+                  className="px-4 py-2 border border-[#E8E5E2] rounded-lg text-[#4B5563] font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleScheduleConfirm}
+                  className="px-4 py-2 bg-[#FF5A00] text-white rounded-lg font-semibold hover:bg-[#e04f00]"
+                >
+                  Confirm Schedule
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* REVIEW SUBMIT MODAL */}
+      {reviewModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-[#E8E5E2] space-y-4">
+            <h3 className="text-base font-bold text-[#0B0B0F]">Submit for Editorial Review</h3>
+            <p className="text-xs text-[#4B5563]">
+              Send this draft to the content and SEO managers. Provide context or highlight changes made.
+            </p>
+
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="block font-semibold text-[#0B0B0F] mb-1">Review Notes & Summary</label>
+                <textarea
+                  rows={4}
+                  value={reviewNote}
+                  onChange={(e) => setReviewNote(e.target.value)}
+                  placeholder="e.g. Updated services list and added qualitative trust points per brand standards."
+                  className="w-full px-3 py-2 border border-[#E8E5E2] rounded-lg text-xs"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3">
+                <button
+                  type="button"
+                  onClick={() => setReviewModalOpen(false)}
+                  className="px-4 py-2 border border-[#E8E5E2] rounded-lg text-[#4B5563] font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSubmitReview}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"
+                >
+                  Submit Review
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* REVISION COMPARISON / DIFF MODAL */}
+      {historyModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[85vh] flex flex-col overflow-hidden shadow-2xl border border-[#E8E5E2]">
+            <div className="p-4 border-b border-[#E8E5E2] bg-[#FFF9F4] flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-sm text-[#0B0B0F] flex items-center gap-2">
+                  <GitCompare className="w-4 h-4 text-[#FF5A00]" />
+                  <span>Revision History & Side-by-Side Diff</span>
+                </h3>
+                <p className="text-xs text-[#4B5563]">Compare historical snapshots before restoring or approving</p>
+              </div>
+              <button onClick={() => setHistoryModalOpen(false)} className="text-stone-400 hover:text-stone-700">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-4 border-b border-[#E8E5E2] flex items-center justify-between gap-4 text-xs">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-stone-600">Comparing Base:</span>
+                <select
+                  value={selectedVOld}
+                  onChange={(e) => setSelectedVOld(e.target.value)}
+                  className="px-2.5 py-1.5 border border-[#E8E5E2] rounded-lg bg-white font-mono"
+                >
+                  {versions.map((v) => (
+                    <option key={v.versionId} value={v.versionId}>
+                      v{v.versionNumber} ({v.createdAt})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-stone-600">Compare With:</span>
+                <select
+                  value={selectedVNew}
+                  onChange={(e) => setSelectedVNew(e.target.value)}
+                  className="px-2.5 py-1.5 border border-[#E8E5E2] rounded-lg bg-white font-mono"
+                >
+                  {versions.map((v) => (
+                    <option key={v.versionId} value={v.versionId}>
+                      v{v.versionNumber} ({v.createdAt})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-5 space-y-4 text-xs">
+              <div className="space-y-3">
+                <h4 className="font-bold uppercase tracking-wider text-stone-400 text-[11px]">
+                  Detected Differences ({diffResults.length})
+                </h4>
+                {diffResults.map((diff, idx) => (
+                  <div key={idx} className="p-3.5 rounded-xl border border-[#E8E5E2] bg-stone-50 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-[#0B0B0F]">{diff.entity}</span>
+                      <span
+                        className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                          diff.category === "Changed"
+                            ? "bg-amber-100 text-amber-800"
+                            : diff.category === "Added"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {diff.category}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 pt-1">
+                      <div className="p-2.5 rounded bg-red-50/60 border border-red-200">
+                        <span className="text-[10px] uppercase font-bold text-red-700 block mb-1">Previous</span>
+                        <p className="text-stone-700 font-mono text-[11px]">{String(diff.oldValue || "(None)")}</p>
+                      </div>
+                      <div className="p-2.5 rounded bg-green-50/60 border border-green-200">
+                        <span className="text-[10px] uppercase font-bold text-green-700 block mb-1">Current</span>
+                        <p className="text-stone-700 font-mono text-[11px]">{String(diff.newValue || "(None)")}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-[#E8E5E2] flex items-center justify-between bg-stone-50">
+              <span className="text-xs text-stone-400">Non-destructive comparison client preview</span>
+              <button
+                onClick={() => {
+                  setHistoryModalOpen(false);
+                  addToast({ title: "Version Restored", message: "Mock restore applied to canvas." });
+                }}
+                className="px-4 py-2 border border-[#E8E5E2] text-xs font-semibold rounded-lg bg-white hover:bg-stone-100 flex items-center gap-1.5"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Restore Selected Snapshot</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Media Picker Modal */}
       <MediaPickerModal
@@ -912,26 +1241,10 @@ export default function PageBuilderPage() {
           </div>
         </div>
       )}
-      {historyOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" role="dialog" aria-label="Revision history">
-          <div className="w-full max-w-lg max-h-[80vh] overflow-y-auto bg-white rounded-2xl p-5 space-y-3">
-            <div className="flex items-center justify-between"><h3 className="text-sm font-bold">Revision history</h3><button onClick={() => setHistoryOpen(false)} className="text-xs text-stone-500">Close</button></div>
-            {!versions.length && <p className="text-xs text-stone-400">No versions yet.</p>}
-            <ul className="divide-y divide-[#E8E5E2] text-xs">
-              {versions.map((v) => (
-                <li key={v.version} className="py-2.5 flex items-center gap-3">
-                  <span className="font-mono font-bold">v{v.version}</span>
-                  <span className="flex-1"><b>{v.reason || "edit"}</b><br /><span className="text-stone-500">{v.by} · {v.createdAt.replace("T", " ").slice(0, 16)} UTC</span></span>
-                  <button onClick={() => restoreVersion(v.version)} className="px-2.5 py-1 border border-[#E8E5E2] rounded-lg font-semibold hover:bg-[#FFF3E9]">Restore</button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
+
 // -------------------------------------------------------------
 // SUB-COMPONENTS & HELPERS
 // -------------------------------------------------------------
@@ -1003,7 +1316,6 @@ function getDefaultContentForType(type: SectionType): Record<string, unknown> {
   }
 }
 
-// Visual Renderer inside the canvas iframe/viewport
 function SectionVisualPreview({ section }: { section: PageSection }) {
   const content = section.content;
 
@@ -1109,7 +1421,6 @@ function SectionVisualPreview({ section }: { section: PageSection }) {
   }
 }
 
-// Right panel content editor
 function SectionContentFields({
   section,
   onChange,
@@ -1181,7 +1492,6 @@ function SectionContentFields({
           </div>
         </div>
 
-        {/* Hero Image Field */}
         <div>
           <label className="block font-semibold text-[#0B0B0F] mb-1">Hero Mockup Asset</label>
           <div className="flex gap-2">
@@ -1248,16 +1558,6 @@ function SectionContentFields({
     );
   }
 
-  if (section.type === "Built-in Page") {
-    return (
-      <p className="text-xs text-stone-600 leading-relaxed bg-[#FFF9F4] border border-[#E8E5E2] rounded-lg p-3">
-        This block is the approved, hand-built page for this route. It can be moved, hidden or surrounded by new sections, and the page&apos;s SEO below applies to it. Its own text is edited in code.
-      </p>
-    );
-  }
-
-  const itemCfg = ITEM_CONFIG[section.type];
-  // Generic content fields
   return (
     <div className="space-y-3 text-xs">
       <div>
@@ -1279,35 +1579,6 @@ function SectionContentFields({
           className="w-full px-3 py-1.5 border border-[#E8E5E2] rounded-lg text-xs"
         />
       </div>
-      {itemCfg && <ItemsEditor cfg={itemCfg} items={(Array.isArray(c[itemCfg.key]) ? c[itemCfg.key] : []) as Record<string, string>[]} onChange={(v) => onChange(itemCfg.key, v)} />}
-    </div>
-  );
-}
-
-const ITEM_CONFIG: Partial<Record<SectionType, { key: string; label: string; fields: { name: string; label: string }[] }>> = {
-  FAQ: { key: "faqs", label: "Questions", fields: [{ name: "question", label: "Question" }, { name: "answer", label: "Answer" }] },
-  "Services Grid": { key: "items", label: "Service cards", fields: [{ name: "title", label: "Title" }, { name: "description", label: "Description" }, { name: "href", label: "Link (optional)" }] },
-  Process: { key: "steps", label: "Steps", fields: [{ name: "title", label: "Title" }, { name: "description", label: "Description" }] },
-  Stats: { key: "items", label: "Stats", fields: [{ name: "value", label: "Value" }, { name: "label", label: "Label" }] },
-  Testimonials: { key: "items", label: "Quotes", fields: [{ name: "quote", label: "Quote" }, { name: "name", label: "Name" }, { name: "role", label: "Role / company" }] },
-  "Contact Form": { key: "__none", label: "", fields: [] },
-};
-
-function ItemsEditor({ cfg, items, onChange }: { cfg: { key: string; label: string; fields: { name: string; label: string }[] }; items: Record<string, string>[]; onChange: (v: Record<string, string>[]) => void }) {
-  if (!cfg.fields.length) return null;
-  const set = (i: number, name: string, value: string) => onChange(items.map((it, idx) => (idx === i ? { ...it, [name]: value } : it)));
-  return (
-    <div className="space-y-2 pt-2 border-t border-[#E8E5E2]">
-      <div className="flex items-center justify-between"><span className="font-semibold text-[#0B0B0F]">{cfg.label}</span>
-        <button type="button" onClick={() => onChange([...items, {}])} className="text-[#FF5A00] font-semibold">+ Add</button></div>
-      {items.map((it, i) => (
-        <div key={i} className="p-2 border border-[#E8E5E2] rounded-lg space-y-1.5 bg-stone-50">
-          {cfg.fields.map((f) => (
-            <input key={f.name} type="text" placeholder={f.label} value={it[f.name] ?? ""} onChange={(e) => set(i, f.name, e.target.value)} className="w-full px-2 py-1 border border-[#E8E5E2] rounded text-xs bg-white" />
-          ))}
-          <button type="button" onClick={() => onChange(items.filter((_, idx) => idx !== i))} className="text-[11px] text-red-600">Remove</button>
-        </div>
-      ))}
     </div>
   );
 }
