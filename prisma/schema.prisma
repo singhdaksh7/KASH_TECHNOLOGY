@@ -9,8 +9,48 @@ datasource db {
 
 enum PageStatus {
   DRAFT
+  IN_REVIEW
+  CHANGES_REQUESTED
+  APPROVED
   PUBLISHED
   SCHEDULED
+  ARCHIVED
+}
+
+enum LeadPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+  CANCELLED
+}
+
+enum NotificationType {
+  NEW_LEAD
+  PAGE_REVIEW
+  PAGE_APPROVED
+  PAGE_PUBLISHED
+  FORM_SUBMISSION
+  SEO_WARNING
+  SYSTEM
+}
+
+enum TemplateCategory {
+  BLANK
+  SERVICE
+  LANDING_PAGE
+  PORTFOLIO
+  LOCATION
+  CAMPAIGN
+  ABOUT
+  CONTACT
+  CUSTOM
 }
 
 enum UserStatus {
@@ -147,22 +187,31 @@ model RecoveryCode {
 }
 
 model Page {
-  id          String        @id @default(cuid())
-  title       String
-  slug        String        @unique
-  status      PageStatus    @default(DRAFT)
-  pageType    String        @default("STANDARD")
-  publishedAt DateTime?
-  createdById String?
-  updatedById String?
-  deletedAt   DateTime?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  createdBy   User?         @relation("PageCreator", fields: [createdById], references: [id], onDelete: SetNull)
-  updatedBy   User?         @relation("PageUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
-  sections    PageSection[]
-  versions    PageVersion[]
-  seo         SeoMetadata?
+  id                   String        @id @default(cuid())
+  title                String
+  slug                 String        @unique
+  status               PageStatus    @default(DRAFT)
+  pageType             String        @default("STANDARD")
+  publishedAt          DateTime?
+  publishAt            DateTime?
+  unpublishAt          DateTime?
+  submittedForReviewAt DateTime?
+  submittedById        String?
+  reviewedAt           DateTime?
+  reviewedById         String?
+  reviewNote           String?
+  approvedAt           DateTime?
+  approvedById         String?
+  createdById          String?
+  updatedById          String?
+  deletedAt            DateTime?
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+  createdBy            User?         @relation("PageCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy            User?         @relation("PageUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+  sections             PageSection[]
+  versions             PageVersion[]
+  seo                  SeoMetadata?
 
   @@index([status, publishedAt])
   @@index([deletedAt])
@@ -452,4 +501,39 @@ model AuditLog {
   @@index([actorId, createdAt])
   @@index([entity, entityId])
   @@index([action, createdAt])
+}
+
+model PageTemplate {
+  id         String           @id @default(cuid())
+  name       String
+  slug       String           @unique
+  definition Json
+  category   TemplateCategory @default(CUSTOM)
+  isSystem   Boolean          @default(false)
+  createdAt  DateTime         @default(now())
+}
+
+model GlobalBlock {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  content   Json
+  createdAt DateTime @default(now())
+}
+
+model Task {
+  id        String       @id @default(cuid())
+  title     String
+  status    TaskStatus   @default(TODO)
+  priority  LeadPriority @default(MEDIUM)
+  createdAt DateTime     @default(now())
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  createdAt DateTime         @default(now())
 }
