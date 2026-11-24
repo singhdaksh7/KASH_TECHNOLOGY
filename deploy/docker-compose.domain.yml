@@ -1,0 +1,20 @@
+# Production domain routing. Apply ONLY after DNS (A records for kash-technology.com and www) points at this server:
+#   docker compose -f docker-compose.yml -f docker-compose.domain.yml up -d web
+# Canonical host: https://kash-technology.com ; www redirects (permanent) to the apex.
+services:
+  web:
+    labels:
+      traefik.http.routers.kash-apex.rule: Host(`kash-technology.com`)
+      traefik.http.routers.kash-apex.entrypoints: websecure
+      traefik.http.routers.kash-apex.tls: "true"
+      traefik.http.routers.kash-apex.tls.certresolver: letsencrypt
+      traefik.http.routers.kash-apex.service: kash
+      traefik.http.routers.kash-www.rule: Host(`www.kash-technology.com`)
+      traefik.http.routers.kash-www.entrypoints: websecure
+      traefik.http.routers.kash-www.tls: "true"
+      traefik.http.routers.kash-www.tls.certresolver: letsencrypt
+      traefik.http.routers.kash-www.middlewares: kash-www-to-apex
+      traefik.http.routers.kash-www.service: kash
+      traefik.http.middlewares.kash-www-to-apex.redirectregex.regex: ^https://www\.kash-technology\.com/(.*)
+      traefik.http.middlewares.kash-www-to-apex.redirectregex.replacement: https://kash-technology.com/$${1}
+      traefik.http.middlewares.kash-www-to-apex.redirectregex.permanent: "true"

@@ -1,0 +1,60 @@
+# KASH Technology - production stack (isolated from every other project on this host).
+#   kash-postgres : dedicated PostgreSQL, private network only, persistent volume
+#   kash-web      : Next.js site + CMS/admin, persistent media volume
+# Traefik (shared, host-network) reaches kash-web through the existing external `kp-proxy` network via labels.
+name: kash
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: kash-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: kash
+      POSTGRES_USER: kash
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set in kash.env}
+    volumes:
+      - kash_pgdata:/var/lib/postgresql/data
+    networks: [kash-internal]
+    mem_limit: 256m
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kash -d kash"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  web:
+    image: ${KASH_IMAGE:?set KASH_IMAGE}
+    container_name: kash-web
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - /opt/kash/secrets/kash.env
+    environment:
+      NODE_ENV: production
+      MEDIA_DIR: /data/media
+    volumes:
+      - kash_media:/data/media
+    networks: [kash-internal, kp-proxy]
+    mem_limit: 640m
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: kp-proxy
+      traefik.http.services.kash.loadbalancer.server.port: "3000"
+      # Verification hostname (works before DNS points here):
+      traefik.http.routers.kash-sslip.rule: Host(`kash.77.37.45.177.sslip.io`)
+      traefik.http.routers.kash-sslip.entrypoints: websecure
+      traefik.http.routers.kash-sslip.tls: "true"
+      traefik.http.routers.kash-sslip.tls.certresolver: letsencrypt
+      traefik.http.routers.kash-sslip.service: kash
+
+volumes:
+  kash_pgdata:
+  kash_media:
+
+networks:
+  kash-internal:
+    name: kash-internal
+  kp-proxy:
+    external: true
