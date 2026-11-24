@@ -1,0 +1,1 @@
+import { prisma } from "@/lib/db/prisma"; import { ok } from "@/lib/server/http"; export async function GET(){return ok(await prisma.article.findMany({where:{status:"PUBLISHED",publishedAt:{lte:new Date()},deletedAt:null},include:{category:true},orderBy:{publishedAt:"desc"}}));}

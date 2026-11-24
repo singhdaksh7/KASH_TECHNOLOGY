@@ -1,0 +1,1 @@
+import { prisma } from "@/lib/db/prisma"; import { ok,fail } from "@/lib/server/http"; export async function GET(_:Request,{params}:{params:Promise<{slug:string}>}){const form=await prisma.form.findFirst({where:{slug:(await params).slug,active:true},include:{fields:{orderBy:{order:"asc"}}}});return form?ok(form):fail("NOT_FOUND","Form not found",404);}
