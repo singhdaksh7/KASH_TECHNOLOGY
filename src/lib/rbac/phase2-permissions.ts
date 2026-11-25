@@ -19,6 +19,10 @@ export const PHASE2_PERMISSIONS: Record<string, string> = {
   "notifications.view": "View own notifications",
   "email_templates.view": "View email templates",
   "email_templates.manage": "Edit email templates",
+  "email_settings.view": "View email delivery settings and status (never the API key)",
+  "email_settings.manage": "Configure Resend, replace/remove the API key, send test emails",
+  "email_logs.view": "View the email delivery log",
+  "email.retry": "Retry failed transactional emails",
   "import_export.use": "Use CSV/JSON import and export",
   "search.use": "Use admin search",
 };

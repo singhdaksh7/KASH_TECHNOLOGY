@@ -2,7 +2,7 @@ import { AdminApiError, api } from "./http";
 import { DEFAULT_FOOTER, DEFAULT_HEADER, DEFAULT_NAVIGATION, DEFAULT_THEME_CONFIG } from "./defaults";
 import * as ui from "./adapters";
 import type {
-  AdminNotification, AdminTask, AdvancedSeoIssue, EmailTemplateItem, FormTemplateItem, GlobalBlock, LeadPriority, MediaFolder, PageTemplate, PageVersion, PortfolioTemplateItem,
+  AdminNotification, AdminTask, EmailDeliveryItem, EmailSettingsInput, EmailSettingsView, EmailStatusView, AdvancedSeoIssue, EmailTemplateItem, FormTemplateItem, GlobalBlock, LeadPriority, MediaFolder, PageTemplate, PageVersion, PortfolioTemplateItem,
   SchedulePublishConfig, VersionDiff,
   AdminPageItem, ArticleItem, AuditItem, FooterConfig, FormItem, HeaderConfig, LeadItem, MediaItem, NavigationLink,   PortfolioItem, RedirectItem, RoleItem, SeoIssue, SessionInfo, TeamMember, ThemeConfig,
 } from "./types";
@@ -137,7 +137,19 @@ export const adminClient = {
   saveEmailTemplate: async (t: Pick<EmailTemplateItem, "slug" | "subject" | "body" | "enabled">): Promise<EmailTemplateItem> =>
     ui.toUiEmailTemplate(await api<ui.EmailTemplateRow>(`/email-templates/${t.slug}`, { method: "PATCH", json: { subject: t.subject, body: t.body, enabled: t.enabled } })),
   getEmailStatus: () => api<{ configured: boolean }>("/email-status"),
-  previewEmailTemplate: (slug: string, draft: { subject: string; body: string }, variables?: Record<string, string>) => api<{ subject: string; text: string }>(`/email-templates/${slug}/preview`, { json: { ...draft, variables } }),
+  previewEmailTemplate: (slug: string, draft: { subject: string; body: string }, variables?: Record<string, string>) => api<{ subject: string; text: string; html: string | null; previewData: boolean }>(`/email-templates/${slug}/preview`, { json: { ...draft, variables } }),
+
+  /* ───── Email & Resend (the API key is write-only: it is never returned) ───── */
+  getEmailSettings: () => api<EmailSettingsView>("/email/settings"),
+  saveEmailSettings: (input: EmailSettingsInput) => api<EmailSettingsView>("/email/settings", { method: "PUT", json: input }),
+  setEmailApiKey: (apiKey: string) => api<EmailSettingsView>("/email/settings/api-key", { method: "PUT", json: { apiKey } }),
+  removeEmailApiKey: () => api<EmailSettingsView>("/email/settings/api-key", { method: "DELETE" }),
+  getEmailDeliveryStatus: () => api<EmailStatusView>("/email/status"),
+  getEmailDomain: () => api<{ domain: string; status: "verified" | "needs_verification" | "unknown"; detail: string }>("/email/domain"),
+  sendTestEmail: (recipient: string) => api<{ status: string; message: string | null }>("/email/test", { json: { recipient } }),
+  getEmailDeliveries: (status?: string) => api<EmailDeliveryItem[]>(`/email/deliveries${status ? `?status=${status}` : ""}`),
+  getLeadEmails: (leadId: string) => api<EmailDeliveryItem[]>(`/leads/${encodeURIComponent(leadId)}/email`),
+  retryEmailDelivery: (id: string) => api<{ status: string; errorMessage: string | null }>(`/email-deliveries/${encodeURIComponent(id)}/retry`, { method: "POST", json: {} }),
 
   /* ───── Phase 2: form & portfolio templates ───── */
   getFormTemplates: async (): Promise<FormTemplateItem[]> => (await api<ui.FormTemplateRow[]>("/form-templates")).map(ui.toUiFormTemplate),

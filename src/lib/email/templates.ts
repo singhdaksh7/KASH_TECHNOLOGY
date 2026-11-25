@@ -1,4 +1,3 @@
-import { Resend } from "resend";
 import { prisma } from "@/lib/db/prisma";
 
 /**
@@ -8,7 +7,7 @@ import { prisma } from "@/lib/db/prisma";
  * template's allow-list; there are no expressions, helpers, conditionals or property access, so a template
  * can never execute code or read data it was not explicitly handed.
  */
-import { EMAIL_TEMPLATE_DEFS, TEMPLATE_DEF_BY_KEY } from "./template-defs";
+import { EMAIL_TEMPLATE_DEFS, TEMPLATE_DEF_BY_KEY, isLegacyDefault } from "./template-defs";
 export { EMAIL_TEMPLATE_DEFS, TEMPLATE_DEF_BY_KEY };
 export type { TemplateDef } from "./template-defs";
 
@@ -46,7 +45,7 @@ export async function resolveTemplate(key: string): Promise<ResolvedTemplate> {
   const def = TEMPLATE_DEF_BY_KEY.get(key);
   if (!def) throw new TemplateError(`Unknown email template "${key}"`);
   const row = await prisma.emailTemplate.findUnique({ where: { key } }).catch(() => null);
-  if (row?.enabled && !validateTemplateText(row.subject, def.variables).length && !validateTemplateText(row.body, def.variables).length) {
+  if (row?.enabled && !isLegacyDefault(key, row) && !validateTemplateText(row.subject, def.variables).length && !validateTemplateText(row.body, def.variables).length) {
     return { key, subject: row.subject, body: row.body, variables: def.variables, source: "database" };
   }
   return { key, subject: def.subject, body: def.body, variables: def.variables, source: "default" };
@@ -55,15 +54,4 @@ export async function resolveTemplate(key: string): Promise<ResolvedTemplate> {
 export async function renderEmail(key: string, vars: Record<string, unknown>) {
   const t = await resolveTemplate(key);
   return { subject: renderTemplate(t.subject, vars, t.variables, { singleLine: true }), text: renderTemplate(t.body, vars, t.variables), source: t.source };
-}
-
-export async function sendTemplatedEmail(key: string, to: string, vars: Record<string, unknown>): Promise<{ sent: boolean; error?: string }> {
-  if (!process.env.RESEND_API_KEY || !process.env.RESEND_FROM_EMAIL) return { sent: false, error: "Email not configured" };
-  try {
-    const mail = await renderEmail(key, { siteName: "KASH Technology", ...vars });
-    const { error } = await new Resend(process.env.RESEND_API_KEY).emails.send({ from: process.env.RESEND_FROM_EMAIL, to, subject: mail.subject, text: mail.text });
-    return error ? { sent: false, error: error.message } : { sent: true };
-  } catch (e) {
-    return { sent: false, error: e instanceof Error ? e.message : "Email error" };
-  }
 }

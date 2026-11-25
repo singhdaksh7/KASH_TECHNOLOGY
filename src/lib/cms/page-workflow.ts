@@ -4,7 +4,7 @@ import { HttpError } from "@/lib/server/api";
 import { auditTx } from "@/lib/server/audit-tx";
 import { assertCan, can, type Actor } from "@/lib/rbac/actor";
 import { notifySafe, usersWithPermission } from "@/lib/notifications";
-import { sendTemplatedEmail } from "@/lib/email/templates";
+import { sendTemplatedEmail } from "@/lib/email/delivery";
 import { afterContentPublished } from "./publish-hooks";
 import { ACTION_PERMISSIONS, FAST_TRACK_FROM, assertTransition, validateSchedule, type WorkflowAction } from "./workflow";
 import { applyToLive, loadPage, snapshotPage, validateWorkingCopy, workingCopy } from "./working-copy";

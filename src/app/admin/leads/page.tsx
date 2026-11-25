@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { AlertTriangle, Building, Kanban, Mail, Phone, Search, Send, Table as TableIcon, X } from "lucide-react";
-import type { AdminTask, LeadItem, LeadPriority, LeadStatus } from "@/lib/admin-client/types";
+import type { AdminTask, EmailDeliveryItem, LeadItem, LeadPriority, LeadStatus } from "@/lib/admin-client/types";
 import { adminClient, errorMessage } from "@/lib/admin-client";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { useToast } from "@/components/admin/ToastContext";
@@ -45,11 +45,12 @@ export default function LeadsPage() {
   const [note, setNote] = useState("");
   const [taskTitle, setTaskTitle] = useState("");
   const [tagText, setTagText] = useState("");
+  const [leadEmails, setLeadEmails] = useState<EmailDeliveryItem[]>([]);
   const [emailOn, setEmailOn] = useState<boolean | null>(null);
 
   const who = useCallback((id?: unknown) => (id ? people.find((p) => p.id === id)?.name ?? "Unknown user" : "Unassigned"), [people]);
   const reloadList = useCallback(async () => { const l = await adminClient.getLeads(); setLeads(l); return l; }, []);
-  const openLead = useCallback(async (id: string) => { try { setOpen(await adminClient.getLead(id)); } catch (e) { addToast({ title: "Could not open lead", message: errorMessage(e), type: "error" }); } }, [addToast]);
+  const openLead = useCallback(async (id: string) => { adminClient.getLeadEmails(id).then(setLeadEmails).catch(() => setLeadEmails([])); try { setOpen(await adminClient.getLead(id)); } catch (e) { addToast({ title: "Could not open lead", message: errorMessage(e), type: "error" }); } }, [addToast]);
   const refresh = useCallback(async (id?: string) => { await reloadList(); if (id) await openLead(id); }, [reloadList, openLead]);
   const act = async (id: string, fn: () => Promise<unknown>, ok: string) => {
     try { await fn(); await refresh(id); addToast({ title: ok, message: "Saved.", type: "success" }); } catch (e) { addToast({ title: "Update failed", message: errorMessage(e), type: "error" }); }
@@ -173,6 +174,18 @@ export default function LeadsPage() {
             <div className="space-y-1 pt-2 border-t border-[#E8E5E2]"><span className="font-semibold block">Where it came from</span>
               {([["Source", open.source], ["Form", open.attribution?.formName], ["Landing page", open.landingPage], ["Referrer", open.referrer], ["UTM source", open.utm?.source], ["UTM medium", open.utm?.medium], ["UTM campaign", open.utm?.campaign], ["Service", open.service]] as const).filter(([, v]) => v).map(([k, v]) => <p key={k} className="flex gap-2"><span className="w-24 shrink-0 text-stone-400">{k}</span><span className="break-all">{v}</span></p>)}
               <p className="flex gap-2"><span className="w-24 shrink-0 text-stone-400">Received</span>{open.date} UTC</p></div>
+
+            <div className="pt-2 border-t border-[#E8E5E2] space-y-2"><span className="font-semibold block">Email</span>
+              {([["lead_internal", "Internal notification"], ["lead_confirmation", "Visitor confirmation"]] as const).map(([key, label]) => {
+                const d = leadEmails.find((x) => x.templateKey === key);
+                return (
+                  <div key={key} className="flex items-center justify-between gap-2">
+                    <span>{label}: <b className={d?.status === "SENT" ? "text-green-700" : d?.status === "FAILED" ? "text-red-600" : "text-stone-500"}>{d?.status ?? "NOT SENT"}</b>{d?.errorMessage && d.status !== "SENT" ? <span className="block text-[10px] text-stone-400">{d.errorMessage}</span> : null}</span>
+                    {d && (d.status === "FAILED" || d.status === "SKIPPED") && <button type="button" onClick={() => void act(open.id, () => adminClient.retryEmailDelivery(d.id), "Email retried")} className="px-2 py-1 border border-[#E8E5E2] rounded font-semibold hover:bg-stone-50 shrink-0">Retry {key === "lead_internal" ? "Internal" : "Visitor"} Email</button>}
+                  </div>
+                );
+              })}
+            </div>
 
             <div className="pt-2 border-t border-[#E8E5E2] space-y-2"><span className="font-semibold block">Tasks</span>
               {(open.tasks ?? []).map((t) => <p key={t.id} className={`flex gap-2 ${t.completed ? "line-through text-stone-400" : ""}`}><span>•</span><span className="flex-1">{t.title}{t.assignedTo ? ` — ${t.assignedTo}` : ""}</span></p>)}

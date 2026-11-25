@@ -26,7 +26,11 @@ phase() { # name, require2fa, script
   docker rm -f kash-e2e-pg >/dev/null 2>&1 || true
   return $RC
 }
-phase "AUTH (2FA enforced)" true auth.mjs
-phase "CMS / RBAC / forms / media" false cms.mjs
-phase "FOUNDER BOOTSTRAP (temp password → forced change → 2FA)" true founder-bootstrap.mjs \
+FAILED=0
+run_phase() { phase "$@" || { echo "!! phase failed: $1"; FAILED=1; }; }
+run_phase "AUTH (2FA enforced)" true auth.mjs
+run_phase "CMS / RBAC / forms / media" false cms.mjs
+run_phase "EMAIL / RESEND (settings, secrecy, contact form, logs)" false email.mjs
+run_phase "FOUNDER BOOTSTRAP (temp password → forced change → 2FA)" true founder-bootstrap.mjs \
   'printf %s "$E2E_TEMP_PASSWORD" | USER_EMAIL=$E2E_ADMIN_EMAIL MODE=reset node deploy/ops/force-password-reset.cjs >/dev/null'
+exit $FAILED

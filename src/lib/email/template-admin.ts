@@ -4,16 +4,21 @@ import { HttpError } from "@/lib/server/api";
 import { auditTx } from "@/lib/server/audit-tx";
 import { assertCan, type Actor } from "@/lib/rbac/actor";
 import { EMAIL_TEMPLATE_DEFS, TEMPLATE_DEF_BY_KEY, TemplateError, renderTemplate, validateTemplateText } from "./templates";
+import { isLegacyDefault } from "./template-defs";
+import { renderPreview } from "./lead-mail";
 
 export const updateEmailTemplateSchema = z.object({
   name: z.string().trim().min(1).max(120).optional(), subject: z.string().trim().min(1).max(300).optional(),
   body: z.string().min(1).max(20_000).optional(), enabled: z.boolean().optional(),
 }).refine((v) => Object.keys(v).length > 0, { message: "Nothing to update" });
 
-const view = (def: (typeof EMAIL_TEMPLATE_DEFS)[number], row: { name: string; subject: string; body: string; enabled: boolean; updatedAt: Date } | null | undefined) => ({
+const view = (def: (typeof EMAIL_TEMPLATE_DEFS)[number], stored: { name: string; subject: string; body: string; enabled: boolean; updatedAt: Date } | null | undefined) => {
+  const row = isLegacyDefault(def.key, stored) ? null : stored;
+  return {
   key: def.key, name: row?.name ?? def.name, subject: row?.subject ?? def.subject, body: row?.body ?? def.body, enabled: row?.enabled ?? true,
   variables: def.variables, isCustomised: !!row && (row.subject !== def.subject || row.body !== def.body || !row.enabled), updatedAt: row?.updatedAt ?? null,
-});
+  };
+};
 
 export async function listEmailTemplates(actor: Actor) {
   assertCan(actor, "email_templates.view");
@@ -51,14 +56,19 @@ export async function saveEmailTemplate(actor: Actor, key: string, input: z.infe
   return view(d, row);
 }
 
-/** Renders a template with sample (or supplied) values so editors can preview it. Nothing is sent. */
+/** Renders a template with clearly-labelled sample values so editors can preview it. Nothing is sent. */
 export async function previewEmailTemplate(actor: Actor, key: string, variables: Record<string, string> = {}, draft?: { subject?: string; body?: string }) {
   assertCan(actor, "email_templates.view");
   const d = defOrThrow(key);
   const current = view(d, await prisma.emailTemplate.findUnique({ where: { key } }));
-  const sample = Object.fromEntries(d.variables.map((v) => [v, variables[v] ?? `[${v}]`]));
+  const subject = draft?.subject ?? current.subject, body = draft?.body ?? current.body;
+  const problems = [...validateTemplateText(subject, d.variables), ...validateTemplateText(body, d.variables)];
+  if (problems.length) throw new HttpError(400, "UNSAFE_TEMPLATE", problems.join("; "), { allowed: d.variables });
   try {
-    return { subject: renderTemplate(draft?.subject ?? current.subject, sample, d.variables, { singleLine: true }), text: renderTemplate(draft?.body ?? current.body, sample, d.variables) };
+    const branded = await renderPreview(key, subject, body, variables);
+    if (branded) return { ...branded, previewData: true };
+    const sample = Object.fromEntries(d.variables.map((v) => [v, variables[v] ?? `[${v}]`]));
+    return { subject: renderTemplate(subject, sample, d.variables, { singleLine: true }), text: renderTemplate(body, sample, d.variables), html: null as string | null, previewData: true };
   } catch (e) {
     if (e instanceof TemplateError) throw new HttpError(400, "UNSAFE_TEMPLATE", e.message, { allowed: d.variables });
     throw e;

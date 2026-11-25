@@ -12,3 +12,9 @@ Secrets (DB password, AUTH_SECRET, TOTP key, bootstrap admin) live only in `secr
 - **Nightly backup:** copy `deploy/backup.sh` to `/opt/kash/`, `deploy/cron/kash-backup` to `/etc/cron.d/` (02:30 server time = UTC). Verified custom-format `pg_dump`, 14-day retention of `kash-db-nightly-*.dump` only. Log: `/opt/kash/backups/backup.log`. Media files (volume `kash_media`) are NOT included.
 - **Deploy command (with domain routing):** `docker compose -f docker-compose.yml -f docker-compose.domain.yml --env-file .env --env-file secrets/kash.env up -d web`
 - **Rollback to v2.0.0:** `cd /opt/kash && sed -i 's#^KASH_IMAGE=.*#KASH_IMAGE=kash-web:2.0.0-5a38ed9#' .env && docker compose -f docker-compose.yml -f docker-compose.domain.yml --env-file .env --env-file secrets/kash.env up -d web`. The Phase 2 migration is additive (new tables/nullable columns/enum values), so v2.0.0 runs against the migrated database unchanged. Do NOT restore a database dump unless data is lost; if you must, use `pg_restore --clean` from `/opt/kash/backups/kash-db-pre-v2.1.0-*.dump` (this discards anything written since).
+
+## v2.2.0 (Email & Resend)
+- Configure in **Admin → Settings → Email & Resend**: API key (encrypted with `TOTP_ENCRYPTION_KEY`, write-only), From, internal recipient, toggles, **Send Test Email**. Delivery log: `/admin/settings/email/logs`.
+- Priority: admin settings → env fallback (`RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `CONTACT_RECEIVER_EMAIL`) → disabled. Leads are always saved first; email failures never lose a lead.
+- Migration `20261127000000_email_delivery` is additive (2 tables, enum, nullable `Lead.budget`). Rolling back the image to 2.1.1 is safe.
+- Do NOT change `TOTP_ENCRYPTION_KEY` without re-entering the Resend key in admin (it also protects 2FA secrets).

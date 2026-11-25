@@ -102,30 +102,30 @@ enum EmailStatus {
 }
 
 model User {
-  id            String               @id @default(cuid())
-  email         String               @unique
-  name          String?
-  passwordHash  String
-  mustChangePassword Boolean         @default(false)
-  status        UserStatus           @default(ACTIVE)
-  lastLoginAt   DateTime?
-  deletedAt     DateTime?
-  createdAt     DateTime             @default(now())
-  updatedAt     DateTime             @updatedAt
-  roles         UserRole[]
-  sessions      Session[]
-  twoFactor     TwoFactorCredential?
-  recoveryCodes RecoveryCode[]
-  createdPages  Page[]               @relation("PageCreator")
-  updatedPages  Page[]               @relation("PageUpdater")
-  pageVersions  PageVersion[]
-  media         MediaAsset[]
-  auditLogs     AuditLog[]
-  leadNotes     LeadNote[]
-  assignedLeads Lead[]               @relation("LeadAssignee")
-  assignedTasks Task[]               @relation("TaskAssignee")
-  createdTasks  Task[]               @relation("TaskCreator")
-  notifications Notification[]
+  id                 String               @id @default(cuid())
+  email              String               @unique
+  name               String?
+  passwordHash       String
+  mustChangePassword Boolean              @default(false)
+  status             UserStatus           @default(ACTIVE)
+  lastLoginAt        DateTime?
+  deletedAt          DateTime?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  roles              UserRole[]
+  sessions           Session[]
+  twoFactor          TwoFactorCredential?
+  recoveryCodes      RecoveryCode[]
+  createdPages       Page[]               @relation("PageCreator")
+  updatedPages       Page[]               @relation("PageUpdater")
+  pageVersions       PageVersion[]
+  media              MediaAsset[]
+  auditLogs          AuditLog[]
+  leadNotes          LeadNote[]
+  assignedLeads      Lead[]               @relation("LeadAssignee")
+  assignedTasks      Task[]               @relation("TaskAssignee")
+  createdTasks       Task[]               @relation("TaskCreator")
+  notifications      Notification[]
 
   @@index([status])
   @@index([deletedAt])
@@ -473,6 +473,7 @@ model Lead {
   company        String?
   service        String?
   message        String?
+  budget         String?
   source         String?
   utmSource      String?
   utmMedium      String?
@@ -685,4 +686,55 @@ model PortfolioTemplate {
   definition  Json
   isSystem    Boolean  @default(false)
   createdAt   DateTime @default(now())
+}
+
+enum EmailDeliveryStatus {
+  QUEUED
+  SENT
+  FAILED
+  SKIPPED
+}
+
+/// Single-row outbound email configuration. The Resend API key is stored ONLY as AES-256-GCM ciphertext
+/// (same helper as TOTP secrets) and is never returned by any API.
+model EmailSettings {
+  id                       String   @id @default("default")
+  provider                 String   @default("resend")
+  enabled                  Boolean  @default(false)
+  sendVisitorConfirmation  Boolean  @default(true)
+  sendInternalNotification Boolean  @default(true)
+  fromName                 String?
+  fromEmail                String?
+  replyToEmail             String?
+  internalRecipient        String?
+  visitorReplyEmail        String?
+  testRecipient            String?
+  encryptedApiKey          String?
+  apiKeyLast4              String?
+  updatedById              String?
+  updatedAt                DateTime @updatedAt
+}
+
+/// One row per attempted (or skipped) transactional email. Holds no secrets and no raw provider responses.
+model EmailDelivery {
+  id                String              @id @default(cuid())
+  templateKey       String
+  provider          String              @default("resend")
+  recipient         String
+  subject           String
+  entityType        String?
+  entityId          String?
+  status            EmailDeliveryStatus @default(QUEUED)
+  providerMessageId String?
+  errorCode         String?
+  errorMessage      String?
+  attempts          Int                 @default(1)
+  dedupeKey         String?             @unique
+  createdAt         DateTime            @default(now())
+  sentAt            DateTime?
+  updatedAt         DateTime            @updatedAt
+
+  @@index([entityType, entityId])
+  @@index([status, createdAt])
+  @@index([createdAt])
 }

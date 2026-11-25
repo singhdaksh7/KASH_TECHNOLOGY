@@ -76,6 +76,8 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "Tasks", perm: "tasks.view", href: "/admin/tasks", icon: CheckSquare },
       { label: "Notifications", perm: "notifications.view", href: "/admin/notifications", icon: History },
+      { label: "Email & Resend", perm: "email_settings.view", href: "/admin/settings/email", icon: Settings },
+      { label: "Email Logs", perm: "email_logs.view", href: "/admin/settings/email/logs", icon: History },
       { label: "Email Templates", perm: "email_templates.view", href: "/admin/settings/email-templates", icon: FileText },
       { label: "Import / Export", perm: "import_export.use", href: "/admin/tools/import-export", icon: CornerUpRight },
       { label: "Team", perm: "users.view", href: "/admin/team", icon: UserCheck },

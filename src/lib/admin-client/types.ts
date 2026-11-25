@@ -600,3 +600,21 @@ export interface SessionInfo {
   twoFactorEnabled: boolean;
   twoFactorRequired: boolean;
 }
+
+/* ───── Email & Resend ───── */
+export interface EmailSettingsView {
+  provider: string; enabled: boolean; sendVisitorConfirmation: boolean; sendInternalNotification: boolean;
+  fromName: string; fromEmail: string; replyToEmail: string; internalRecipient: string; visitorReplyEmail: string; testRecipient: string;
+  apiKey: { configured: boolean; source: "database" | "environment" | "none"; lastFour: string | null };
+  envFallback: { fromEmail: boolean; apiKey: boolean };
+}
+export type EmailSettingsInput = Partial<Pick<EmailSettingsView, "enabled" | "sendVisitorConfirmation" | "sendInternalNotification" | "fromName" | "fromEmail" | "replyToEmail" | "internalRecipient" | "visitorReplyEmail" | "testRecipient">>;
+export interface EmailStatusView {
+  state: "connected" | "not_configured" | "disabled" | "error"; provider: string; from: string | null; internalRecipient: string; apiKeySource: string;
+  lastSuccess: string | null; lastFailure: { at: string; code: string | null; message: string | null; template: string } | null;
+}
+export type EmailDeliveryStatus = "QUEUED" | "SENT" | "FAILED" | "SKIPPED";
+export interface EmailDeliveryItem {
+  id: string; templateKey: string; provider: string; recipient: string; subject: string; entityType: string | null; entityId: string | null; status: EmailDeliveryStatus;
+  errorCode: string | null; errorMessage: string | null; attempts: number; createdAt: string; sentAt: string | null; leadName?: string | null;
+}

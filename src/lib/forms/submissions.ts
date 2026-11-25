@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
-import { notifyLead } from "@/lib/email/resend";
-import { sendTemplatedEmail } from "@/lib/email/templates";
+import { notifyLead, leadToMailData } from "@/lib/email/lead-mail";
+import { sendTemplatedEmail } from "@/lib/email/delivery";
 import { sha256 } from "@/lib/auth/crypto";
 import { logEmailSent, onLeadCreated } from "@/lib/crm/leads";
 import { notifySafe, usersWithPermission } from "@/lib/notifications";
@@ -50,7 +50,7 @@ export async function saveSubmission(formSlug: string, raw: Record<string, unkno
     ? await prisma.lead.create({
       data: {
         name: str(values.name) ?? str(values.fullName), email: str(values.email), phone: str(values.phone), company: str(values.company),
-        service: str(values.service) ?? str(values.serviceInterested), message: str(values.message), source: `form:${formSlug}`,
+        service: str(values.service) ?? str(values.serviceInterested), budget: str(values.budget) ?? str(values.projectBudget), message: str(values.message), source: `form:${formSlug}`,
         utmSource: str(raw.utmSource), utmMedium: str(raw.utmMedium), utmCampaign: str(raw.utmCampaign), utmTerm: str(raw.utmTerm), utmContent: str(raw.utmContent),
         landingPage: str(raw.landingPage) ?? referer, referrer: str(raw.referrer) ?? referer,
       },
@@ -74,15 +74,21 @@ export async function saveSubmission(formSlug: string, raw: Record<string, unkno
     });
   }
 
-  let mail: { sent: boolean; error?: string } = { sent: false, error: "Notifications disabled for this form" };
+  // Everything above is committed; from here on nothing can lose the enquiry.
+  let status: "PENDING" | "SENT" | "FAILED" = "PENDING";
+  let emailError: string | undefined;
   if (form.sendNotification) {
     const email = str(values.email);
-    mail = lead
-      ? await notifyLead(lead, { confirmation: formSlug !== "newsletter" }).catch((e: unknown) => ({ sent: false, error: e instanceof Error ? e.message : "email error" }))
-      : await notifyLead({ name: str(values.name) ?? form.name, email, message: Object.entries(values).map(([k, v]) => `${k}: ${String(v)}`).join("\n"), source: `form:${formSlug}` }, { confirmation: false }).catch((e: unknown) => ({ sent: false, error: e instanceof Error ? e.message : "email error" }));
-    if (formSlug === "newsletter" && email) await sendTemplatedEmail("newsletter_confirmation", email, { email }).catch(() => undefined);
-    if (lead && mail.sent) await logEmailSent(lead.id, { template: "lead_internal", form: formSlug });
+    const isNewsletter = formSlug === "newsletter";
+    const out = lead
+      ? await notifyLead({ type: "Lead", id: lead.id }, leadToMailData(lead), { confirmation: !isNewsletter })
+      : await notifyLead({ type: "FormSubmission", id: submission.id }, { name: str(values.name) ?? form.name, email, message: Object.entries(values).map(([k, v]) => `${k}: ${String(v)}`).join("\n"), source: `form:${formSlug}`, submittedAt: submission.createdAt }, { confirmation: false });
+    if (isNewsletter && email) await sendTemplatedEmail("newsletter_confirmation", email, { email }, { type: "FormSubmission", id: submission.id }).catch(() => undefined);
+    const internal = out.internal;
+    status = internal?.status === "SENT" ? "SENT" : internal?.status === "FAILED" ? "FAILED" : internal?.status === "SKIPPED" && internal.errorCode !== "TOGGLE_OFF" ? "FAILED" : "PENDING";
+    emailError = internal && internal.status !== "SENT" ? internal.errorMessage ?? undefined : undefined;
+    if (lead && internal?.status === "SENT" && !internal.duplicate) await logEmailSent(lead.id, { template: "lead_internal", form: formSlug });
   }
-  const updated = await prisma.formSubmission.update({ where: { id: submission.id }, data: { emailStatus: !form.sendNotification ? "PENDING" : mail.sent ? "SENT" : "FAILED", emailError: mail.error?.slice(0, 500) } });
+  const updated = await prisma.formSubmission.update({ where: { id: submission.id }, data: { emailStatus: status, emailError: emailError?.slice(0, 500) } });
   return { lead, submission: updated, successMessage: form.successMessage ?? ((form.settings ?? {}) as { successMessage?: string }).successMessage ?? null, successRedirectUrl: form.successRedirectUrl ?? null };
 }
