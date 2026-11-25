@@ -8,7 +8,7 @@ import { lookupRedirect } from "@/lib/server/redirects";
  *  3. Public GET/HEAD paths are checked against the admin-managed Redirect table (60s in-process cache).
  */
 const SESSION_COOKIE = "kash_admin_session";
-const AUTH_PAGES = ["/admin/login", "/admin/verify-2fa", "/admin/setup-2fa"];
+const AUTH_PAGES = ["/admin/login", "/admin/verify-2fa", "/admin/setup-2fa", "/admin/change-password"];
 
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;

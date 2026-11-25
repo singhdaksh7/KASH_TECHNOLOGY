@@ -20,13 +20,13 @@ const putSetting = (key: string, value: unknown, theme = false) => api("/setting
 
 export const adminClient = {
   /* ───── auth ───── */
-  login: (email: string, password: string) => api<{ requiresTwoFactor: boolean; setupTwoFactor?: boolean }>("/auth/login", { json: { email, password } }),
+  login: (email: string, password: string) => api<{ requiresTwoFactor: boolean; setupTwoFactor?: boolean; mustChangePassword?: boolean }>("/auth/login", { json: { email, password } }),
   verifyTwoFactor: (code: string) => api<{ authenticated: boolean }>("/auth/verify-2fa", { json: { code } }),
   useRecoveryCode: (code: string) => api<{ authenticated: boolean }>("/auth/recovery", { json: { code } }),
   setupTwoFactor: () => api<{ provisioningUri: string; qrDataUrl: string; manualKey: string }>("/auth/2fa/setup", { method: "POST", json: {} }),
   confirmTwoFactor: (code: string) => api<{ recoveryCodes: string[] }>("/auth/2fa/confirm", { json: { code } }),
   logout: () => api("/auth/logout", { method: "POST", json: {} }).then(() => true),
-  changePassword: (currentPassword: string, newPassword: string) => api("/auth/password", { json: { currentPassword, newPassword } }).then(() => true),
+  changePassword: (currentPassword: string, newPassword: string) => api<{ changed: boolean; twoFactorEnabled?: boolean }>("/auth/password", { json: { currentPassword, newPassword } }),
   getSession: () => api<SessionInfo>("/auth/session"),
 
   /* ───── pages ───── */

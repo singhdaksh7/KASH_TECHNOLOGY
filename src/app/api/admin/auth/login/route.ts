@@ -40,7 +40,7 @@ export async function POST(request: Request) {
   const token = await createSession(user.id, request);
   await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
   await audit({ actorId: user.id, action: "auth.login", entity: "User", entityId: user.id, metadata: { twoFactor: false } });
-  const response = NextResponse.json({ success: true, data: { requiresTwoFactor: false, setupTwoFactor: true } });
+  const response = NextResponse.json({ success: true, data: { requiresTwoFactor: false, setupTwoFactor: true, mustChangePassword: user.mustChangePassword } });
   response.cookies.set(SESSION_COOKIE, token, cookieOptions);
   return response;
 }

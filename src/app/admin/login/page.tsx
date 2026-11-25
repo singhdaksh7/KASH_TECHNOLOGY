@@ -20,7 +20,7 @@ export default function AdminLoginPage() {
     setError("");
     try {
       const r = await adminClient.login(email.trim(), password);
-      router.push(r.requiresTwoFactor ? "/admin/verify-2fa" : "/admin/setup-2fa");
+      router.push(r.requiresTwoFactor ? "/admin/verify-2fa" : r.mustChangePassword ? "/admin/change-password" : "/admin/setup-2fa");
     } catch (err) {
       setError(errorMessage(err));
       setLoading(false);

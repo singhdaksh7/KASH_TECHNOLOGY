@@ -8,6 +8,7 @@ export async function GET() {
   const u = session.user;
   return ok({
     user: { id: u.id, email: u.email, name: u.name, roles: u.roles.map((x) => x.role.name), permissions: userPermissions(session) },
+    mustChangePassword: u.mustChangePassword,
     twoFactorEnabled: !!u.twoFactor?.enabledAt,
     twoFactorRequired: requires2fa(),
     expiresAt: session.expiresAt,

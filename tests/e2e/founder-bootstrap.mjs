@@ -1,0 +1,93 @@
+// Server started with 2FA enforced; the seeded admin was put through deploy/ops/force-password-reset.cjs (temporary password, mustChangePassword).
+import { Client, check, summary, totp } from "./lib.mjs";
+const email = process.env.E2E_ADMIN_EMAIL, temp = process.env.E2E_TEMP_PASSWORD, oldSeed = process.env.E2E_ADMIN_PASSWORD;
+const NEW = "Fnd-Str0ng!-new-passphrase";
+
+const c = new Client();
+let r = await c.api("/auth/login", { json: { email, password: oldSeed } });
+check("pre-reset password no longer works", r.status === 401);
+r = await c.api("/auth/login", { json: { email, password: "1234567891" } });
+check("wrong temporary password → 401", r.status === 401 && r.err?.code === "INVALID_CREDENTIALS");
+r = await c.api("/pages");
+check("admin API with no session → 401", r.status === 401);
+
+r = await c.api("/auth/login", { json: { email, password: temp } });
+check("correct temporary password → accepted, mustChangePassword flagged", r.status === 200 && r.data?.mustChangePassword === true);
+r = await c.req("/admin", { redirect: "manual" });
+check("/admin before password change → redirect to change-password", [302, 307].includes(r.status) && (r.headers.get("location") || "").includes("/admin/change-password"));
+r = await c.req("/admin/setup-2fa", { redirect: "manual" });
+check("/admin/setup-2fa before password change → redirect to change-password", [302, 307].includes(r.status) && (r.headers.get("location") || "").includes("/admin/change-password"));
+r = await c.req("/admin/change-password", { redirect: "manual" });
+check("change-password page reachable", r.status === 200);
+r = await c.api("/pages");
+check("admin API blocked before password change", r.status === 403 && r.err?.code === "PASSWORD_CHANGE_REQUIRED");
+r = await c.api("/auth/2fa/setup", { method: "POST", json: {} });
+check("2FA setup blocked before password change", r.status === 403 && r.err?.code === "PASSWORD_CHANGE_REQUIRED");
+r = await c.api("/auth/2fa/confirm", { json: { code: "123456" } });
+check("2FA confirm blocked before password change", r.status === 403 && r.err?.code === "PASSWORD_CHANGE_REQUIRED");
+r = await c.api("/auth/session");
+check("session endpoint reports mustChangePassword + SUPER_ADMIN", r.data?.mustChangePassword === true && r.data?.user.roles.includes("SUPER_ADMIN"));
+
+r = await c.api("/auth/password", { json: { currentPassword: "wrong-current-pw", newPassword: NEW } });
+check("wrong current password → rejected", r.status === 401);
+r = await c.api("/auth/password", { json: { currentPassword: temp, newPassword: temp } });
+check("new == temporary password → rejected", r.status === 400);
+r = await c.api("/auth/password", { json: { currentPassword: temp, newPassword: "Short1!" } });
+check("too-short new password → rejected", r.status === 400);
+const oldCookie = c.jar.get("kash_admin_session");
+r = await c.api("/auth/password", { json: { currentPassword: temp, newPassword: NEW } });
+check("forced password change succeeds", r.status === 200 && r.data?.changed === true && r.data?.twoFactorEnabled === false);
+check("session rotated on password change", c.jar.get("kash_admin_session") && c.jar.get("kash_admin_session") !== oldCookie);
+const stale = new Client(); stale.jar.set("kash_admin_session", oldCookie);
+r = await stale.api("/auth/session");
+check("pre-change session token no longer valid", r.status === 401);
+
+r = await c.api("/pages");
+check("admin API before 2FA → TWO_FACTOR_SETUP_REQUIRED", r.status === 403 && r.err?.code === "TWO_FACTOR_SETUP_REQUIRED");
+r = await c.req("/admin", { redirect: "manual" });
+check("/admin before 2FA → redirect to setup-2fa", [302, 307].includes(r.status) && (r.headers.get("location") || "").includes("/admin/setup-2fa"));
+r = await c.req("/admin/change-password", { redirect: "manual" });
+check("change-password page no longer reachable after change", [302, 307].includes(r.status));
+
+r = await c.api("/auth/2fa/setup", { method: "POST", json: {} });
+check("2FA QR setup works", r.status === 200 && r.data?.qrDataUrl?.startsWith("data:image/png") && !!r.data?.manualKey && r.data?.provisioningUri?.startsWith("otpauth://totp/"));
+const secret = r.data.manualKey;
+r = await c.api("/auth/2fa/confirm", { json: { code: "000000" } });
+check("wrong authenticator code → rejected", r.status === 400);
+r = await c.api("/pages");
+check("QR shown but unverified → still blocked", r.status === 403);
+r = await c.api("/auth/2fa/confirm", { json: { code: totp(secret) } });
+check("correct code → 2FA enabled + exactly 10 recovery codes", r.status === 200 && r.data?.recoveryCodes?.length === 10);
+r = await c.api("/pages");
+check("admin API allowed after setup", r.status === 200);
+r = await c.req("/admin", { redirect: "manual" });
+check("/admin allowed after setup", r.status === 200);
+r = await c.api("/auth/logout", { method: "POST", json: {} });
+check("logout works", r.status === 200);
+r = await c.api("/pages");
+check("session dead after logout", r.status === 401);
+
+const d = new Client();
+r = await d.api("/auth/login", { json: { email, password: temp } });
+check("temporary password rejected after change", r.status === 401);
+r = await d.api("/auth/login", { json: { email, password: NEW } });
+check("second login: new password → requires TOTP", r.status === 200 && r.data?.requiresTwoFactor === true && !d.jar.has("kash_admin_session"));
+r = await d.api("/pages");
+check("password step alone grants nothing", r.status === 401);
+r = await d.api("/auth/verify-2fa", { json: { code: "000000" } });
+check("wrong TOTP → rejected", r.status === 401);
+r = await d.api("/auth/verify-2fa", { json: { code: totp(secret) } });
+check("second login: TOTP → session", r.status === 200 && d.jar.has("kash_admin_session"));
+r = await d.api("/pages");
+check("dashboard API after full login", r.status === 200);
+r = await d.api("/auth/password", { json: { currentPassword: NEW, newPassword: "Another-Str0ng-passphrase!" } });
+check("Settings password change works later (no forced flag)", r.status === 200);
+r = await d.api("/auth/session");
+check("no forced-change flag after voluntary change", r.data?.mustChangePassword === false);
+
+const e = new Client();
+r = await e.api("/auth/verify-2fa", { json: { code: totp(secret) } });
+check("TOTP without password step → 401", r.status === 401);
+r = await e.api("/auth/recovery", { json: { code: "0123456789" } });
+check("recovery code without password step → 401", r.status === 401);
+process.exit(summary() ? 1 : 0);

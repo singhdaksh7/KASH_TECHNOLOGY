@@ -596,6 +596,7 @@ export interface AuditItem {
 
 export interface SessionInfo {
   user: { id: string; email: string; name: string | null; roles: string[]; permissions: string[] };
+  mustChangePassword: boolean;
   twoFactorEnabled: boolean;
   twoFactorRequired: boolean;
 }

@@ -7,7 +7,7 @@ PORT=3200
 PW='E2E-Passw0rd!-not-a-real-secret'
 export TOTP_ENCRYPTION_KEY=e2e-totp-key-not-secret AUTH_SECRET=e2e-auth-secret-not-secret NEXT_PUBLIC_SITE_URL=http://localhost:$PORT MEDIA_DIR=/tmp/kash-e2e-media
 export DATABASE_URL="postgresql://postgres:testpw@localhost:54329/kash_e2e?schema=public"
-export E2E_ADMIN_EMAIL=e2e-admin@example.test E2E_ADMIN_PASSWORD="$PW"
+export E2E_TEMP_PASSWORD=1234567890 E2E_ADMIN_EMAIL=e2e-admin@example.test E2E_ADMIN_PASSWORD="$PW"
 
 phase() { # name, require2fa, script
   echo "=== $1"
@@ -17,6 +17,7 @@ phase() { # name, require2fa, script
   rm -rf "$MEDIA_DIR"
   npx prisma migrate deploy >/dev/null
   BOOTSTRAP_ADMIN_EMAIL=$E2E_ADMIN_EMAIL BOOTSTRAP_ADMIN_PASSWORD=$PW npx tsx prisma/seed.ts >/dev/null
+  if [ -n "${4:-}" ]; then eval "$4"; fi
   ADMIN_REQUIRE_2FA=$2 npx next start -p $PORT >/tmp/kash-e2e-server.log 2>&1 &
   SERVER=$!
   sleep 5
@@ -27,3 +28,5 @@ phase() { # name, require2fa, script
 }
 phase "AUTH (2FA enforced)" true auth.mjs
 phase "CMS / RBAC / forms / media" false cms.mjs
+phase "FOUNDER BOOTSTRAP (temp password → forced change → 2FA)" true founder-bootstrap.mjs \
+  'printf %s "$E2E_TEMP_PASSWORD" | USER_EMAIL=$E2E_ADMIN_EMAIL MODE=reset node deploy/ops/force-password-reset.cjs >/dev/null'

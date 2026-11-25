@@ -54,6 +54,10 @@ export default function AdminSetup2FaPage() {
           <ul className="grid grid-cols-2 gap-2 font-mono text-sm bg-[#090A0D] border border-white/10 rounded-xl p-4 select-all">
             {recovery.map((c) => <li key={c}>{c}</li>)}
           </ul>
+          <div className="grid grid-cols-2 gap-2">
+            <button type="button" onClick={() => void navigator.clipboard?.writeText(recovery.join("\n"))} className="py-2.5 rounded-xl border border-white/10 text-xs font-bold hover:bg-white/5">Copy codes</button>
+            <button type="button" onClick={() => { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([`KASH CMS recovery codes (each works once)\n\n${recovery.join("\n")}\n`], { type: "text/plain" })); a.download = "kash-recovery-codes.txt"; a.click(); URL.revokeObjectURL(a.href); }} className="py-2.5 rounded-xl border border-white/10 text-xs font-bold hover:bg-white/5">Download .txt</button>
+          </div>
           <button onClick={() => router.push("/admin")} className="w-full py-3 rounded-xl bg-gradient-to-r from-[#FF5A00] to-[#FF8A3D] text-white text-xs font-bold">I have saved them — continue</button>
         </div>
       </div>
