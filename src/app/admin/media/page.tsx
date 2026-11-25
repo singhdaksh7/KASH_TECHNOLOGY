@@ -187,7 +187,7 @@ export default function MediaLibraryPage() {
         </div>
 
         {selected && (
-          <aside className="w-80 bg-white rounded-xl border border-[#E8E5E2] p-5 shrink-0 space-y-4">
+          <aside className="fixed inset-0 z-40 w-full overflow-y-auto bg-white p-5 space-y-4 lg:static lg:z-auto lg:w-80 lg:shrink-0 lg:rounded-xl lg:border lg:border-[#E8E5E2]">
             <div className="flex items-center justify-between pb-3 border-b border-[#E8E5E2]"><h4 className="text-xs font-bold uppercase tracking-wider">Asset details</h4><button onClick={() => setSelected(null)} aria-label="Close details" className="text-stone-400 hover:text-stone-700"><X className="w-4 h-4" /></button></div>
             <div className="aspect-video bg-stone-100 rounded-lg overflow-hidden relative border border-[#E8E5E2] flex items-center justify-center">{thumb(selected, "object-contain")}</div>
             <div className="flex gap-2 text-[11px] items-center"><code className="flex-1 truncate bg-stone-50 border border-[#E8E5E2] rounded px-2 py-1">{selected.url}</code><button onClick={() => { void navigator.clipboard?.writeText(selected.url); addToast({ title: "Copied", message: "URL copied." }); }} aria-label="Copy URL" className="p-1.5 border border-[#E8E5E2] rounded hover:bg-stone-50"><Copy className="w-3.5 h-3.5" /></button></div>

@@ -155,7 +155,7 @@ export default function LeadsPage() {
         </div>
 
         {open && (
-          <aside className="w-[380px] shrink-0 bg-white rounded-xl border border-[#E8E5E2] p-5 space-y-4 text-xs max-h-[calc(100vh-120px)] overflow-y-auto sticky top-20">
+          <aside className="fixed inset-0 z-40 w-full overflow-y-auto bg-white p-5 space-y-4 text-xs lg:static lg:z-auto lg:w-[380px] lg:shrink-0 lg:rounded-xl lg:border lg:border-[#E8E5E2] lg:max-h-[calc(100vh-120px)] lg:sticky lg:top-20">
             <div className="flex items-start justify-between"><div><h3 className="text-sm font-bold">{open.name}</h3>{open.company && <p className="flex items-center gap-1 text-stone-500"><Building className="w-3 h-3" />{open.company}</p>}</div><button onClick={() => setOpen(null)} aria-label="Close lead"><X className="w-4 h-4 text-stone-400" /></button></div>
             <div className="space-y-1">{open.email && <a href={`mailto:${open.email}`} className="flex items-center gap-2 text-[#FF5A00]"><Mail className="w-3.5 h-3.5" />{open.email}</a>}{open.phone && <a href={`tel:${open.phone}`} className="flex items-center gap-2 text-[#FF5A00]"><Phone className="w-3.5 h-3.5" />{open.phone}</a>}</div>
             {open.message && <p className="p-3 rounded-lg bg-stone-50 border border-[#E8E5E2] whitespace-pre-wrap leading-relaxed">{open.message}</p>}
