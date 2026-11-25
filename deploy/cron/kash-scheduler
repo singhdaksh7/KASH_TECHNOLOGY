@@ -1,0 +1,4 @@
+# KASH CMS scheduled publishing: every minute. Idempotent endpoint; flock prevents overlapping runs.
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+* * * * * root flock -n /run/kash-scheduler.lock /opt/kash/scheduler-tick.sh >> /opt/kash/logs/scheduler.log 2>&1

@@ -31,6 +31,8 @@ services:
         condition: service_healthy
     env_file:
       - /opt/kash/secrets/kash.env
+      - path: /opt/kash/secrets/scheduler.env   # CMS_SCHEDULER_SECRET (optional; scheduler endpoint is disabled without it)
+        required: false
     environment:
       NODE_ENV: production
       MEDIA_DIR: /data/media

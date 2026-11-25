@@ -1,0 +1,4 @@
+# KASH nightly PostgreSQL backup at 02:30 server time. Log: /opt/kash/backups/backup.log
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+30 2 * * * root /opt/kash/backup.sh >> /opt/kash/backups/backup.log 2>&1
