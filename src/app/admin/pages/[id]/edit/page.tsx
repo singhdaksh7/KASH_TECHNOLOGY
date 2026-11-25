@@ -1,9 +1,8 @@
-/* eslint-disable */
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Image from "next/image";
 import {
   AdminPageItem,
@@ -14,8 +13,10 @@ import {
   SchedulePublishConfig,
   PageVersion,
   VersionDiff,
+  SessionInfo,
 } from "@/lib/admin-client/types";
-import { adminClient } from "@/lib/admin-client";
+import { newId } from "@/lib/admin-client/ids";
+import { adminClient, errorMessage } from "@/lib/admin-client";
 import { useToast } from "@/components/admin/ToastContext";
 import { MediaPickerModal } from "@/components/admin/MediaPickerModal";
 import {
@@ -33,36 +34,16 @@ import {
   ChevronUp,
   ChevronDown,
   Settings,
-  Sparkles,
   Search,
-  Bold,
-  Italic,
-  Underline,
-  Heading1,
-  Heading2,
-  Heading3,
-  List,
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
-  Link2,
-  Palette,
   Layout,
-  ExternalLink,
-  HelpCircle,
-  FileText,
   X,
-  Code,
   Calendar,
   Clock,
   Send,
   Check,
   AlertCircle,
-  History,
   GitCompare,
   RotateCcw,
-  Shield,
-  Layers,
 } from "lucide-react";
 
 const AVAILABLE_SECTIONS: Array<{ type: SectionType; label: string; desc: string; icon: string }> = [
@@ -93,7 +74,6 @@ const AVAILABLE_SECTIONS: Array<{ type: SectionType; label: string; desc: string
 
 export default function PageBuilderPage() {
   const params = useParams();
-  const router = useRouter();
   const { addToast } = useToast();
   const pageId = params.id as string;
 
@@ -110,38 +90,63 @@ export default function PageBuilderPage() {
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [reviewNote, setReviewNote] = useState("");
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
-  const [scheduleDate, setScheduleDate] = useState("2026-11-25");
+  const [scheduleDate, setScheduleDate] = useState(() => new Date(Date.now() + 86_400_000).toISOString().slice(0, 10));
   const [scheduleTime, setScheduleTime] = useState("10:00");
   const [scheduleTimezone, setScheduleTimezone] = useState("Asia/Kolkata");
+  const [unpublishDate, setUnpublishDate] = useState("");
+  const [unpublishTime, setUnpublishTime] = useState("00:00");
+  const [scheduleError, setScheduleError] = useState("");
+  const [changesModalOpen, setChangesModalOpen] = useState(false);
+  const [changesNote, setChangesNote] = useState("");
+  const [session, setSession] = useState<SessionInfo | null>(null);
+  const [loadError, setLoadError] = useState("");
+  const [compareError, setCompareError] = useState("");
+  const [savedJson, setSavedJson] = useState("");
 
   // Revision / History Diff Modal
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
   const [versions, setVersions] = useState<PageVersion[]>([]);
   const [diffResults, setDiffResults] = useState<VersionDiff[]>([]);
-  const [selectedVOld, setSelectedVOld] = useState<string>("v12");
-  const [selectedVNew, setSelectedVNew] = useState<string>("v13");
+  const [selectedVOld, setSelectedVOld] = useState<string>("");
+  const [selectedVNew, setSelectedVNew] = useState<string>("");
 
   // Media Picker modal
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
   const [mediaPickerTargetField, setMediaPickerTargetField] = useState<string | null>(null);
 
+  const loadVersions = useCallback(async () => {
+    const v = await adminClient.getPageVersions(pageId);
+    setVersions(v);
+    if (v.length >= 2) { setSelectedVOld(v[1].versionId); setSelectedVNew(v[0].versionId); } else if (v.length === 1) { setSelectedVOld(v[0].versionId); setSelectedVNew(v[0].versionId); }
+  }, [pageId]);
+
   useEffect(() => {
     adminClient.getPage(pageId).then((data) => {
       if (data) {
         setPage(data);
-        if (data.sections.length > 0) {
-          setSelectedSectionId(data.sections[0].id);
-        }
-      }
-      setLoading(false);
-    });
+        setSavedJson(JSON.stringify(data));
+        if (data.sections.length > 0) setSelectedSectionId(data.sections[0].id);
+      } else setLoadError("This page could not be found, or you do not have access to it.");
+    }).catch((e) => setLoadError(errorMessage(e))).finally(() => setLoading(false));
+    adminClient.getSession().then(setSession).catch(() => undefined);
     adminClient.getPageVersions(pageId).then((v) => {
       setVersions(v);
-      if (v.length >= 2) {
-        adminClient.compareVersions(pageId, v[1].versionId, v[0].versionId).then(setDiffResults);
-      }
-    });
+      if (v.length >= 2) { setSelectedVOld(v[1].versionId); setSelectedVNew(v[0].versionId); } else if (v.length === 1) { setSelectedVOld(v[0].versionId); setSelectedVNew(v[0].versionId); }
+    }).catch(() => undefined);
   }, [pageId]);
+
+  // Side-by-side comparison from the server's structured diff.
+  useEffect(() => {
+    if (!historyModalOpen || !selectedVOld || !selectedVNew) return;
+    let live = true;
+    adminClient.compareVersions(pageId, selectedVOld, selectedVNew).then((d) => { if (live) { setDiffResults(d); setCompareError(""); } }).catch((e) => { if (live) { setDiffResults([]); setCompareError(errorMessage(e)); } });
+    return () => { live = false; };
+  }, [historyModalOpen, selectedVOld, selectedVNew, pageId]);
+
+  const perms = useMemo(() => new Set(session?.user.permissions ?? []), [session]);
+  const isSuper = !!session?.user.roles.includes("SUPER_ADMIN");
+  // Advisory only: the server decides. Buttons simply do not offer what this user cannot do.
+  const can = useCallback((...keys: string[]) => !session || isSuper || keys.some((k) => perms.has(k)), [session, isSuper, perms]);
 
   if (loading) {
     return (
@@ -157,7 +162,7 @@ export default function PageBuilderPage() {
   if (!page) {
     return (
       <div className="p-8 text-center">
-        <p className="text-base font-semibold text-red-600">Page not found.</p>
+        <p className="text-base font-semibold text-red-600">{loadError || "Page not found."}</p>
         <Link href="/admin/pages" className="text-xs text-[#FF5A00] underline mt-2 inline-block">
           Return to Pages List
         </Link>
@@ -170,7 +175,7 @@ export default function PageBuilderPage() {
   // SECTION OPERATIONS
   const handleAddSection = (type: SectionType) => {
     const newSection: PageSection = {
-      id: `sec-${Date.now()}`,
+      id: newId("sec"),
       type,
       order: page.sections.length + 1,
       enabled: true,
@@ -205,7 +210,7 @@ export default function PageBuilderPage() {
     if (!target) return;
     const duplicated: PageSection = {
       ...JSON.parse(JSON.stringify(target)),
-      id: `sec-${Date.now()}`,
+      id: newId("sec"),
       order: target.order + 1,
     };
     const idx = page.sections.findIndex((s) => s.id === id);
@@ -266,56 +271,75 @@ export default function PageBuilderPage() {
     setPage({ ...page, sections: updatedSections });
   };
 
-  const handleSaveDraft = async () => {
+  const dirty = JSON.stringify(page) !== savedJson;
+  const adopt = (p: AdminPageItem) => { setPage(p); setSavedJson(JSON.stringify(p)); };
+  const fail = (title: string, err: unknown) => addToast({ title, message: errorMessage(err), type: "error" });
+
+  /** Saves the working copy to the server. The live site is unchanged until publish. */
+  const handleSaveDraft = async (quiet = false): Promise<AdminPageItem | null> => {
     setSaving(true);
-    await adminClient.savePage(page);
-    setSaving(false);
-    addToast({ title: "Draft Saved", message: "All page changes saved to memory.", type: "success" });
+    try {
+      const saved = await adminClient.savePage(page);
+      adopt(saved);
+      if (!quiet) addToast({ title: "Draft saved", message: saved.status === "Draft" && page.status !== "Draft" ? "Saved. The page returned to Draft because its content changed, so it needs review again." : "Saved. The live site is unchanged until you publish.", type: "success" });
+      return saved;
+    } catch (err) { fail("Save failed", err); return null; } finally { setSaving(false); }
+  };
+  /** Runs a workflow action against the saved content: unsaved edits are saved first so reviewers see exactly what you see. */
+  const workflow = async (title: string, run: () => Promise<AdminPageItem>, message: string) => {
+    setSaving(true);
+    try {
+      if (dirty) { const saved = await adminClient.savePage(page); adopt(saved); }
+      const updated = await run();
+      adopt(updated);
+      await loadVersions().catch(() => undefined);
+      addToast({ title, message, type: "success" });
+      return true;
+    } catch (err) {
+      fail(`${title} failed`, err);
+      return false;
+    } finally { setSaving(false); }
   };
 
-  const handleSubmitReview = async () => {
-    setSaving(true);
-    const updated = await adminClient.submitForReview(page.id, reviewNote);
-    if (updated) setPage(updated);
-    setSaving(false);
-    setReviewModalOpen(false);
-    addToast({ title: "Submitted for Review", message: "Editorial team notified for review.", type: "success" });
-  };
-
-  const handleApprove = async () => {
-    setSaving(true);
-    const updated = await adminClient.approvePage(page.id, "Approved by Tech Lead.");
-    if (updated) setPage(updated);
-    setSaving(false);
-    addToast({ title: "Page Approved", message: "Ready for scheduling or instant publish.", type: "success" });
-  };
-
+  const handleSubmitReview = async () => { if (await workflow("Submitted for review", () => adminClient.submitForReview(page.id, reviewNote), "Reviewers have been notified.")) { setReviewModalOpen(false); setReviewNote(""); } };
+  const handleRequestChanges = async () => { if (!changesNote.trim()) return; if (await workflow("Changes requested", () => adminClient.requestChanges(page.id, changesNote.trim()), "The author has been notified.")) { setChangesModalOpen(false); setChangesNote(""); } };
+  const handleApprove = () => workflow("Page approved", () => adminClient.approvePage(page.id), "Ready to schedule or publish.");
+  const handlePublishNow = () => workflow("Published", async () => { await adminClient.publishPage(page.id); return (await adminClient.getPage(page.id)) as AdminPageItem; }, "Live on the public site (it can take up to a minute to appear everywhere).");
+  const handleUnpublish = () => { if (confirm("Take this page offline? Visitors will no longer see it.")) void workflow("Unpublished", async () => { await adminClient.unpublishPage(page.id); return (await adminClient.getPage(page.id)) as AdminPageItem; }, "The page is now a draft."); };
+  const handleArchive = () => { if (confirm("Archive this page? It is removed from the public site.")) void workflow("Archived", () => adminClient.archivePage(page.id), "Moved to the archive."); };
+  const handleUnarchive = () => workflow("Restored", () => adminClient.unarchivePage(page.id), "Back to Draft.");
+  const handleCancelSchedule = () => workflow("Schedule cancelled", () => adminClient.cancelSchedule(page.id), "The page is approved but not scheduled.");
   const handleScheduleConfirm = async () => {
-    setSaving(true);
-    const cfg: SchedulePublishConfig = {
-      publishDate: scheduleDate,
-      publishTime: scheduleTime,
-      timezone: scheduleTimezone,
-    };
-    const updated = await adminClient.schedulePublish(page.id, cfg);
-    if (updated) setPage(updated);
-    setSaving(false);
-    setScheduleModalOpen(false);
-    addToast({
-      title: "Publishing Scheduled",
-      message: `Scheduled for ${scheduleDate} at ${scheduleTime} (${scheduleTimezone}).`,
-      type: "success",
-    });
+    setScheduleError("");
+    const cfg: SchedulePublishConfig = { publishDate: scheduleDate, publishTime: scheduleTime, timezone: scheduleTimezone, ...(unpublishDate ? { unpublishDate, unpublishTime } : {}) };
+    if (await workflow("Publishing scheduled", () => adminClient.schedulePublish(page.id, cfg), `Goes live ${scheduleDate} ${scheduleTime} (${scheduleTimezone}); stored as UTC.`)) setScheduleModalOpen(false);
+    else setScheduleError("Could not schedule. Check the date is in the future and the unpublish time is after it.");
+  };
+  const handlePreview = async () => { const saved = dirty ? await handleSaveDraft(true) : page; if (saved) window.open(`/preview?page=${encodeURIComponent(saved.id)}`, "_blank", "noopener"); };
+  const handleRestore = async (versionId: string) => {
+    if (!confirm(`Restore version ${versionId}? It becomes the live content and is recorded as a new version.`)) return;
+    try { const restored = await adminClient.restorePageVersion(page.id, Number(versionId)); adopt(restored); setSelectedSectionId(restored.sections[0]?.id ?? null); setHistoryModalOpen(false); await loadVersions(); addToast({ title: "Version restored", message: `Version ${versionId} is now live.`, type: "success" }); }
+    catch (err) { fail("Restore failed", err); }
+  };
+  const handleDetach = async (section: PageSection) => {
+    if (!section.globalBlockId || !confirm("Detach this section from its global block? It becomes an independent copy you can edit; later changes to the block will not affect it.")) return;
+    try {
+      if (dirty) { const saved = await adminClient.savePage(page); adopt(saved); }
+      await adminClient.detachGlobalBlock(section.globalBlockId, page.id);
+      const fresh = await adminClient.getPage(page.id);
+      if (fresh) adopt(fresh);
+      addToast({ title: "Detached", message: "This section is now independent.", type: "success" });
+    } catch (err) { fail("Detach failed", err); }
   };
 
-  const handlePublishNow = async () => {
-    setSaving(true);
-    const updated = { ...page, status: "Published" as const };
-    await adminClient.savePage(updated);
-    setPage(updated);
-    setSaving(false);
-    addToast({ title: "Page Published", message: "Page is live in the CMS repository.", type: "success" });
-  };
+  const status = page.status;
+  const canEditPage = can("pages.edit");
+  const iAmSubmitter = !!session && page.submittedBy === (session.user.name || session.user.email);
+  const canApprove = can("content.approve") && (!iAmSubmitter || isSuper);
+  const canPublish = can("content.publish", "pages.publish");
+  const fastTrack = (status === "Draft" || status === "Changes_Requested") && can("content.approve");
+  const canPublishNow = canPublish && (status === "Approved" || fastTrack || (status === "Published" && !!(page as AdminPageItem & { hasUnpublishedChanges?: boolean }).hasUnpublishedChanges));
+  const canSchedule = can("content.schedule") && (status === "Approved" || fastTrack);
 
   return (
     <div className="h-screen flex flex-col bg-[#0B0B0F] overflow-hidden select-none">
@@ -349,13 +373,15 @@ export default function PageBuilderPage() {
                     ? "bg-red-100 text-red-700"
                     : page.status === "Scheduled"
                     ? "bg-indigo-100 text-indigo-700"
+                    : page.status === "Archived"
+                    ? "bg-stone-200 text-stone-600"
                     : "bg-amber-100 text-amber-700"
                 }`}
               >
-                {page.status}
+                {page.status.replace("_", " ")}
               </span>
             </div>
-            <p className="text-[11px] text-[#4B5563] px-1 font-mono">/{page.slug}</p>
+            <p className="text-[11px] text-[#4B5563] px-1 font-mono">{page.slug.startsWith("/") ? page.slug : `/${page.slug}`}{dirty ? " · unsaved changes" : (page as AdminPageItem & { hasUnpublishedChanges?: boolean }).hasUnpublishedChanges ? " · unpublished changes" : ""}</p>
           </div>
         </div>
 
@@ -390,19 +416,19 @@ export default function PageBuilderPage() {
           </button>
         </div>
 
-        {/* Action buttons with Approval & Scheduling & Diff */}
+        {/* Action buttons: only what this user may do in the current state (the server enforces the rules) */}
         <div className="flex items-center gap-2">
           <button
             onClick={() => setHistoryModalOpen(true)}
             className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-[#4B5563] hover:text-[#0B0B0F] border border-[#E8E5E2] rounded-lg hover:bg-stone-50"
-            title="Revision History & Diff"
+            title="Revision history, compare and restore"
           >
             <GitCompare className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Diff</span>
+            <span className="hidden sm:inline">History</span>
           </button>
 
           <button
-            onClick={() => setPreviewOpen(true)}
+            onClick={handlePreview}
             className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-[#4B5563] hover:text-[#0B0B0F] border border-[#E8E5E2] rounded-lg hover:bg-stone-50"
           >
             <Eye className="w-3.5 h-3.5" />
@@ -410,49 +436,60 @@ export default function PageBuilderPage() {
           </button>
 
           <button
-            onClick={handleSaveDraft}
-            disabled={saving}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-[#0B0B0F] rounded-lg transition-colors"
+            onClick={() => setPreviewOpen(true)}
+            className="hidden lg:flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-[#4B5563] border border-[#E8E5E2] rounded-lg hover:bg-stone-50"
           >
-            <Save className="w-3.5 h-3.5" />
-            <span>Save Draft</span>
+            <span>Canvas view</span>
           </button>
 
-          {/* WORKFLOW DROPDOWN / ACTIONS */}
-          {page.status === "Draft" || page.status === "Changes_Requested" ? (
+          {canEditPage && status !== "Archived" && (
             <button
-              onClick={() => setReviewModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+              onClick={() => void handleSaveDraft()}
+              disabled={saving || !dirty}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-[#0B0B0F] rounded-lg transition-colors disabled:opacity-50"
             >
+              <Save className="w-3.5 h-3.5" />
+              <span>{saving ? "Saving…" : "Save Draft"}</span>
+            </button>
+          )}
+
+          {(status === "Draft" || status === "Changes_Requested") && can("content.submit_review") && (
+            <button onClick={() => setReviewModalOpen(true)} disabled={saving} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-100 disabled:opacity-60">
               <Send className="w-3.5 h-3.5" />
               <span>Submit for Review</span>
             </button>
-          ) : page.status === "In_Review" ? (
-            <button
-              onClick={handleApprove}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200 rounded-lg hover:bg-purple-100 transition-colors"
-            >
-              <Check className="w-3.5 h-3.5" />
-              <span>Approve Version</span>
+          )}
+
+          {status === "In_Review" && can("content.review") && (
+            <button onClick={() => setChangesModalOpen(true)} disabled={saving} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 disabled:opacity-60">
+              <AlertCircle className="w-3.5 h-3.5" />
+              <span>Request Changes</span>
             </button>
-          ) : null}
+          )}
 
-          <button
-            onClick={() => setScheduleModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border border-[#E8E5E2] rounded-lg text-[#4B5563] hover:bg-stone-50"
-          >
-            <Calendar className="w-3.5 h-3.5 text-stone-500" />
-            <span className="hidden sm:inline">Schedule</span>
-          </button>
+          {status === "In_Review" && canApprove && (
+            <button onClick={handleApprove} disabled={saving} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200 rounded-lg hover:bg-purple-100 disabled:opacity-60">
+              <Check className="w-3.5 h-3.5" />
+              <span>Approve</span>
+            </button>
+          )}
+          {status === "In_Review" && can("content.approve") && !canApprove && (
+            <span className="text-[11px] text-stone-500 max-w-[150px] leading-tight" title="Four-eyes rule">You submitted this; another approver must approve it.</span>
+          )}
 
-          <button
-            onClick={handlePublishNow}
-            disabled={saving}
-            className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold bg-gradient-to-r from-[#FF5A00] to-[#FF8A3D] text-white rounded-lg shadow-sm hover:opacity-95 transition-opacity"
-          >
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>Publish</span>
-          </button>
+          {canSchedule && (
+            <button onClick={() => setScheduleModalOpen(true)} disabled={saving} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border border-[#E8E5E2] rounded-lg text-[#4B5563] hover:bg-stone-50 disabled:opacity-60">
+              <Calendar className="w-3.5 h-3.5 text-stone-500" />
+              <span className="hidden sm:inline">Schedule</span>
+            </button>
+          )}
+
+          {canPublishNow && (
+            <button onClick={handlePublishNow} disabled={saving} className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold bg-gradient-to-r from-[#FF5A00] to-[#FF8A3D] text-white rounded-lg shadow-sm hover:opacity-95 disabled:opacity-60">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>{status === "Published" ? "Publish changes" : fastTrack ? "Approve & Publish" : "Publish"}</span>
+            </button>
+          )}
         </div>
       </header>
 
@@ -703,6 +740,13 @@ export default function PageBuilderPage() {
                   </span>
                 </div>
 
+                {selectedSection.isGlobalBlock && (
+                  <div className="mb-4 p-3 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-900 space-y-2">
+                    <p><strong>Linked to global block{selectedSection.blockName ? ` “${selectedSection.blockName}”` : ""}.</strong> Its content and style come from the block and update everywhere it is used. Edit it under <Link href="/admin/design/global-blocks" className="underline font-semibold">Global Blocks</Link>, or detach it to edit this copy independently.</p>
+                    <button onClick={() => void handleDetach(selectedSection)} className="px-3 py-1.5 border border-amber-300 rounded-lg font-semibold bg-white hover:bg-amber-100">Detach from block</button>
+                  </div>
+                )}
+                <fieldset disabled={!!selectedSection.isGlobalBlock} className={selectedSection.isGlobalBlock ? "opacity-60" : ""}>
                 <SectionContentFields
                   section={selectedSection}
                   onChange={handleUpdateContent}
@@ -711,6 +755,7 @@ export default function PageBuilderPage() {
                     setMediaPickerOpen(true);
                   }}
                 />
+                </fieldset>
               </div>
             )}
 
@@ -879,7 +924,7 @@ export default function PageBuilderPage() {
                     <label className="block font-semibold text-[#0B0B0F] mb-1">Search Intent</label>
                     <select
                       value={page.seo.searchIntent || "Commercial"}
-                      onChange={(e) => setPage({ ...page, seo: { ...page.seo, searchIntent: e.target.value as any } })}
+                      onChange={(e) => setPage({ ...page, seo: { ...page.seo, searchIntent: e.target.value as NonNullable<AdminPageItem["seo"]["searchIntent"]> } })}
                       className="w-full px-3 py-1.5 border border-[#E8E5E2] rounded-lg text-xs bg-white"
                     >
                       <option value="Commercial">Commercial</option>
@@ -944,43 +989,46 @@ export default function PageBuilderPage() {
             {activeTab === "workflow" && (
               <div className="space-y-4 text-xs">
                 <div className="pb-3 border-b border-[#E8E5E2]">
-                  <h4 className="text-xs font-bold text-[#0B0B0F] uppercase tracking-wider">Editorial Review & Audit Trail</h4>
-                  <p className="text-[11px] text-[#4B5563]">Approval workflow history and reviewer signatures</p>
+                  <h4 className="text-xs font-bold text-[#0B0B0F] uppercase tracking-wider">Review & Approval</h4>
+                  <p className="text-[11px] text-[#4B5563]">Who did what, and when. Editing approved or scheduled content returns it to Draft.</p>
+                </div>
+
+                <div className="p-3 rounded-xl border border-[#E8E5E2] bg-stone-50 space-y-1">
+                  <p><span className="text-stone-400">Status:</span> <strong>{status.replace("_", " ")}</strong></p>
+                  {page.submittedBy && <p><span className="text-stone-400">Submitted by:</span> {page.submittedBy}{page.submittedAt ? ` · ${new Date(page.submittedAt).toLocaleString()}` : ""}</p>}
+                  {page.assignedReviewer && <p><span className="text-stone-400">Last reviewed by:</span> {page.assignedReviewer}</p>}
+                  {page.reviewNotes && <p className="pt-1"><span className="text-stone-400 block">Latest note</span>{page.reviewNotes}</p>}
+                  {typeof page.versionNumber === "number" && <p><span className="text-stone-400">Version:</span> v{page.versionNumber}</p>}
                 </div>
 
                 {page.schedule && (
                   <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl space-y-1 text-blue-950">
-                    <div className="flex items-center gap-1.5 font-bold">
-                      <Clock className="w-3.5 h-3.5 text-blue-600" />
-                      <span>Scheduled Publication</span>
-                    </div>
-                    <p className="text-[11px]">
-                      Going live on <strong>{page.schedule.publishDate}</strong> at <strong>{page.schedule.publishTime}</strong> ({page.schedule.timezone}).
-                    </p>
-                    <button
-                      onClick={async () => {
-                        const updated = await adminClient.cancelSchedule(page.id);
-                        if (updated) setPage(updated);
-                        addToast({ title: "Schedule Cancelled", message: "Page reverted to draft status." });
-                      }}
-                      className="text-[11px] font-semibold text-red-600 hover:underline pt-1 block"
-                    >
-                      Cancel Publication Schedule
-                    </button>
+                    <div className="flex items-center gap-1.5 font-bold"><Clock className="w-3.5 h-3.5 text-blue-600" /><span>{status === "Scheduled" ? "Scheduled publication" : "Scheduled takedown"}</span></div>
+                    {page.schedule.publishDate && <p className="text-[11px]">Goes live <strong>{page.schedule.publishDate}</strong> at <strong>{page.schedule.publishTime}</strong> ({page.schedule.timezone}).</p>}
+                    {page.schedule.unpublishDate && <p className="text-[11px]">Goes offline <strong>{page.schedule.unpublishDate}</strong> at <strong>{page.schedule.unpublishTime}</strong> ({page.schedule.timezone}).</p>}
+                    {page.schedule.publishAtUtc && <p className="text-[10px] font-mono text-blue-800/70">UTC: {page.schedule.publishAtUtc}</p>}
+                    {can("content.schedule") && <button onClick={handleCancelSchedule} disabled={saving} className="text-[11px] font-semibold text-red-600 hover:underline pt-1 block">Cancel schedule</button>}
                   </div>
                 )}
 
+                <div className="flex flex-wrap gap-2">
+                  {status === "Published" && canPublish && <button onClick={handleUnpublish} disabled={saving} className="px-3 py-1.5 border border-[#E8E5E2] rounded-lg font-semibold hover:bg-stone-50">Unpublish</button>}
+                  {status !== "Archived" && status !== "Draft" && can("content.approve", "content.publish", "pages.publish") && <button onClick={handleArchive} disabled={saving} className="px-3 py-1.5 border border-[#E8E5E2] rounded-lg font-semibold hover:bg-stone-50">Archive</button>}
+                  {status === "Draft" && can("content.approve", "content.publish", "pages.publish") && <button onClick={handleArchive} disabled={saving} className="px-3 py-1.5 border border-[#E8E5E2] rounded-lg font-semibold hover:bg-stone-50">Archive</button>}
+                  {status === "Archived" && can("content.approve", "content.publish", "pages.publish") && <button onClick={handleUnarchive} disabled={saving} className="px-3 py-1.5 border border-[#E8E5E2] rounded-lg font-semibold hover:bg-stone-50">Restore to Draft</button>}
+                </div>
+
                 <div className="space-y-2.5">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Activity Log</span>
-                  {(page.reviewHistory || [
-                    { id: "1", actor: "Daksh Singh", role: "Super Admin", action: "SUBMITTED", note: "Initial content structure populated", timestamp: "Today" },
-                  ]).map((item) => (
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Activity</span>
+                  {!(page.reviewHistory?.length) && <p className="text-stone-400">No review activity yet.</p>}
+                  {page.reviewHistory?.map((item) => (
                     <div key={item.id} className="p-2.5 rounded-lg border border-[#E8E5E2] bg-stone-50 space-y-1">
                       <div className="flex items-center justify-between text-[11px]">
-                        <span className="font-bold text-[#0B0B0F]">{item.actor}</span>
-                        <span className="text-stone-400 font-mono text-[10px]">{item.timestamp}</span>
+                        <span className="font-bold text-[#0B0B0F]">{item.action.replace(/_/g, " ").toLowerCase().replace(/^\w/, (c) => c.toUpperCase())}</span>
+                        <span className="text-stone-400 font-mono text-[10px]">{new Date(item.timestamp).toLocaleString()}</span>
                       </div>
-                      <p className="text-[11px] text-stone-600">{item.note}</p>
+                      <p className="text-[11px] text-stone-500">{item.actor}{item.role ? ` · ${item.role}` : ""}</p>
+                      {item.note && <p className="text-[11px] text-stone-700">{item.note}</p>}
                     </div>
                   ))}
                 </div>
@@ -996,7 +1044,7 @@ export default function PageBuilderPage() {
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-[#E8E5E2] space-y-4">
             <h3 className="text-base font-bold text-[#0B0B0F]">Schedule Page Publication</h3>
             <p className="text-xs text-[#4B5563]">
-              Set the future date and time for automatic deployment to production.
+              The page goes live automatically at this time (checked every minute) and can optionally be taken offline later.
             </p>
 
             <div className="space-y-3 text-xs">
@@ -1021,8 +1069,19 @@ export default function PageBuilderPage() {
                 </div>
               </div>
 
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-[#0B0B0F] mb-1">Take offline on (optional)</label>
+                  <input type="date" value={unpublishDate} onChange={(e) => setUnpublishDate(e.target.value)} className="w-full px-3 py-2 border border-[#E8E5E2] rounded-lg" />
+                </div>
+                <div>
+                  <label className="block font-semibold text-[#0B0B0F] mb-1">Offline time</label>
+                  <input type="time" value={unpublishTime} onChange={(e) => setUnpublishTime(e.target.value)} disabled={!unpublishDate} className="w-full px-3 py-2 border border-[#E8E5E2] rounded-lg disabled:opacity-50" />
+                </div>
+              </div>
+
               <div>
-                <label className="block font-semibold text-[#0B0B0F] mb-1">Display Timezone</label>
+                <label className="block font-semibold text-[#0B0B0F] mb-1">Timezone of the times above</label>
                 <select
                   value={scheduleTimezone}
                   onChange={(e) => setScheduleTimezone(e.target.value)}
@@ -1030,9 +1089,16 @@ export default function PageBuilderPage() {
                 >
                   <option value="Asia/Kolkata">Asia/Kolkata (IST +5:30)</option>
                   <option value="UTC">UTC (Universal Coordinated Time)</option>
-                  <option value="America/New_York">America/New_York (EST)</option>
+                  <option value="Europe/London">Europe/London</option>
+                  <option value="America/New_York">America/New_York</option>
+                  <option value="America/Los_Angeles">America/Los_Angeles</option>
+                  <option value="Asia/Dubai">Asia/Dubai</option>
+                  <option value="Asia/Singapore">Asia/Singapore</option>
+                  <option value="Australia/Sydney">Australia/Sydney</option>
                 </select>
+                <p className="mt-1 text-[11px] text-stone-500">The server stores the exact moment in UTC, so the schedule does not depend on this browser or the server clock zone.</p>
               </div>
+              {scheduleError && <p role="alert" className="text-red-600">{scheduleError}</p>}
 
               <div className="flex justify-end gap-2 pt-3">
                 <button
@@ -1050,6 +1116,21 @@ export default function PageBuilderPage() {
                   Confirm Schedule
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* REQUEST CHANGES MODAL */}
+      {changesModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-[#E8E5E2] space-y-4">
+            <h3 className="text-base font-bold text-[#0B0B0F]">Request changes</h3>
+            <p className="text-xs text-[#4B5563]">Explain what needs to change. The author is notified and the page returns to them.</p>
+            <textarea rows={4} autoFocus value={changesNote} onChange={(e) => setChangesNote(e.target.value)} placeholder="What should be changed?" className="w-full px-3 py-2 border border-[#E8E5E2] rounded-lg text-xs" />
+            <div className="flex justify-end gap-2 text-xs">
+              <button type="button" onClick={() => setChangesModalOpen(false)} className="px-4 py-2 border border-[#E8E5E2] rounded-lg text-[#4B5563] font-semibold">Cancel</button>
+              <button type="button" disabled={!changesNote.trim() || saving} onClick={handleRequestChanges} className="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 disabled:opacity-50">Send back</button>
             </div>
           </div>
         </div>
@@ -1097,105 +1178,55 @@ export default function PageBuilderPage() {
         </div>
       )}
 
-      {/* REVISION COMPARISON / DIFF MODAL */}
+      {/* REVISION HISTORY, COMPARE & RESTORE */}
       {historyModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[85vh] flex flex-col overflow-hidden shadow-2xl border border-[#E8E5E2]">
+          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[88vh] flex flex-col overflow-hidden shadow-2xl border border-[#E8E5E2]">
             <div className="p-4 border-b border-[#E8E5E2] bg-[#FFF9F4] flex items-center justify-between">
               <div>
-                <h3 className="font-bold text-sm text-[#0B0B0F] flex items-center gap-2">
-                  <GitCompare className="w-4 h-4 text-[#FF5A00]" />
-                  <span>Revision History & Side-by-Side Diff</span>
-                </h3>
-                <p className="text-xs text-[#4B5563]">Compare historical snapshots before restoring or approving</p>
+                <h3 className="font-bold text-sm text-[#0B0B0F] flex items-center gap-2"><GitCompare className="w-4 h-4 text-[#FF5A00]" /><span>Revision history & compare</span></h3>
+                <p className="text-xs text-[#4B5563]">Pick two versions to see what was added, removed or changed in metadata, SEO, sections, content, style and order.</p>
               </div>
-              <button onClick={() => setHistoryModalOpen(false)} className="text-stone-400 hover:text-stone-700">
-                <X className="w-5 h-5" />
-              </button>
+              <button onClick={() => setHistoryModalOpen(false)} aria-label="Close" className="text-stone-400 hover:text-stone-700"><X className="w-5 h-5" /></button>
             </div>
-
-            <div className="p-4 border-b border-[#E8E5E2] flex items-center justify-between gap-4 text-xs">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-stone-600">Comparing Base:</span>
-                <select
-                  value={selectedVOld}
-                  onChange={(e) => setSelectedVOld(e.target.value)}
-                  className="px-2.5 py-1.5 border border-[#E8E5E2] rounded-lg bg-white font-mono"
-                >
-                  {versions.map((v) => (
-                    <option key={v.versionId} value={v.versionId}>
-                      v{v.versionNumber} ({v.createdAt})
-                    </option>
-                  ))}
-                </select>
+            {versions.length === 0 ? <p className="p-8 text-xs text-stone-500 text-center">No versions yet. A version is recorded each time the page is published, restored or created.</p> : (<>
+              <div className="p-4 border-b border-[#E8E5E2] flex flex-wrap items-center gap-4 text-xs">
+                <label className="flex items-center gap-2"><span className="font-semibold text-stone-600">From</span>
+                  <select value={selectedVOld} onChange={(e) => setSelectedVOld(e.target.value)} className="px-2.5 py-1.5 border border-[#E8E5E2] rounded-lg bg-white font-mono">{versions.map((v) => <option key={v.versionId} value={v.versionId}>v{v.versionNumber} · {new Date(v.createdAt).toLocaleString()} · {v.changeSummary}</option>)}</select></label>
+                <label className="flex items-center gap-2"><span className="font-semibold text-stone-600">To</span>
+                  <select value={selectedVNew} onChange={(e) => setSelectedVNew(e.target.value)} className="px-2.5 py-1.5 border border-[#E8E5E2] rounded-lg bg-white font-mono">{versions.map((v) => <option key={v.versionId} value={v.versionId}>v{v.versionNumber} · {new Date(v.createdAt).toLocaleString()} · {v.changeSummary}</option>)}</select></label>
               </div>
-
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-stone-600">Compare With:</span>
-                <select
-                  value={selectedVNew}
-                  onChange={(e) => setSelectedVNew(e.target.value)}
-                  className="px-2.5 py-1.5 border border-[#E8E5E2] rounded-lg bg-white font-mono"
-                >
-                  {versions.map((v) => (
-                    <option key={v.versionId} value={v.versionId}>
-                      v{v.versionNumber} ({v.createdAt})
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-5 space-y-4 text-xs">
-              <div className="space-y-3">
-                <h4 className="font-bold uppercase tracking-wider text-stone-400 text-[11px]">
-                  Detected Differences ({diffResults.length})
-                </h4>
-                {diffResults.map((diff, idx) => (
-                  <div key={idx} className="p-3.5 rounded-xl border border-[#E8E5E2] bg-stone-50 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-[#0B0B0F]">{diff.entity}</span>
-                      <span
-                        className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                          diff.category === "Changed"
-                            ? "bg-amber-100 text-amber-800"
-                            : diff.category === "Added"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {diff.category}
-                      </span>
+              <div className="flex-1 overflow-y-auto p-5 space-y-5 text-xs">
+                {compareError && <p role="alert" className="text-red-600">{compareError}</p>}
+                {!compareError && diffResults.length === 0 && <p className="text-stone-500">{selectedVOld === selectedVNew ? "Choose two different versions to compare." : "These versions are identical."}</p>}
+                {(["metadata", "seo", "section", "content", "style", "order"] as const).map((area) => {
+                  const rows = diffResults.filter((d) => d.area === area);
+                  if (!rows.length) return null;
+                  const title = { metadata: "Page details", seo: "SEO", section: "Sections added / removed / toggled", content: "Section content", style: "Section style", order: "Section order" }[area];
+                  return (
+                    <div key={area} className="space-y-2">
+                      <h4 className="font-bold uppercase tracking-wider text-stone-400 text-[11px]">{title} ({rows.length})</h4>
+                      {rows.map((d, i) => (
+                        <div key={i} className="p-3 rounded-xl border border-[#E8E5E2] bg-stone-50 space-y-2">
+                          <div className="flex items-center justify-between gap-2"><span className="font-bold text-[#0B0B0F]">{d.entity}{d.field ? <span className="font-mono font-normal text-stone-500"> · {d.field}</span> : null}</span>
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${d.category === "Changed" ? "bg-amber-100 text-amber-800" : d.category === "Added" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>{d.category}</span></div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="p-2.5 rounded bg-red-50/60 border border-red-200"><span className="text-[10px] uppercase font-bold text-red-700 block mb-1">Before</span><p className="text-stone-700 font-mono text-[11px] break-words whitespace-pre-wrap">{fmtVal(d.oldValue)}</p></div>
+                            <div className="p-2.5 rounded bg-green-50/60 border border-green-200"><span className="text-[10px] uppercase font-bold text-green-700 block mb-1">After</span><p className="text-stone-700 font-mono text-[11px] break-words whitespace-pre-wrap">{fmtVal(d.newValue)}</p></div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-
-                    <div className="grid grid-cols-2 gap-3 pt-1">
-                      <div className="p-2.5 rounded bg-red-50/60 border border-red-200">
-                        <span className="text-[10px] uppercase font-bold text-red-700 block mb-1">Previous</span>
-                        <p className="text-stone-700 font-mono text-[11px]">{String(diff.oldValue || "(None)")}</p>
-                      </div>
-                      <div className="p-2.5 rounded bg-green-50/60 border border-green-200">
-                        <span className="text-[10px] uppercase font-bold text-green-700 block mb-1">Current</span>
-                        <p className="text-stone-700 font-mono text-[11px]">{String(diff.newValue || "(None)")}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
-            </div>
-
-            <div className="p-4 border-t border-[#E8E5E2] flex items-center justify-between bg-stone-50">
-              <span className="text-xs text-stone-400">Non-destructive comparison client preview</span>
-              <button
-                onClick={() => {
-                  setHistoryModalOpen(false);
-                  addToast({ title: "Version Restored", message: "Mock restore applied to canvas." });
-                }}
-                className="px-4 py-2 border border-[#E8E5E2] text-xs font-semibold rounded-lg bg-white hover:bg-stone-100 flex items-center gap-1.5"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                <span>Restore Selected Snapshot</span>
-              </button>
-            </div>
+              <div className="p-4 border-t border-[#E8E5E2] flex items-center justify-between bg-stone-50 text-xs">
+                <span className="text-stone-400">Comparing is read-only. Restoring replaces the live page with the “From” version and records a new version.</span>
+                {canPublish && selectedVOld && (
+                  <button onClick={() => void handleRestore(selectedVOld)} disabled={saving} className="px-4 py-2 border border-[#E8E5E2] font-semibold rounded-lg bg-white hover:bg-stone-100 flex items-center gap-1.5 disabled:opacity-60"><RotateCcw className="w-3.5 h-3.5" /><span>Restore v{selectedVOld}</span></button>
+                )}
+              </div>
+            </>)}
           </div>
         </div>
       )}
@@ -1248,6 +1279,11 @@ export default function PageBuilderPage() {
 // -------------------------------------------------------------
 // SUB-COMPONENTS & HELPERS
 // -------------------------------------------------------------
+
+function fmtVal(v: unknown): string {
+  if (v === undefined || v === null || v === "") return "(empty)";
+  return typeof v === "string" ? v : JSON.stringify(v, null, 2);
+}
 
 function getBgColor(bg: SectionStyle["background"], custom?: string): string {
   switch (bg) {
@@ -1558,6 +1594,15 @@ function SectionContentFields({
     );
   }
 
+  if (section.type === "Built-in Page") {
+    return (
+      <p className="text-xs text-stone-600 leading-relaxed bg-[#FFF9F4] border border-[#E8E5E2] rounded-lg p-3">
+        This block is the approved, hand-built page for this route. It can be moved, hidden or surrounded by new sections, and the page&apos;s SEO below applies to it. Its own text is edited in code.
+      </p>
+    );
+  }
+
+  const itemCfg = ITEM_CONFIG[section.type];
   return (
     <div className="space-y-3 text-xs">
       <div>
@@ -1579,6 +1624,35 @@ function SectionContentFields({
           className="w-full px-3 py-1.5 border border-[#E8E5E2] rounded-lg text-xs"
         />
       </div>
+      {itemCfg && <ItemsEditor cfg={itemCfg} items={(Array.isArray(c[itemCfg.key]) ? c[itemCfg.key] : []) as Record<string, string>[]} onChange={(v) => onChange(itemCfg.key, v)} />}
+    </div>
+  );
+}
+
+const ITEM_CONFIG: Partial<Record<SectionType, { key: string; label: string; fields: { name: string; label: string }[] }>> = {
+  FAQ: { key: "faqs", label: "Questions", fields: [{ name: "question", label: "Question" }, { name: "answer", label: "Answer" }] },
+  "Services Grid": { key: "items", label: "Service cards", fields: [{ name: "title", label: "Title" }, { name: "description", label: "Description" }, { name: "href", label: "Link (optional)" }] },
+  Process: { key: "steps", label: "Steps", fields: [{ name: "title", label: "Title" }, { name: "description", label: "Description" }] },
+  Stats: { key: "items", label: "Stats", fields: [{ name: "value", label: "Value" }, { name: "label", label: "Label" }] },
+  Testimonials: { key: "items", label: "Quotes", fields: [{ name: "quote", label: "Quote" }, { name: "name", label: "Name" }, { name: "role", label: "Role / company" }] },
+  "Contact Form": { key: "__none", label: "", fields: [] },
+};
+
+function ItemsEditor({ cfg, items, onChange }: { cfg: { key: string; label: string; fields: { name: string; label: string }[] }; items: Record<string, string>[]; onChange: (v: Record<string, string>[]) => void }) {
+  if (!cfg.fields.length) return null;
+  const set = (i: number, name: string, value: string) => onChange(items.map((it, idx) => (idx === i ? { ...it, [name]: value } : it)));
+  return (
+    <div className="space-y-2 pt-2 border-t border-[#E8E5E2]">
+      <div className="flex items-center justify-between"><span className="font-semibold text-[#0B0B0F]">{cfg.label}</span>
+        <button type="button" onClick={() => onChange([...items, {}])} className="text-[#FF5A00] font-semibold">+ Add</button></div>
+      {items.map((it, i) => (
+        <div key={i} className="p-2 border border-[#E8E5E2] rounded-lg space-y-1.5 bg-stone-50">
+          {cfg.fields.map((f) => (
+            <input key={f.name} type="text" placeholder={f.label} value={it[f.name] ?? ""} onChange={(e) => set(i, f.name, e.target.value)} className="w-full px-2 py-1 border border-[#E8E5E2] rounded text-xs bg-white" />
+          ))}
+          <button type="button" onClick={() => onChange(items.filter((_, idx) => idx !== i))} className="text-[11px] text-red-600">Remove</button>
+        </div>
+      ))}
     </div>
   );
 }

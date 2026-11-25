@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { HttpError } from "@/lib/server/api";
-import { pageInclude, type PageWithRelations } from "./pages";
+import { pageInclude } from "./pages";
 
 // The V1 implementations are the single source of truth for working copies, validation and applying drafts to live rows.
 export { applyToLive, pageInclude, validateWorkingCopy, workingCopy } from "./pages";

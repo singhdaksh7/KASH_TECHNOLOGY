@@ -14,7 +14,7 @@ export const PAGE_STATE_SELECT = {
   submittedById: true, reviewedAt: true, reviewedById: true, reviewNote: true, approvedAt: true, approvedById: true, updatedAt: true,
 } as const;
 
-const pageLink = (id: string) => `/admin/pages/${id}`;
+const pageLink = (id: string) => `/admin/pages/${id}/edit`;
 const authorsOf = (p: { createdById: string | null; submittedById: string | null }, actorId: string) =>
   [p.submittedById, p.createdById].filter((x): x is string => !!x && x !== actorId);
 
@@ -78,7 +78,7 @@ export async function approvePage(actor: Actor, pageId: string, note?: string) {
   // Best-effort templated email to the author(s); a mail outage never affects the approval.
   const recipients = await prisma.user.findMany({ where: { id: { in: people }, deletedAt: null }, select: { email: true } }).catch(() => []);
   for (const r of recipients) {
-    await sendTemplatedEmail("page_approval", r.email, { pageTitle: page.title, pageSlug: page.slug, reviewerNote: note ?? "", adminUrl: pageLink(pageId) }).catch(() => undefined);
+    await sendTemplatedEmail("page_approval", r.email, { pageTitle: page.title, pageSlug: page.slug, reviewerNote: note ?? "", adminUrl: `${(process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/+$/, "")}${pageLink(pageId)}` }).catch(() => undefined);
   }
   return prisma.page.findUniqueOrThrow({ where: { id: pageId }, select: PAGE_STATE_SELECT });
 }

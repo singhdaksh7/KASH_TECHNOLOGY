@@ -1,147 +1,119 @@
-/* eslint-disable */
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Search,
-  Plus,
-  FileText,
-  Briefcase,
-  Users,
-  Settings,
-  Image as ImageIcon,
-  HelpCircle,
-  X,
-  Layers,
-  ArrowRight,
-  ExternalLink,
-} from "lucide-react";
+import { ArrowRight, Briefcase, FileText, Image as ImageIcon, Layers, Plus, Search, Settings, Users, X, type LucideIcon } from "lucide-react";
+import { adminClient, type SessionInfo } from "@/lib/admin-client";
 
-interface CommandItem {
-  id: string;
-  title: string;
-  category: "Navigation" | "Actions" | "Content";
-  url: string;
-  icon: any;
-  shortcut?: string;
-}
+interface Item { id: string; title: string; hint: string; url: string; icon: LucideIcon; group: string }
 
-const COMMANDS: CommandItem[] = [
-  { id: "c1", title: "Create New Page", category: "Actions", url: "/admin/templates/pages", icon: Plus, shortcut: "P" },
-  { id: "c2", title: "Create Portfolio Project", category: "Actions", url: "/admin/portfolio/new", icon: Plus, shortcut: "C" },
-  { id: "c3", title: "Upload Media Asset", category: "Actions", url: "/admin/media", icon: ImageIcon, shortcut: "U" },
-  { id: "c4", title: "View Inbound Leads & Deals", category: "Navigation", url: "/admin/leads", icon: Users, shortcut: "L" },
-  { id: "c5", title: "Open Advanced SEO Dashboard", category: "Navigation", url: "/admin/seo", icon: Search, shortcut: "S" },
-  { id: "c6", title: "Global Reusable Blocks", category: "Navigation", url: "/admin/design/global-blocks", icon: Layers },
-  { id: "c7", title: "Page Templates Library", category: "Navigation", url: "/admin/templates/pages", icon: FileText },
-  { id: "c8", title: "Admin Tasks & Action Items", category: "Navigation", url: "/admin/tasks", icon: CheckCircleIcon },
-  { id: "c9", title: "System & Brand Tokens", category: "Navigation", url: "/admin/design/theme", icon: Settings },
-  { id: "c10", title: "Notification Center", category: "Navigation", url: "/admin/notifications", icon: HelpCircle },
+/** Navigation shortcuts. `perm` is advisory only (hides what the user could not open); the API enforces permissions regardless. */
+const COMMANDS: Array<Item & { perm?: string }> = [
+  { id: "c-page", title: "Create page from a template", hint: "Page Templates", url: "/admin/templates/pages", icon: Plus, group: "Actions", perm: "pages.create" },
+  { id: "c-proj", title: "Create portfolio project", hint: "Portfolio Templates", url: "/admin/portfolio/templates", icon: Plus, group: "Actions", perm: "portfolio.edit" },
+  { id: "c-media", title: "Open Media Library", hint: "Upload and organise assets", url: "/admin/media", icon: ImageIcon, group: "Go to", perm: "media.view" },
+  { id: "c-leads", title: "Leads", hint: "Pipeline, assignment, follow-ups", url: "/admin/leads", icon: Users, group: "Go to", perm: "leads.view" },
+  { id: "c-seo", title: "SEO Audit", hint: "Critical, warnings, recommendations", url: "/admin/seo", icon: Search, group: "Go to", perm: "seo.audit" },
+  { id: "c-blocks", title: "Global Blocks", hint: "Reusable sections", url: "/admin/design/global-blocks", icon: Layers, group: "Go to", perm: "global_blocks.view" },
+  { id: "c-pages", title: "Pages", hint: "All pages and the page builder", url: "/admin/pages", icon: FileText, group: "Go to", perm: "pages.view" },
+  { id: "c-tasks", title: "Tasks", hint: "Assigned work", url: "/admin/tasks", icon: FileText, group: "Go to", perm: "tasks.view" },
+  { id: "c-notif", title: "Notifications", hint: "Reviews, approvals, leads", url: "/admin/notifications", icon: FileText, group: "Go to", perm: "notifications.view" },
+  { id: "c-theme", title: "Theme settings", hint: "Brand tokens", url: "/admin/design/theme", icon: Settings, group: "Go to", perm: "settings.view" },
 ];
-
-function CheckCircleIcon(props: any) {
-  return <Layers {...props} />;
-}
+const TYPE_ICON: Record<string, LucideIcon> = { page: FileText, portfolio: Briefcase, article: FileText, media: ImageIcon, lead: Users };
+const GROUP_LABEL: Record<string, string> = { pages: "Pages", portfolio: "Portfolio", articles: "Articles", media: "Media", leads: "Leads" };
 
 export function CommandPalette() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [session, setSession] = useState<SessionInfo | null>(null);
+  const [found, setFound] = useState<Item[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [error, setError] = useState("");
+  const [cursor, setCursor] = useState(0);
+  const seq = useRef(0);
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        setOpen((prev) => !prev);
-      }
-      if (e.key === "Escape") {
-        setOpen(false);
-      }
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); setOpen((o) => !o); }
+      if (e.key === "Escape") setOpen(false);
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  useEffect(() => {
+    if (open && !session) adminClient.getSession().then(setSession).catch(() => undefined);
+  }, [open, session]);
+
+  const allowed = (perm?: string) => !perm || !session || session.user.roles.includes("SUPER_ADMIN") || session.user.permissions.includes(perm);
+  const canSearch = !session || session.user.roles.includes("SUPER_ADMIN") || session.user.permissions.includes("search.use");
+
+  // Debounced real search. The server returns only the groups this user is permitted to see.
+  useEffect(() => {
+    const q = query.trim();
+    if (!open || q.length < 2 || !canSearch) { seq.current++; return; }
+    const mine = ++seq.current;
+    const t = setTimeout(() => {
+      setSearching(true);
+      adminClient.search(q).then((r) => {
+        if (mine !== seq.current) return;
+        setFound(Object.entries(r.results).flatMap(([group, hits]) => hits.map((h) => ({ id: `${h.type}-${h.id}`, title: h.title, hint: [h.subtitle, h.status].filter(Boolean).join(" · "), url: h.url, icon: TYPE_ICON[h.type] ?? FileText, group: GROUP_LABEL[group] ?? group }))));
+        setError("");
+      }).catch((e: unknown) => { if (mine === seq.current) { setFound([]); setError(e instanceof Error ? e.message : "Search failed"); } })
+        .finally(() => { if (mine === seq.current) setSearching(false); });
+    }, 200);
+    return () => clearTimeout(t);
+  }, [query, open, canSearch]);
+
+  const commands = useMemo(() => COMMANDS.filter((c) => allowed(c.perm) && (!query.trim() || `${c.title} ${c.hint}`.toLowerCase().includes(query.trim().toLowerCase()))),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [query, session]);
+  const searchActive = query.trim().length >= 2 && canSearch;
+  const items = [...(searchActive ? found : []), ...commands];
+
   if (!open) return null;
-
-  const filtered = COMMANDS.filter((c) =>
-    c.title.toLowerCase().includes(query.toLowerCase()) ||
-    c.category.toLowerCase().includes(query.toLowerCase())
-  );
-
-  const handleSelect = (url: string) => {
-    setOpen(false);
-    setQuery("");
-    router.push(url);
+  const go = (url: string) => { setOpen(false); setQuery(""); setCursor(0); router.push(url); };
+  const onInputKey = (e: React.KeyboardEvent) => {
+    if (e.key === "ArrowDown") { e.preventDefault(); setCursor((c) => Math.min(c + 1, items.length - 1)); }
+    if (e.key === "ArrowUp") { e.preventDefault(); setCursor((c) => Math.max(c - 1, 0)); }
+    if (e.key === "Enter" && items[cursor]) go(items[cursor].url);
   };
 
   return (
-    <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-start justify-center p-4 pt-20">
-      <div className="bg-white rounded-2xl max-w-xl w-full shadow-2xl border border-[#E8E5E2] overflow-hidden flex flex-col max-h-[70vh] animate-in fade-in-0 zoom-in-95">
-        {/* INPUT */}
+    <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-start justify-center p-4 pt-20" onClick={() => setOpen(false)} role="dialog" aria-label="Command palette">
+      <div className="bg-white rounded-2xl max-w-xl w-full shadow-2xl border border-[#E8E5E2] overflow-hidden flex flex-col max-h-[70vh]" onClick={(e) => e.stopPropagation()}>
         <div className="p-4 border-b border-[#E8E5E2] flex items-center gap-3">
           <Search className="w-5 h-5 text-stone-400 shrink-0" />
-          <input
-            type="text"
-            autoFocus
-            placeholder="Type a command or search pages, leads, settings..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="flex-1 text-sm bg-transparent border-none outline-none text-[#0B0B0F]"
-          />
-          <kbd className="px-2 py-0.5 rounded bg-stone-100 text-stone-500 text-[10px] font-mono border border-stone-200">
-            ESC
-          </kbd>
+          <input type="text" autoFocus placeholder="Search pages, portfolio, media, leads — or jump to a screen…" value={query}
+            onChange={(e) => { setQuery(e.target.value); setCursor(0); }} onKeyDown={onInputKey} className="flex-1 text-sm bg-transparent border-none outline-none text-[#0B0B0F]" />
+          <button onClick={() => setOpen(false)} aria-label="Close" className="text-stone-400 hover:text-stone-700"><X className="w-4 h-4" /></button>
         </div>
-
-        {/* RESULTS */}
-        <div className="flex-1 overflow-y-auto p-2 space-y-1">
-          {filtered.map((cmd) => {
-            const Icon = cmd.icon;
+        <div className="flex-1 overflow-y-auto p-2 space-y-0.5">
+          {items.map((it, i) => {
+            const Icon = it.icon;
+            const showGroup = i === 0 || items[i - 1].group !== it.group;
             return (
-              <div
-                key={cmd.id}
-                onClick={() => handleSelect(cmd.url)}
-                className="flex items-center justify-between p-3 rounded-xl hover:bg-[#FFF9F4] hover:text-[#FF5A00] cursor-pointer group transition-colors text-xs"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-7 h-7 rounded-lg bg-stone-100 group-hover:bg-[#FFF3E9] flex items-center justify-center text-stone-500 group-hover:text-[#FF5A00]">
-                    <Icon className="w-3.5 h-3.5" />
+              <React.Fragment key={it.id}>
+                {showGroup && <div className="px-3 pt-2 pb-1 text-[10px] font-mono font-bold uppercase tracking-wider text-stone-400">{it.group}</div>}
+                <div onClick={() => go(it.url)} onMouseEnter={() => setCursor(i)}
+                  className={`flex items-center justify-between p-2.5 rounded-xl cursor-pointer text-xs ${i === cursor ? "bg-[#FFF9F4] text-[#FF5A00]" : ""}`}>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-7 h-7 rounded-lg bg-stone-100 flex items-center justify-center text-stone-500 shrink-0"><Icon className="w-3.5 h-3.5" /></div>
+                    <div className="min-w-0"><span className="font-bold text-[#0B0B0F] block truncate">{it.title}</span>{it.hint && <span className="text-[10px] text-stone-400 block truncate">{it.hint}</span>}</div>
                   </div>
-                  <div>
-                    <span className="font-bold text-[#0B0B0F] group-hover:text-[#FF5A00]">
-                      {cmd.title}
-                    </span>
-                    <span className="text-[10px] text-stone-400 block font-mono">
-                      {cmd.category}
-                    </span>
-                  </div>
+                  <ArrowRight className="w-3.5 h-3.5 shrink-0 text-[#FF5A00] opacity-0 group-hover:opacity-100" />
                 </div>
-
-                <div className="flex items-center gap-2">
-                  {cmd.shortcut && (
-                    <kbd className="px-1.5 py-0.5 rounded bg-stone-100 text-stone-400 text-[9px] font-mono border">
-                      {cmd.shortcut}
-                    </kbd>
-                  )}
-                  <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 text-[#FF5A00]" />
-                </div>
-              </div>
+              </React.Fragment>
             );
           })}
-
-          {filtered.length === 0 && (
-            <div className="p-8 text-center text-stone-400 text-xs">
-              No admin actions matching &ldquo;{query}&rdquo;
-            </div>
-          )}
+          {searchActive && searching && <div className="p-3 text-center text-stone-400 text-xs">Searching…</div>}
+          {searchActive && error && <div className="p-3 text-center text-red-600 text-xs">{error}</div>}
+          {!(searchActive && searching) && !(searchActive && error) && items.length === 0 && <div className="p-8 text-center text-stone-400 text-xs">{query.trim().length < 2 ? "Type at least 2 characters to search." : `Nothing found for “${query}”.`}</div>}
         </div>
-
-        {/* FOOTER */}
         <div className="p-3 bg-stone-50 border-t border-[#E8E5E2] flex items-center justify-between text-[11px] text-stone-400">
-          <span>Navigate with mouse or arrow keys</span>
-          <span className="font-mono">KASH CMS Command Palette</span>
+          <span>↑ ↓ to move · Enter to open · Esc to close</span><span>Only items you can access are shown</span>
         </div>
       </div>
     </div>

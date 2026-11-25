@@ -103,7 +103,7 @@ test("phase 2 database integration", { skip }, async (t) => {
     assert.equal((await wf.approvePage(rv, p.id)).status, "APPROVED");
     await rejects(wf.publishPage(actor(reviewer.id, ["content.approve"]), p.id), "FORBIDDEN");
     assert.equal((await wf.publishPage(rv, p.id)).status, "PUBLISHED");
-    await rejects(wf.publishPage(rv, p.id), "INVALID_TRANSITION");
+    await rejects(wf.publishPage(rv, p.id), "NOTHING_TO_PUBLISH");
     assert.equal((await wf.archivePage(rv, p.id)).status, "ARCHIVED");
     assert.equal((await wf.unarchivePage(rv, p.id)).status, "DRAFT");
     // notifications generated, deduplicated
@@ -160,6 +160,62 @@ test("phase 2 database integration", { skip }, async (t) => {
     await sched.processScheduledContent();
     assert.equal(await prisma.notification.count({ where: { entityId: bad.id, type: "PAGE_PUBLISH_FAILED", userId: boss.id } }) <= 1, true);
     assert.equal((await prisma.page.findUnique({ where: { id: bad.id } }))!.status, "SCHEDULED");
+  });
+
+  await t.test("draft-reset rule: edits send review/approved/scheduled pages to DRAFT; live pages stay live", async () => {
+    const { resetToDraftAfterEdit } = wf;
+    for (const status of ["IN_REVIEW", "APPROVED", "SCHEDULED"] as const) {
+      const p = await mkPage(`rst-${status.toLowerCase()}`, status, status === "SCHEDULED" ? { publishAt: new Date(Date.now() + 3_600_000), approvedAt: new Date() } : { approvedAt: new Date() });
+      const from = await prisma.$transaction((tx) => resetToDraftAfterEdit(tx, p.id, author.id, "content edited"));
+      assert.equal(from, status);
+      const after = (await prisma.page.findUnique({ where: { id: p.id } }))!;
+      assert.equal(after.status, "DRAFT"); assert.equal(after.publishAt, null); assert.equal(after.approvedAt, null);
+      assert.ok(await prisma.auditLog.findFirst({ where: { action: "page.reset_to_draft", entityId: p.id } }), "audited");
+    }
+    const draft = await mkPage("rst-draft"), live = await mkPage("rst-live", "PUBLISHED", { publishedAt: new Date() });
+    assert.equal(await prisma.$transaction((tx) => resetToDraftAfterEdit(tx, draft.id, author.id, "x")), null);
+    assert.equal(await prisma.$transaction((tx) => resetToDraftAfterEdit(tx, live.id, author.id, "x")), null);
+    assert.equal((await prisma.page.findUnique({ where: { id: live.id } }))!.status, "PUBLISHED", "a live page is never taken offline by an edit");
+  });
+
+  await t.test("re-publishing a live page promotes its pending draft; nothing to publish is rejected", async () => {
+    const live = await mkPage("repub", "PUBLISHED", { publishedAt: new Date() });
+    await rejects(wf.publishPage(rv, live.id), "NOTHING_TO_PUBLISH");
+    await prisma.page.update({ where: { id: live.id }, data: { draft: { title: "Edited live", slug: live.slug, seo: {}, sections: [{ type: "cta", order: 0, enabled: true, content: { heading: "new" } }] } } });
+    await rejects(wf.publishPage(actor(reviewer.id, ["content.review"]), live.id), "FORBIDDEN");
+    assert.equal((await wf.publishPage(rv, live.id)).status, "PUBLISHED");
+    const after = (await prisma.page.findUnique({ where: { id: live.id }, include: { sections: true } }))!;
+    assert.equal(after.title, "Edited live"); assert.equal(after.draft, null); assert.equal(after.sections[0].type, "cta");
+  });
+
+  await t.test("editing a global block returns linked approved pages to DRAFT (and audits it)", async () => {
+    const b = await blocks.createBlock(admin, { name: U("Reset block"), type: "cta", content: { heading: "v1" } });
+    const approved = await mkPage("gbr-approved", "APPROVED", { approvedAt: new Date() }), live = await mkPage("gbr-live", "PUBLISHED", { publishedAt: new Date() });
+    await prisma.pageSection.create({ data: { pageId: approved.id, type: "cta", order: 1, content: {}, globalBlockId: b.id } });
+    await prisma.pageSection.create({ data: { pageId: live.id, type: "cta", order: 1, content: {}, globalBlockId: b.id } });
+    await blocks.updateBlock(admin, b.name === "" ? b.id : b.id, { name: b.name }); // non-material
+    assert.equal((await prisma.page.findUnique({ where: { id: approved.id } }))!.status, "APPROVED", "a rename alone does not reset");
+    await blocks.updateBlock(admin, b.id, { content: { heading: "v2" } });
+    assert.equal((await prisma.page.findUnique({ where: { id: approved.id } }))!.status, "DRAFT");
+    assert.equal((await prisma.page.findUnique({ where: { id: live.id } }))!.status, "PUBLISHED");
+    assert.ok(await prisma.auditLog.findFirst({ where: { action: "page.reset_to_draft", entityId: approved.id } }));
+  });
+
+  await t.test("page DTO exposes review history, schedule in IST + UTC, global-block links", async () => {
+    const { toAdminPageDetail } = await import("../src/lib/server/dto-pages");
+    const { pageInclude } = await import("../src/lib/cms/pages");
+    const p = await mkPage("dto");
+    await wf.submitForReview(sa, p.id, "please check");
+    await wf.approvePage(rv, p.id);
+    const when = new Date(Date.now() + 86_400_000); when.setUTCSeconds(0, 0);
+    await wf.schedulePage(rv, p.id, { publishAt: when, unpublishAt: new Date(when.getTime() + 3_600_000) });
+    const dto = await toAdminPageDetail((await prisma.page.findUnique({ where: { id: p.id }, include: pageInclude }))!);
+    assert.equal(dto.status, "Scheduled");
+    assert.deepEqual(dto.reviewHistory!.map((h) => h.action).slice(0, 3), ["SCHEDULED", "APPROVED", "SUBMITTED"]);
+    assert.equal(dto.reviewHistory!.find((h) => h.action === "SUBMITTED")!.note, "please check");
+    assert.equal(dto.schedule!.timezone, "Asia/Kolkata"); assert.equal(dto.schedule!.publishAtUtc, when.toISOString());
+    assert.equal(new Date(`${dto.schedule!.publishDate}T${dto.schedule!.publishTime}:00+05:30`).toISOString(), when.toISOString(), "IST wall clock round-trips to the stored UTC instant");
+    assert.equal(dto.submittedBy, "author");
   });
 
   await t.test("global blocks: CRUD, usage, deletion guard, detach (live + draft)", async () => {

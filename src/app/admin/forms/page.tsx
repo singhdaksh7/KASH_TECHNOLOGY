@@ -213,6 +213,35 @@ export default function FormsManagerPage() {
                         <span className="font-semibold text-stone-700">Required</span>
                       </label>
                     </div>
+                    <div className="col-span-3 grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+                      {selectedForm.isMultiStep && (
+                        <div>
+                          <label className="block text-[10px] text-stone-400 uppercase font-semibold">Step</label>
+                          <select value={field.step ?? 1} onChange={(e) => { const u = [...selectedForm.fields]; u[idx] = { ...u[idx], step: Number(e.target.value) }; setSelectedForm({ ...selectedForm, fields: u }); }} className="w-full px-2 py-1 border border-[#E8E5E2] rounded bg-white text-xs">
+                            {Array.from({ length: Math.max(2, selectedForm.stepTitles?.length ?? 2) }, (_, n) => <option key={n} value={n + 1}>Step {n + 1}</option>)}
+                          </select>
+                        </div>
+                      )}
+                      <div>
+                        <label className="block text-[10px] text-stone-400 uppercase font-semibold">Section heading</label>
+                        <input type="text" value={field.section ?? ""} onChange={(e) => { const u = [...selectedForm.fields]; u[idx] = { ...u[idx], section: e.target.value }; setSelectedForm({ ...selectedForm, fields: u }); }} className="w-full px-2 py-1 border border-[#E8E5E2] rounded bg-white text-xs" placeholder="optional" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-stone-400 uppercase font-semibold">Help text</label>
+                        <input type="text" value={field.description ?? ""} onChange={(e) => { const u = [...selectedForm.fields]; u[idx] = { ...u[idx], description: e.target.value }; setSelectedForm({ ...selectedForm, fields: u }); }} className="w-full px-2 py-1 border border-[#E8E5E2] rounded bg-white text-xs" placeholder="optional" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-stone-400 uppercase font-semibold">Show only when</label>
+                        <div className="flex gap-1">
+                          <select value={field.conditionalOn?.field ?? ""} onChange={(e) => { const u = [...selectedForm.fields]; u[idx] = { ...u[idx], conditionalRules: undefined, conditionalOn: e.target.value ? { field: e.target.value, equals: u[idx].conditionalOn?.equals ?? "" } : undefined }; setSelectedForm({ ...selectedForm, fields: u }); }} className="w-1/2 px-1 py-1 border border-[#E8E5E2] rounded bg-white text-xs">
+                            <option value="">Always</option>
+                            {selectedForm.fields.filter((o) => o.id !== field.id).map((o) => <option key={o.id} value={o.name}>{o.label}</option>)}
+                          </select>
+                          {field.conditionalOn && <input type="text" value={field.conditionalOn.equals} onChange={(e) => { const u = [...selectedForm.fields]; u[idx] = { ...u[idx], conditionalRules: undefined, conditionalOn: { field: field.conditionalOn!.field, equals: e.target.value } }; setSelectedForm({ ...selectedForm, fields: u }); }} className="w-1/2 px-1 py-1 border border-[#E8E5E2] rounded bg-white text-xs" placeholder="equals…" />}
+                        </div>
+                        {field.conditionalRules && !field.conditionalOn && <p className="text-[10px] text-amber-700 mt-0.5">Advanced rule set (kept as-is).</p>}
+                      </div>
+                    </div>
                   </div>
 
                   <button
@@ -265,6 +294,27 @@ export default function FormsManagerPage() {
                   className="w-full px-3 py-1.5 border border-[#E8E5E2] rounded-lg text-xs"
                 />
               </div>
+
+              <div className="col-span-2">
+                <label className="block font-semibold text-[#0B0B0F] mb-1">Redirect after success (optional)</label>
+                <input type="text" value={selectedForm.redirectUrl ?? ""} onChange={(e) => setSelectedForm({ ...selectedForm, redirectUrl: e.target.value })} placeholder="/thank-you or https://…" className="w-full px-3 py-1.5 border border-[#E8E5E2] rounded-lg text-xs font-mono" />
+                <p className="mt-1 text-[11px] text-stone-500">Only a page on this site or an https address is accepted.</p>
+              </div>
+
+              <label className="flex items-center gap-2 font-semibold"><input type="checkbox" checked={selectedForm.createCrmLead ?? true} onChange={(e) => setSelectedForm({ ...selectedForm, createCrmLead: e.target.checked })} />Create a lead for each submission</label>
+              <label className="flex items-center gap-2 font-semibold"><input type="checkbox" checked={selectedForm.sendEmailNotification ?? true} onChange={(e) => setSelectedForm({ ...selectedForm, sendEmailNotification: e.target.checked })} />Send email notification</label>
+              <label className="flex items-center gap-2 font-semibold"><input type="checkbox" checked={selectedForm.active ?? true} onChange={(e) => setSelectedForm({ ...selectedForm, active: e.target.checked })} />Form is live</label>
+              <label className="flex items-center gap-2 font-semibold"><input type="checkbox" checked={!!selectedForm.isMultiStep} onChange={(e) => setSelectedForm({ ...selectedForm, isMultiStep: e.target.checked, stepTitles: e.target.checked && !(selectedForm.stepTitles?.length) ? ["Step 1", "Step 2"] : selectedForm.stepTitles })} />Multi-step form</label>
+              {selectedForm.isMultiStep && (
+                <div className="col-span-2 space-y-2">
+                  <span className="block font-semibold text-[#0B0B0F]">Step titles</span>
+                  {(selectedForm.stepTitles ?? []).map((t, i) => (
+                    <div key={i} className="flex gap-2"><input type="text" value={t} onChange={(e) => { const u = [...(selectedForm.stepTitles ?? [])]; u[i] = e.target.value; setSelectedForm({ ...selectedForm, stepTitles: u }); }} className="flex-1 px-3 py-1.5 border border-[#E8E5E2] rounded-lg text-xs" />
+                      {(selectedForm.stepTitles?.length ?? 0) > 2 && i === (selectedForm.stepTitles?.length ?? 0) - 1 && <button type="button" onClick={() => setSelectedForm({ ...selectedForm, stepTitles: (selectedForm.stepTitles ?? []).slice(0, -1), fields: selectedForm.fields.map((f) => ((f.step ?? 1) > i ? { ...f, step: i } : f)) })} className="text-red-600">Remove</button>}</div>
+                  ))}
+                  {(selectedForm.stepTitles?.length ?? 0) < 10 && <button type="button" onClick={() => setSelectedForm({ ...selectedForm, stepTitles: [...(selectedForm.stepTitles ?? []), `Step ${(selectedForm.stepTitles?.length ?? 0) + 1}`] })} className="text-[#FF5A00] font-semibold">+ Add step</button>}
+                </div>
+              )}
             </div>
           </div>
         ) : (

@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Menu, ExternalLink } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Bell, ExternalLink, Menu, Search } from "lucide-react";
+import { adminClient } from "@/lib/admin-client";
 
 interface AdminHeaderProps {
   onToggleSidebar?: () => void;
@@ -18,6 +20,15 @@ export function AdminHeader({
   breadcrumbs,
   actions,
 }: AdminHeaderProps) {
+  const [unread, setUnread] = useState(0);
+  useEffect(() => {
+    let alive = true;
+    const load = () => adminClient.getUnreadNotificationCount().then((n) => alive && setUnread(n)).catch(() => undefined);
+    load();
+    const t = setInterval(load, 60_000);
+    window.addEventListener("kash:notifications-changed", load);
+    return () => { alive = false; clearInterval(t); window.removeEventListener("kash:notifications-changed", load); };
+  }, []);
   const toggle = onToggleSidebar ?? (() => window.dispatchEvent(new Event("kash:toggle-sidebar")));
   return (
     <header className="sticky top-0 z-30 bg-[#FFF9F4]/90 backdrop-blur-md border-b border-[#E8E5E2] px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
@@ -89,7 +100,9 @@ export function AdminHeader({
           title="Notification Center"
         >
           <Bell className="w-4 h-4" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#FF5A00]" />
+          {unread > 0 && (
+            <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-[#FF5A00] text-white text-[10px] font-bold leading-4 text-center" aria-label={`${unread} unread notifications`}>{unread > 99 ? "99+" : unread}</span>
+          )}
         </Link>
 
         <Link

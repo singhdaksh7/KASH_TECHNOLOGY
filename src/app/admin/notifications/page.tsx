@@ -1,22 +1,17 @@
-/* eslint-disable */
 "use client";
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { AdminNotification, NotificationType } from "@/lib/admin-client/types";
-import { adminClient } from "@/lib/admin-client";
+import { AdminNotification } from "@/lib/admin-client/types";
+import { adminClient, errorMessage } from "@/lib/admin-client";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { useToast } from "@/components/admin/ToastContext";
 import {
-  Bell,
-  CheckCircle2,
   AlertTriangle,
   FileText,
   Mail,
-  Shield,
   ExternalLink,
   Check,
-  RotateCw,
 } from "lucide-react";
 
 export default function NotificationsCenterPage() {
@@ -26,23 +21,30 @@ export default function NotificationsCenterPage() {
   const { addToast } = useToast();
 
   useEffect(() => {
-    adminClient.getNotifications().then((data) => {
-      setNotifications(data);
-      setLoading(false);
-    });
+    adminClient.getNotifications().then(setNotifications).catch((e) => addToast({ title: "Could not load notifications", message: errorMessage(e), type: "error" })).finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- load once on mount; addToast identity is not stable
   }, []);
+  const changed = () => window.dispatchEvent(new Event("kash:notifications-changed"));
 
   const handleMarkRead = async (id: string) => {
-    await adminClient.markNotificationRead(id);
-    setNotifications(
-      notifications.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
+    try {
+      await adminClient.markNotificationRead(id);
+      setNotifications(notifications.map((n) => (n.id === id ? { ...n, read: true } : n)));
+      changed();
+    } catch (e) {
+      addToast({ title: "Could not update", message: errorMessage(e), type: "error" });
+    }
   };
 
   const handleMarkAllRead = async () => {
-    await adminClient.markAllNotificationsRead();
-    setNotifications(notifications.map((n) => ({ ...n, read: true })));
-    addToast({ title: "Notifications Cleared", message: "All notifications marked as read." });
+    try {
+      await adminClient.markAllNotificationsRead();
+      setNotifications(notifications.map((n) => ({ ...n, read: true })));
+      changed();
+      addToast({ title: "All caught up", message: "All notifications marked as read." });
+    } catch (e) {
+      addToast({ title: "Could not update", message: errorMessage(e), type: "error" });
+    }
   };
 
   const unreadCount = notifications.filter((n) => !n.read).length;
@@ -53,6 +55,7 @@ export default function NotificationsCenterPage() {
 
   return (
     <div className="space-y-6">
+      {loading && <p className="text-xs text-stone-400">Loading notifications…</p>}
       <AdminHeader
         title="Notification Center"
         subtitle="Real-time administrative alerts across inbound project leads, editorial reviews, and SEO health triggers"
@@ -131,14 +134,9 @@ export default function NotificationsCenterPage() {
                   {!item.read && (
                     <span className="w-2 h-2 rounded-full bg-[#FF5A00]" />
                   )}
-                  {item.isDemo && (
-                    <span className="text-[9px] uppercase font-bold text-stone-400 bg-stone-100 px-1.5 py-0.2 rounded">
-                      Demo / Dev
-                    </span>
-                  )}
                 </div>
                 <p className="text-xs text-[#4B5563] mt-0.5 leading-relaxed">{item.message}</p>
-                <span className="text-[10px] text-stone-400 mt-1 block font-mono">{item.timestamp}</span>
+                <span className="text-[10px] text-stone-400 mt-1 block font-mono">{new Date(item.timestamp).toLocaleString()}</span>
               </div>
             </div>
 

@@ -1,20 +1,12 @@
-/* eslint-disable */
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PortfolioTemplateItem } from "@/lib/admin-client/types";
-import { adminClient } from "@/lib/admin-client";
+import { adminClient, errorMessage } from "@/lib/admin-client";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { useToast } from "@/components/admin/ToastContext";
-import {
-  Briefcase,
-  Layers,
-  ArrowRight,
-  Code,
-  Sparkles,
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 export default function PortfolioTemplatesPage() {
   const router = useRouter();
@@ -23,51 +15,20 @@ export default function PortfolioTemplatesPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    adminClient.getPortfolioTemplates().then((data) => {
-      setTemplates(data);
-      setLoading(false);
-    });
+    adminClient.getPortfolioTemplates().then(setTemplates).catch((e) => addToast({ title: "Could not load templates", message: errorMessage(e), type: "error" })).finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- load once on mount; addToast identity is not stable
   }, []);
 
   const handleUseTemplate = async (tpl: PortfolioTemplateItem) => {
-    const newProject = {
-      id: `proj-${Date.now()}`,
-      name: `New ${tpl.name}`,
-      slug: `${tpl.slug}-${Date.now().toString().slice(-4)}`,
-      status: "Draft" as const,
-      projectType: "REAL PROJECT" as const,
-      category: tpl.category,
-      industry: "Enterprise / Growth",
-      shortDescription: tpl.description,
-      fullDescription: `Comprehensive case study based on ${tpl.name} blueprint.`,
-      thumbnail: "/images/projects/exora-preview.png",
-      heroImage: "/images/hero/hero-laptop-composition.png",
-      gallery: [],
-      technologies: tpl.sampleTechStack,
-      services: [tpl.category, "Custom Architecture"],
-      problem: ["Operational bottlenecks and fragmentation"],
-      solution: ["Engineered scalable Next.js and cloud infrastructure"],
-      features: [{ title: "Modular Architecture", description: "Standardized service layers." }],
-      architecture: [{ label: "Stack", description: tpl.sampleTechStack.join(", ") }],
-      clickBehaviour: "Open Case Study" as const,
-      seo: {
-        title: `${tpl.name} Case Study | KASH Technology`,
-        metaDescription: tpl.description,
-        slug: tpl.slug,
-        canonicalUrl: "",
-        focusKeyword: tpl.name,
-        secondaryKeywords: "",
-        ogTitle: "",
-        ogDescription: "",
-        ogImage: "",
-        index: true,
-        follow: true,
-      },
-      updatedAt: new Date().toISOString().slice(0, 10),
-    };
-    await adminClient.saveProject(newProject);
-    addToast({ title: "Case Study Initialized", message: `Created "${newProject.name}" from blueprint.`, type: "success" });
-    router.push(`/admin/portfolio/${newProject.id}`);
+    const title = window.prompt("Project title", `New ${tpl.name}`);
+    if (!title?.trim()) return;
+    try {
+      const created = await adminClient.createProjectFromTemplate(tpl.id, title.trim());
+      addToast({ title: "Draft project created", message: `"${title.trim()}" was created as a draft from the ${tpl.name} blueprint.`, type: "success" });
+      router.push(`/admin/portfolio/${created.id}`);
+    } catch (err) {
+      addToast({ title: "Could not create project", message: errorMessage(err), type: "error" });
+    }
   };
 
   return (
@@ -77,6 +38,7 @@ export default function PortfolioTemplatesPage() {
         subtitle="Standardized technical structures for SaaS platforms, mobile apps, ERPs, and branding campaigns"
         breadcrumbs={[{ label: "Portfolio", href: "/admin/portfolio" }, { label: "Templates" }]}
       />
+      {loading && <p className="text-xs text-stone-400">Loading templates…</p>}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {templates.map((tpl) => (

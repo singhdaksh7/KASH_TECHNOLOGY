@@ -6,7 +6,7 @@ import { notifySafe, usersWithPermission } from "@/lib/notifications";
 export type ContentEntity = "Page" | "Article" | "PortfolioProject";
 const ENTITY_KEY: Record<ContentEntity, string> = { Page: "page", Article: "article", PortfolioProject: "portfolio" };
 const ENTITY_LINK: Record<ContentEntity, (id: string) => string> = {
-  Page: (id) => `/admin/pages/${id}`, Article: (id) => `/admin/articles/${id}`, PortfolioProject: (id) => `/admin/portfolio/${id}`,
+  Page: (id) => `/admin/pages/${id}/edit`, Article: () => "/admin/insights", PortfolioProject: (id) => `/admin/portfolio/${id}`,
 };
 
 export interface PublishEvent {

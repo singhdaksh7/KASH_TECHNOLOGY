@@ -1,25 +1,17 @@
-/* eslint-disable */
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PageTemplate } from "@/lib/admin-client/types";
-import { adminClient } from "@/lib/admin-client";
+import { adminClient, errorMessage } from "@/lib/admin-client";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { useToast } from "@/components/admin/ToastContext";
 import {
-  Layers,
   Plus,
   Copy,
   Trash2,
-  ExternalLink,
   Search,
-  CheckCircle2,
-  Sparkles,
   ShieldCheck,
-  FileCode,
-  LayoutTemplate,
   ArrowRight,
 } from "lucide-react";
 
@@ -34,19 +26,25 @@ export default function PageTemplatesPage() {
   const [newPageTitle, setNewPageTitle] = useState("");
   const [newPageSlug, setNewPageSlug] = useState("");
 
+  const [loadError, setLoadError] = useState("");
   useEffect(() => {
     adminClient.getPageTemplates().then((data) => {
       setTemplates(data);
       if (data.length > 0) setSelectedTemplate(data[1] || data[0]);
-      setLoading(false);
-    });
+    }).catch((e) => setLoadError(errorMessage(e))).finally(() => setLoading(false));
   }, []);
 
   const handleCreatePage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedTemplate || !newPageTitle) return;
-    const slug = newPageSlug || newPageTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-    const created = await adminClient.createPageFromTemplate(selectedTemplate.id, newPageTitle, slug);
+    const slug = newPageSlug || newPageTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    let created;
+    try {
+      created = await adminClient.createPageFromTemplate(selectedTemplate.id, newPageTitle, slug);
+    } catch (err) {
+      addToast({ title: "Could not create page", message: errorMessage(err), type: "error" });
+      return;
+    }
     addToast({
       title: "Page Created from Template",
       message: `Created "${created.title}" with ${created.sections.length} predefined sections.`,
@@ -57,10 +55,14 @@ export default function PageTemplatesPage() {
   };
 
   const handleDuplicate = async (id: string) => {
-    const dup = await adminClient.duplicatePageTemplate(id);
-    if (dup) {
-      setTemplates([...templates, dup]);
-      addToast({ title: "Template Duplicated", message: `Created "${dup.name}" copy.` });
+    try {
+      const dup = await adminClient.duplicatePageTemplate(id);
+      if (dup) {
+        setTemplates([...templates, dup]);
+        addToast({ title: "Template Duplicated", message: `Created "${dup.name}" copy.` });
+      }
+    } catch (err) {
+      addToast({ title: "Duplicate failed", message: errorMessage(err), type: "error" });
     }
   };
 
@@ -70,10 +72,12 @@ export default function PageTemplatesPage() {
       return;
     }
     if (confirm("Delete this custom page template?")) {
-      const ok = await adminClient.deletePageTemplate(id);
-      if (ok) {
+      try {
+        await adminClient.deletePageTemplate(id);
         setTemplates(templates.filter((t) => t.id !== id));
         addToast({ title: "Template Deleted", message: "Custom template removed.", type: "info" });
+      } catch (err) {
+        addToast({ title: "Delete failed", message: errorMessage(err), type: "error" });
       }
     }
   };
@@ -92,6 +96,9 @@ export default function PageTemplatesPage() {
         subtitle="Standardized layout blueprints for high-converting service pages, local hubs, and case studies"
         breadcrumbs={[{ label: "Content" }, { label: "Page Templates" }]}
       />
+
+      {loadError && <div role="alert" className="p-4 rounded-xl border border-red-200 bg-red-50 text-sm text-red-700">Could not load templates: {loadError}</div>}
+      {loading && <p className="text-xs text-stone-400">Loading templates…</p>}
 
       {/* SEARCH TOOLBAR */}
       <div className="bg-white rounded-xl border border-[#E8E5E2] p-4 flex flex-col sm:flex-row gap-3 items-center justify-between shadow-xs">

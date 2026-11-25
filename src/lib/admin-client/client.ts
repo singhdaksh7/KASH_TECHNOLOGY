@@ -136,6 +136,7 @@ export const adminClient = {
   getEmailTemplates: async (): Promise<EmailTemplateItem[]> => (await api<ui.EmailTemplateRow[]>("/email-templates")).map(ui.toUiEmailTemplate),
   saveEmailTemplate: async (t: Pick<EmailTemplateItem, "slug" | "subject" | "body" | "enabled">): Promise<EmailTemplateItem> =>
     ui.toUiEmailTemplate(await api<ui.EmailTemplateRow>(`/email-templates/${t.slug}`, { method: "PATCH", json: { subject: t.subject, body: t.body, enabled: t.enabled } })),
+  getEmailStatus: () => api<{ configured: boolean }>("/email-status"),
   previewEmailTemplate: (slug: string, draft: { subject: string; body: string }, variables?: Record<string, string>) => api<{ subject: string; text: string }>(`/email-templates/${slug}/preview`, { json: { ...draft, variables } }),
 
   /* ───── Phase 2: form & portfolio templates ───── */

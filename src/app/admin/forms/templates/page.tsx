@@ -1,22 +1,12 @@
-/* eslint-disable */
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormTemplateItem } from "@/lib/admin-client/types";
-import { adminClient } from "@/lib/admin-client";
+import { adminClient, errorMessage } from "@/lib/admin-client";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { useToast } from "@/components/admin/ToastContext";
-import {
-  FileText,
-  Plus,
-  CheckCircle2,
-  Copy,
-  Layers,
-  Sparkles,
-  ArrowRight,
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 export default function FormTemplatesPage() {
   const router = useRouter();
@@ -25,29 +15,20 @@ export default function FormTemplatesPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    adminClient.getFormTemplates().then((data) => {
-      setTemplates(data);
-      setLoading(false);
-    });
+    adminClient.getFormTemplates().then(setTemplates).catch((e) => addToast({ title: "Could not load templates", message: errorMessage(e), type: "error" })).finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- load once on mount; addToast identity is not stable
   }, []);
 
   const handleUseTemplate = async (tpl: FormTemplateItem) => {
-    const newForm = {
-      id: `form-${Date.now()}`,
-      title: `${tpl.name} Form`,
-      slug: `${tpl.slug}-${Date.now().toString().slice(-4)}`,
-      description: tpl.description,
-      fields: tpl.fields,
-      submitButtonText: tpl.submitButtonText,
-      successMessage: tpl.successMessage,
-      sendEmailNotification: true,
-      createCrmLead: true,
-      submissionsCount: 0,
-      updatedAt: new Date().toISOString().slice(0, 10),
-    };
-    await adminClient.saveForm(newForm);
-    addToast({ title: "Form Created", message: `Initialized "${newForm.title}" from blueprint.`, type: "success" });
-    router.push("/admin/forms");
+    const name = window.prompt("Name for the new form", tpl.name);
+    if (!name?.trim()) return;
+    try {
+      const created = await adminClient.createFormFromTemplate(tpl.id, { name: name.trim() });
+      addToast({ title: "Form created", message: `"${name.trim()}" is ready to edit (slug: ${created.slug}).`, type: "success" });
+      router.push("/admin/forms");
+    } catch (err) {
+      addToast({ title: "Could not create form", message: errorMessage(err), type: "error" });
+    }
   };
 
   return (
@@ -57,6 +38,7 @@ export default function FormTemplatesPage() {
         subtitle="Pre-configured form schemas for contact intake, project scoping, and free digital audits"
         breadcrumbs={[{ label: "Marketing", href: "/admin/forms" }, { label: "Form Templates" }]}
       />
+      {loading && <p className="text-xs text-stone-400">Loading templates…</p>}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {templates.map((tpl) => (

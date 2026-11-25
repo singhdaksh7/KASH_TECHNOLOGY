@@ -20,11 +20,11 @@ export async function adminSearch(actor: Actor, rawQuery: string, perType = 5) {
   const jobs: Array<Promise<void>> = [];
 
   if (can(actor, "pages.view")) jobs.push(prisma.page.findMany({ where: { deletedAt: null, OR: [{ title: like }, { slug: like }] }, select: { id: true, title: true, slug: true, status: true }, orderBy: { updatedAt: "desc" }, take })
-    .then((r) => { groups.pages = r.map((p) => ({ type: "page", id: p.id, title: p.title, subtitle: p.slug, status: p.status, url: `/admin/pages/${p.id}` })); }));
+    .then((r) => { groups.pages = r.map((p) => ({ type: "page", id: p.id, title: p.title, subtitle: p.slug, status: p.status, url: `/admin/pages/${p.id}/edit` })); }));
   if (can(actor, "portfolio.view")) jobs.push(prisma.portfolioProject.findMany({ where: { deletedAt: null, OR: [{ title: like }, { slug: like }, { summary: like }] }, select: { id: true, title: true, slug: true, status: true }, orderBy: { updatedAt: "desc" }, take })
     .then((r) => { groups.portfolio = r.map((p) => ({ type: "portfolio", id: p.id, title: p.title, subtitle: p.slug, status: p.status, url: `/admin/portfolio/${p.id}` })); }));
   if (can(actor, "articles.view")) jobs.push(prisma.article.findMany({ where: { deletedAt: null, OR: [{ title: like }, { slug: like }, { excerpt: like }] }, select: { id: true, title: true, slug: true, status: true }, orderBy: { updatedAt: "desc" }, take })
-    .then((r) => { groups.articles = r.map((a) => ({ type: "article", id: a.id, title: a.title, subtitle: a.slug, status: a.status, url: `/admin/articles/${a.id}` })); }));
+    .then((r) => { groups.articles = r.map((a) => ({ type: "article", id: a.id, title: a.title, subtitle: a.slug, status: a.status, url: "/admin/insights" })); }));
   if (can(actor, "media.view")) jobs.push(prisma.mediaAsset.findMany({ where: { deletedAt: null, OR: [{ filename: like }, { alt: like }, { title: like }, { tags: { has: q.toLowerCase() } }] }, select: { id: true, filename: true, mimeType: true }, orderBy: { createdAt: "desc" }, take })
     .then((r) => { groups.media = r.map((m) => ({ type: "media", id: m.id, title: m.filename, subtitle: m.mimeType, url: `/admin/media?asset=${m.id}` })); }));
   if (can(actor, "leads.view")) jobs.push(prisma.lead.findMany({ where: { deletedAt: null, OR: [{ name: like }, { email: like }, { company: like }, { phone: like }] }, select: { id: true, name: true, email: true, company: true, status: true }, orderBy: { createdAt: "desc" }, take })
