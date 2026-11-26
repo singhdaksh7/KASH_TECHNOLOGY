@@ -5,8 +5,7 @@ import { admin, body, HttpError, refreshPublicSite } from "@/lib/server/api";
 import { ok } from "@/lib/server/http";
 import { audit } from "@/lib/server/audit";
 
-/** Whitelisted keys only. Values are plain JSON owned by the admin UI (header, footer, navigation, theme, site). */
-const GLOBAL_KEYS = ["header", "footer", "navigation", "site", "integrations.public"] as const;
+const GLOBAL_KEYS = ["header", "footer", "navigation", "site", "integrations.public", "business"] as const;
 const THEME_KEYS = ["theme"] as const;
 const schema = z.object({ key: z.string(), value: z.unknown(), theme: z.boolean().optional() });
 
@@ -27,7 +26,6 @@ export const PUT = admin("settings.manage", async ({ request, session }) => {
   return ok(row);
 });
 
-/** Reset a setting back to the approved built-in defaults (the public site falls back when the row is absent). */
 export const DELETE = admin("settings.manage", async ({ request, session }) => {
   const d = await body(request, z.object({ key: z.string(), theme: z.boolean().optional() }));
   const allowed = (d.theme ? THEME_KEYS : GLOBAL_KEYS) as readonly string[];

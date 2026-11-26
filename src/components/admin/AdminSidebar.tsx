@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { adminClient, type SessionInfo } from "@/lib/admin-client";
+import { ADMIN_NAVIGATION, filterNavigation, type NavItemConfig } from "@/lib/rbac/navigation";
 import { 
   LayoutDashboard, 
   FileText, 
@@ -24,199 +25,207 @@ import {
   History, 
   Settings, 
   LogOut,
+  Bell,
+  Activity,
+  Database,
+  Cable,
+  Building2,
+  Mail,
+  type LucideIcon,
 } from "lucide-react";
 
-interface NavGroup {
-  title: string;
-  items: Array<{
-    label: string;
-    href: string;
-    icon: React.ComponentType<{ className?: string }>;
-    badge?: string;
-    /** Advisory only: the API enforces permissions regardless. */
-    perm?: string;
-  }>;
-}
-
-const NAV_GROUPS: NavGroup[] = [
-  {
-    title: "CONTENT",
-    items: [
-      { label: "Pages", perm: "pages.view", href: "/admin/pages", icon: FileText },
-      { label: "Page Templates", perm: "templates.view", href: "/admin/templates/pages", icon: Layers },
-      { label: "Portfolio", perm: "portfolio.view", href: "/admin/portfolio", icon: Briefcase },
-      { label: "Portfolio Templates", perm: "portfolio.view", href: "/admin/portfolio/templates", icon: Layers },
-      { label: "Insights", perm: "articles.view", href: "/admin/insights", icon: BookOpen },
-      { label: "Media Library", perm: "media.view", href: "/admin/media", icon: ImageIcon },
-    ],
-  },
-  {
-    title: "DESIGN & THEME",
-    items: [
-      { label: "Page Builder", perm: "pages.view", href: "/admin/pages", icon: Layers },
-      { label: "Global Blocks", perm: "global_blocks.view", href: "/admin/design/global-blocks", icon: Layers },
-      { label: "Navigation", perm: "settings.view", href: "/admin/design/navigation", icon: Compass },
-      { label: "Header Editor", perm: "settings.view", href: "/admin/design/header", icon: PanelTop },
-      { label: "Footer Editor", perm: "settings.view", href: "/admin/design/footer", icon: PanelBottom },
-      { label: "Theme Settings", perm: "settings.view", href: "/admin/design/theme", icon: Palette },
-    ],
-  },
-  {
-    title: "MARKETING",
-    items: [
-      { label: "SEO Dashboard", perm: "seo.view", href: "/admin/seo", icon: Search },
-      { label: "Forms", perm: "forms.view", href: "/admin/forms", icon: CheckSquare },
-      { label: "Form Templates", perm: "forms.view", href: "/admin/forms/templates", icon: CheckSquare },
-      { label: "Leads", perm: "leads.view", href: "/admin/leads", icon: Users },
-      { label: "Redirects", perm: "seo.view", href: "/admin/redirects", icon: CornerUpRight },
-    ],
-  },
-  {
-    title: "SYSTEM",
-    items: [
-      { label: "Tasks", perm: "tasks.view", href: "/admin/tasks", icon: CheckSquare },
-      { label: "Notifications", perm: "notifications.view", href: "/admin/notifications", icon: History },
-      { label: "Email & Resend", perm: "email_settings.view", href: "/admin/settings/email", icon: Settings },
-      { label: "Email Logs", perm: "email_logs.view", href: "/admin/settings/email/logs", icon: History },
-      { label: "Email Templates", perm: "email_templates.view", href: "/admin/settings/email-templates", icon: FileText },
-      { label: "Import / Export", perm: "import_export.use", href: "/admin/tools/import-export", icon: CornerUpRight },
-      { label: "Team", perm: "users.view", href: "/admin/team", icon: UserCheck },
-      { label: "Roles & Permissions", perm: "users.view", href: "/admin/roles", icon: ShieldAlert },
-      { label: "Audit Log", perm: "audit.view", href: "/admin/audit-log", icon: History },
-      { label: "Settings", href: "/admin/settings", icon: Settings },
-    ],
-  },
-];
+const ICON_MAP: Record<string, LucideIcon> = {
+  FileText,
+  Briefcase,
+  BookOpen,
+  ImageIcon,
+  Layers,
+  Compass,
+  PanelTop,
+  PanelBottom,
+  Palette,
+  Search,
+  CheckSquare,
+  Users,
+  CornerUpRight,
+  UserCheck,
+  ShieldAlert,
+  History,
+  Settings,
+  Bell,
+  Activity,
+  Database,
+  Cable,
+  Building2,
+  Mail,
+};
 
 export function AdminSidebar({ mobileOpen, onClose }: { mobileOpen?: boolean; onClose?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
   const [session, setSession] = useState<SessionInfo | null>(null);
+
   useEffect(() => {
     adminClient.getSession().then(setSession).catch(() => undefined);
   }, []);
-  const can = (perm?: string) => !perm || !session || session.user.roles.includes("SUPER_ADMIN") || session.user.permissions.includes(perm);
+
+  const can = (perm?: string) =>
+    !perm ||
+    !session ||
+    session.user.roles.includes("SUPER_ADMIN") ||
+    session.user.permissions.includes(perm);
+
   const name = session?.user.name || session?.user.email || "…";
-  const initials = name.split(/[\s@.]+/).filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join("") || "?";
+  const initials =
+    name
+      .split(/[\s@.]+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((p) => p[0]?.toUpperCase())
+      .join("") || "?";
+
   const logout = async () => {
     await adminClient.logout().catch(() => undefined);
     router.push("/admin/login");
-    router.refresh();
   };
 
-  return (
-    <>
-      {/* Mobile backdrop */}
-      {mobileOpen && (
-        <div
-          onClick={onClose}
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden backdrop-blur-xs"
-        />
-      )}
+  const visibleGroups = filterNavigation(ADMIN_NAVIGATION, can);
 
-      <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 w-64 bg-[#0B0B0F] border-r border-white/10 flex flex-col justify-between transition-transform duration-200 lg:translate-x-0 ${
-          mobileOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        {/* Brand header */}
-        <div className="p-4 border-b border-white/10 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#FF5A00] to-[#FF8A3D] flex items-center justify-center font-extrabold text-white text-xs shadow-md">
-              K
-            </div>
-            <div className="flex flex-col leading-none">
-              <span className="font-extrabold text-sm tracking-tight text-white uppercase">
-                KASH CMS
-              </span>
-              <span className="text-[10px] text-[#FF5A00] font-mono font-semibold pt-0.5">
-                Admin Console
-              </span>
-            </div>
+  return (
+    <aside
+      className={`
+        fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-[#E8E5E2] flex flex-col
+        transition-transform duration-200 ease-in-out lg:static lg:translate-x-0
+        ${mobileOpen ? "translate-x-0" : "-translate-x-0 max-lg:-translate-x-full"}
+      `}
+    >
+      {/* Brand Header */}
+      <div className="h-16 px-6 border-b border-[#E8E5E2] flex items-center justify-between">
+        <Link href="/admin" className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-[#FF5A00] flex items-center justify-center text-white font-extrabold text-sm tracking-wider">
+            K
           </div>
-          <Link
-            href="/"
-            target="_blank"
-            className="text-[10px] font-mono text-white/50 hover:text-white px-2 py-1 rounded bg-white/5 border border-white/10"
+          <div className="flex flex-col">
+            <span className="font-extrabold text-sm text-[#0B0B0F] tracking-tight">KASH</span>
+            <span className="text-[10px] uppercase font-bold tracking-wider text-[#FF5A00] -mt-1">
+              Admin Platform
+            </span>
+          </div>
+        </Link>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="lg:hidden text-stone-400 hover:text-stone-700 p-1"
+            aria-label="Close menu"
           >
-            Live Site &nearr;
+            ✕
+          </button>
+        )}
+      </div>
+
+      {/* Nav List */}
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6">
+        <div>
+          <Link
+            href="/admin"
+            onClick={onClose}
+            className={`
+              flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors
+              ${
+                pathname === "/admin"
+                  ? "bg-[#FFF3E9] text-[#FF5A00]"
+                  : "text-[#4B5563] hover:bg-[#FFF9F4] hover:text-[#0B0B0F]"
+              }
+            `}
+          >
+            <LayoutDashboard className="w-4 h-4 shrink-0" />
+            <span>Dashboard</span>
           </Link>
         </div>
 
-        {/* Scrollable Navigation Area */}
-        <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6 text-xs font-medium">
-          {/* Main Dashboard item */}
-          <Link
-            href="/admin"
-            className={`flex items-center justify-between px-3 py-2 rounded-xl transition-colors ${
-              pathname === "/admin"
-                ? "bg-[#FF5A00] text-white font-bold shadow-md shadow-[#FF5A00]/25"
-                : "text-white/80 hover:bg-white/5 hover:text-white"
-            }`}
-          >
-            <div className="flex items-center gap-2.5">
-              <LayoutDashboard className="w-4 h-4" />
-              <span>Dashboard</span>
+        {visibleGroups.map((group) => (
+          <div key={group.title} className="space-y-1">
+            <div className="px-3 text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">
+              {group.title}
             </div>
-          </Link>
-
-          {/* Group sections */}
-          {NAV_GROUPS.map((group) => (
-            <div key={group.title} className="space-y-1">
-              <span className="px-3 text-[10px] font-mono font-bold tracking-wider text-white/40 uppercase block mb-1">
-                {group.title}
-              </span>
-              {group.items.filter((i) => can(i.perm)).map((item) => {
-                const Icon = item.icon;
-                const isActive = pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href));
-                return (
+            {group.items.map((item: NavItemConfig) => {
+              const Icon = ICON_MAP[item.iconName] || FileText;
+              const active = pathname === item.href || (item.href !== "/admin/settings" && pathname.startsWith(item.href + "/"));
+              return (
+                <div key={item.href} className="space-y-0.5">
                   <Link
-                    key={item.href}
                     href={item.href}
                     onClick={onClose}
-                    className={`flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
-                      isActive
-                        ? "bg-[#FF5A00]/15 text-[#FF5A00] font-bold border border-[#FF5A00]/30"
-                        : "text-white/70 hover:bg-white/5 hover:text-white"
-                    }`}
+                    className={`
+                      flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-medium transition-colors
+                      ${
+                        active
+                          ? "bg-[#FFF3E9] text-[#FF5A00] font-semibold"
+                          : "text-[#4B5563] hover:bg-[#FFF9F4] hover:text-[#0B0B0F]"
+                      }
+                    `}
                   >
                     <div className="flex items-center gap-2.5">
                       <Icon className="w-4 h-4 shrink-0" />
                       <span>{item.label}</span>
                     </div>
                     {item.badge && (
-                      <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-[#FF5A00] text-white">
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-stone-100 text-stone-600">
                         {item.badge}
                       </span>
                     )}
                   </Link>
-                );
-              })}
-            </div>
-          ))}
-        </div>
-
-        {/* Bottom Current User & Logout */}
-        <div className="p-3 border-t border-white/10 bg-[#08080B] flex items-center justify-between">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-full bg-[#FF5A00] text-white font-bold text-xs flex items-center justify-center shrink-0">
-              {initials}
-            </div>
-            <div className="min-w-0 leading-tight">
-              <div className="text-xs font-bold text-white truncate">{name}</div>
-              <div className="text-[10px] text-white/50 truncate">{session?.user.roles.map((r) => r.replace(/_/g, " ").toLowerCase()).join(", ")}</div>
-            </div>
+                  {item.children?.map((sub) => {
+                    const SubIcon = ICON_MAP[sub.iconName] || FileText;
+                    const subActive = pathname === sub.href;
+                    return (
+                      <Link
+                        key={sub.href}
+                        href={sub.href}
+                        onClick={onClose}
+                        className={`
+                          flex items-center gap-2 pl-9 pr-3 py-1 rounded-lg text-xs font-medium transition-colors
+                          ${
+                            subActive
+                              ? "text-[#FF5A00] font-semibold"
+                              : "text-stone-500 hover:text-stone-900"
+                          }
+                        `}
+                      >
+                        <SubIcon className="w-3.5 h-3.5 shrink-0" />
+                        <span>{sub.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              );
+            })}
           </div>
-          <button
-            type="button"
-            onClick={logout}
-            aria-label="Sign out"
-            className="p-1.5 text-white/50 hover:text-red-400 hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
+        ))}
+      </div>
+
+      {/* Footer User Info & Logout */}
+      <div className="p-4 border-t border-[#E8E5E2] flex items-center justify-between">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 rounded-full bg-[#0B0B0F] text-white flex items-center justify-center font-bold text-xs shrink-0">
+            {initials}
+          </div>
+          <div className="flex flex-col min-w-0">
+            <span className="text-xs font-semibold text-[#0B0B0F] truncate">{name}</span>
+            <span className="text-[10px] text-[#4B5563] truncate">
+              {session?.user.roles.map((r) => r.replace(/_/g, " ")).join(", ") || "…"}
+            </span>
+          </div>
         </div>
-      </aside>
-    </>
+        <button
+          onClick={logout}
+          className="p-1.5 text-stone-400 hover:text-red-600 transition-colors rounded-lg hover:bg-stone-50"
+          title="Sign out"
+          aria-label="Sign out"
+        >
+          <LogOut className="w-4 h-4" />
+        </button>
+      </div>
+    </aside>
   );
 }

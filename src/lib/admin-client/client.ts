@@ -231,6 +231,15 @@ export const adminClient = {
   getRoles: () => api<RoleItem[]>("/roles"),
   getAuditLogs: () => api<AuditItem[]>("/audit"),
 
+  /* ───── integrations, system health & backups ───── */
+  getIntegrations: () => api<{ items: Array<Record<string, unknown>> }>("/integrations").then((r) => r.items),
+  getSystemHealth: () => api<Record<string, unknown>>("/system/health"),
+  getSystemBackups: () => api<Record<string, unknown>>("/system/backups"),
+  replaceMediaEverywhere: (sourceAssetId: string, targetAssetId: string) => api<{ sourceAssetId: string; targetAssetId: string; totalUpdated: number }>(`/media/${sourceAssetId}/replace`, { json: { targetAssetId } }),
+  getSettings: () => settings(),
+  saveSetting: (key: string, value: unknown, theme = false) => putSetting(key, value, theme),
+  resetSetting: (key: string, theme = false) => api("/settings", { method: "DELETE", json: { key, theme } }),
+
   /* ───── header / footer / navigation / theme (stored as admin-shaped settings) ───── */
   getNavigation: async (): Promise<NavigationLink[]> => {
     const row = (await settings()).global.find((r) => r.key === "navigation");

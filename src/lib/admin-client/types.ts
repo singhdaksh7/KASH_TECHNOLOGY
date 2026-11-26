@@ -492,6 +492,18 @@ export interface NavigationLink {
   url: string;
   openNewTab: boolean;
   visible: boolean;
+  type?: "link" | "dropdown" | "mega" | "cta";
+  badge?: string;
+  desktopOnly?: boolean;
+  mobileOnly?: boolean;
+  items?: Array<{
+    id: string;
+    label: string;
+    url: string;
+    badge?: string;
+    description?: string;
+    openNewTab?: boolean;
+  }>;
   children?: NavigationLink[];
 }
 
