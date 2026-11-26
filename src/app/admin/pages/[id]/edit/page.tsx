@@ -342,7 +342,7 @@ export default function PageBuilderPage() {
   const canSchedule = can("content.schedule") && (status === "Approved" || fastTrack);
 
   return (
-    <div className="h-screen flex flex-col bg-[#0B0B0F] overflow-hidden select-none">
+    <div className="h-[100dvh] w-full flex flex-col bg-[#0B0B0F] overflow-hidden select-none">
       {/* 1. TOP BUILDER TOOLBAR */}
       <header className="h-14 bg-white border-b border-[#E8E5E2] px-4 flex items-center justify-between z-20 shrink-0">
         <div className="flex items-center gap-3">
@@ -494,10 +494,10 @@ export default function PageBuilderPage() {
       </header>
 
       {/* 2. THREE COLUMN WORKSPACE */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 min-h-0 flex overflow-hidden">
         {/* LEFT SIDEBAR: SECTION LIBRARY & OUTLINE */}
-        <aside className="w-72 bg-white border-r border-[#E8E5E2] flex flex-col shrink-0">
-          <div className="p-3 border-b border-[#E8E5E2]">
+        <aside className="w-72 bg-white border-r border-[#E8E5E2] flex flex-col h-full shrink-0 min-h-0">
+          <div className="p-3 border-b border-[#E8E5E2] shrink-0">
             <h4 className="text-xs font-bold text-[#0B0B0F] uppercase tracking-wider mb-2">Section Library</h4>
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400" />
@@ -512,7 +512,7 @@ export default function PageBuilderPage() {
           </div>
 
           {/* Section palette list */}
-          <div className="flex-1 overflow-y-auto p-2.5 space-y-1">
+          <div className="flex-1 min-h-0 overflow-y-auto p-2.5 space-y-1">
             {AVAILABLE_SECTIONS.filter((s) => s.label.toLowerCase().includes(searchSection.toLowerCase())).map((item) => (
               <div
                 key={item.type}
@@ -534,7 +534,7 @@ export default function PageBuilderPage() {
           </div>
 
           {/* Canvas Layers Outline */}
-          <div className="border-t border-[#E8E5E2] p-3 max-h-48 overflow-y-auto bg-stone-50">
+          <div className="border-t border-[#E8E5E2] p-3 max-h-56 overflow-y-auto bg-stone-50 shrink-0">
             <h5 className="text-[11px] font-bold text-stone-400 uppercase tracking-wider mb-2">
               Page Tree ({page.sections.length})
             </h5>
@@ -542,7 +542,11 @@ export default function PageBuilderPage() {
               {page.sections.map((sec, idx) => (
                 <div
                   key={sec.id}
-                  onClick={() => setSelectedSectionId(sec.id)}
+                  onClick={() => {
+                    setSelectedSectionId(sec.id);
+                    const el = document.getElementById(`builder-section-${sec.id}`);
+                    if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+                  }}
                   className={`flex items-center justify-between px-2 py-1.5 rounded text-xs cursor-pointer ${
                     selectedSectionId === sec.id
                       ? "bg-[#FF5A00] text-white font-semibold"
@@ -562,14 +566,14 @@ export default function PageBuilderPage() {
         </aside>
 
         {/* CENTER: VISUAL CANVAS */}
-        <main className="flex-1 bg-stone-100/90 overflow-y-auto p-4 sm:p-6 lg:p-8 flex flex-col items-center">
+        <main className="flex-1 min-w-0 min-h-0 bg-stone-200/80 overflow-y-auto overflow-x-auto p-4 sm:p-6 lg:p-8 flex flex-col items-center">
           <div
-            className={`transition-all duration-300 bg-white shadow-xl rounded-xl overflow-hidden min-h-screen w-full mb-12 ${
+            className={`transition-all duration-300 bg-white shadow-2xl rounded-xl overflow-visible h-auto min-h-full w-full mb-16 shrink-0 ${
               viewport === "desktop"
                 ? "max-w-5xl"
                 : viewport === "tablet"
                 ? "max-w-[768px]"
-                : "max-w-[375px]"
+                : "max-w-[390px]"
             }`}
           >
             {page.sections.length === 0 ? (
@@ -584,6 +588,7 @@ export default function PageBuilderPage() {
                 return (
                   <div
                     key={section.id}
+                    id={`builder-section-${section.id}`}
                     onClick={() => setSelectedSectionId(section.id)}
                     className={`relative group transition-all ${
                       isSelected
@@ -598,7 +603,7 @@ export default function PageBuilderPage() {
                   >
                     {/* Floating Controls */}
                     <div
-                      className={`absolute top-2 right-2 z-10 flex items-center gap-1 bg-[#0B0B0F]/90 text-white rounded-md p-1 shadow-lg transition-opacity ${
+                      className={`absolute top-2 right-2 z-30 flex items-center gap-1 bg-[#0B0B0F]/90 text-white rounded-md p-1 shadow-lg transition-opacity ${
                         isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
                       }`}
                     >
@@ -681,7 +686,7 @@ export default function PageBuilderPage() {
         </main>
 
         {/* RIGHT SIDEBAR: CONTROLS & INSPECTOR */}
-        <aside className="w-80 bg-white border-l border-[#E8E5E2] flex flex-col shrink-0">
+        <aside className="w-80 bg-white border-l border-[#E8E5E2] flex flex-col h-full shrink-0 min-h-0">
           <div className="flex border-b border-[#E8E5E2] bg-[#FFF9F4]">
             <button
               onClick={() => setActiveTab("content")}

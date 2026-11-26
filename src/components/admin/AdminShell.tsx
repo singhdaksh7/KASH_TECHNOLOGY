@@ -38,10 +38,22 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const isAuthRoute =
     pathname === "/admin/login" ||
     pathname === "/admin/setup-2fa" ||
-    pathname === "/admin/verify-2fa";
+    pathname === "/admin/verify-2fa" ||
+    pathname === "/admin/change-password";
 
-  if (isAuthRoute) {
-    return <ToastProvider>{children}</ToastProvider>;
+  // Dedicated full-screen workspace routes (e.g. Page Builder) bypass the admin sidebar completely
+  const isDedicatedWorkspace =
+    /^\/admin\/pages\/[^/]+\/edit(\/|$)/.test(pathname || "");
+
+  if (isAuthRoute || isDedicatedWorkspace) {
+    return (
+      <ToastProvider>
+        <CommandPalette />
+        <div className="h-screen w-screen overflow-hidden bg-[#FFF9F4] text-[#0B0B0F] flex flex-col font-sans">
+          {children}
+        </div>
+      </ToastProvider>
+    );
   }
 
   return (

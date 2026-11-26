@@ -127,10 +127,26 @@ export default function LeadsPage() {
         <div className="flex-1 min-w-0">
           {loading ? <p className="py-16 text-center text-stone-400 text-xs">Loading leads…</p> : !shown.length ? <p className="py-16 text-center text-stone-400 text-xs bg-white rounded-xl border border-[#E8E5E2]">{leads.length ? "No leads match these filters." : "No leads yet. They appear here as soon as someone submits a form."}</p>
             : view === "board" ? (
-              <div className="grid grid-flow-col auto-cols-[260px] gap-4 overflow-x-auto pb-2">
+              <div className="grid grid-flow-col auto-cols-[300px] gap-4 overflow-x-auto pb-4 items-start">
                 {COLUMNS.map((c) => {
                   const col = shown.filter((l) => l.status === c);
-                  return <div key={c} className="space-y-2"><div className={`px-3 py-1.5 rounded-lg border text-xs font-bold flex justify-between ${STATUS_CLS[c]}`}><span>{c}</span><span>{col.length}</span></div>{col.map((l) => <Card key={l.id} l={l} />)}</div>;
+                  return (
+                    <div key={c} className="space-y-2.5 bg-stone-100/60 p-2.5 rounded-xl border border-stone-200/80">
+                      <div className={`px-3 py-1.5 rounded-lg border text-xs font-bold flex justify-between shadow-xs ${STATUS_CLS[c]}`}>
+                        <span>{c}</span>
+                        <span className="font-mono">{col.length}</span>
+                      </div>
+                      <div className="space-y-2 max-h-[calc(100vh-220px)] overflow-y-auto pr-0.5">
+                        {col.length === 0 ? (
+                          <div className="py-8 text-center text-stone-400 text-[11px] border border-dashed border-stone-200 rounded-lg">
+                            No {c.toLowerCase()} leads
+                          </div>
+                        ) : (
+                          col.map((l) => <Card key={l.id} l={l} />)
+                        )}
+                      </div>
+                    </div>
+                  );
                 })}
               </div>
             ) : (

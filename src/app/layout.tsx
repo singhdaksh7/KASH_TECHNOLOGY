@@ -1,14 +1,9 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
+import { PublicSiteChrome } from "@/components/layout/PublicSiteChrome";
 import { SITE_CONFIG } from "@/lib/constants";
-import { ConsultationProvider } from "@/components/conversion/ConsultationContext";
-import { FloatingContactButton } from "@/components/conversion/FloatingContactButton";
-import { LeadTracker } from "@/components/conversion/LeadTracker";
 import { Analytics } from "@vercel/analytics/next";
 import { ThemeStyle } from "@/components/cms/ThemeStyle";
 import { getFooterConfig, getHeaderConfig, getSettings } from "@/lib/cms";
@@ -98,44 +93,38 @@ export default async function RootLayout({
         <ThemeStyle />
       </head>
       <body className="min-h-full flex flex-col bg-[#FFF9F4] text-[#0B0B0F]">
-        <ConsultationProvider>
-          <Suspense fallback={null}>
-            <LeadTracker />
-          </Suspense>
-          <a 
-            href="#main-content" 
-            className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 bg-[#FF5A00] text-white px-4 py-2 rounded-lg font-bold"
-          >
-            Skip to main content
-          </a>
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
-          />
-          {gaId && (
-            <>
-              <Script
-                src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
-                strategy="afterInteractive"
-              />
-              <Script id="google-analytics" strategy="afterInteractive">
-                {`
-                  window.dataLayer = window.dataLayer || [];
-                  function gtag(){dataLayer.push(arguments);}
-                  gtag('js', new Date());
-                  gtag('config', '${gaId}', {
-                    page_path: window.location.pathname,
-                  });
-                `}
-              </Script>
-            </>
-          )}
-          <Navbar config={header} />
-          <main id="main-content" className="flex-1">{children}</main>
-          <Footer config={footer} />
-          <FloatingContactButton />
-          <Analytics />
-        </ConsultationProvider>
+        <a 
+          href="#main-content" 
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 bg-[#FF5A00] text-white px-4 py-2 rounded-lg font-bold"
+        >
+          Skip to main content
+        </a>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
+        />
+        {gaId && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${gaId}', {
+                  page_path: window.location.pathname,
+                });
+              `}
+            </Script>
+          </>
+        )}
+        <PublicSiteChrome header={header} footer={footer}>
+          {children}
+        </PublicSiteChrome>
+        <Analytics />
       </body>
     </html>
   );
