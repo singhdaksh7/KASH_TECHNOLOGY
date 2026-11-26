@@ -562,14 +562,14 @@ export default function PageBuilderPage() {
         </aside>
 
         {/* CENTER: VISUAL CANVAS */}
-        <main className="flex-1 bg-[#1A1A22] overflow-y-auto p-6 flex flex-col items-center justify-start">
+        <main className="flex-1 bg-stone-100/90 overflow-y-auto p-4 sm:p-6 lg:p-8 flex flex-col items-center">
           <div
-            className={`transition-all duration-300 bg-white shadow-2xl rounded-lg overflow-hidden min-h-[90vh] my-auto ${
+            className={`transition-all duration-300 bg-white shadow-xl rounded-xl overflow-hidden min-h-screen w-full mb-12 ${
               viewport === "desktop"
-                ? "w-full max-w-5xl"
+                ? "max-w-5xl"
                 : viewport === "tablet"
-                ? "w-[768px]"
-                : "w-[375px]"
+                ? "max-w-[768px]"
+                : "max-w-[375px]"
             }`}
           >
             {page.sections.length === 0 ? (

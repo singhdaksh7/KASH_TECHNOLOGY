@@ -7,13 +7,32 @@ import { CommandPalette } from "@/components/admin/CommandPalette";
 import { ToastProvider } from "@/components/admin/ToastContext";
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return localStorage.getItem("kash_admin_sidebar_collapsed") === "true";
+    } catch {
+      return false;
+    }
+  });
   const pathname = usePathname();
+
   useEffect(() => {
-    const toggle = () => setSidebarOpen((o) => !o);
+    const toggle = () => setMobileSidebarOpen((o) => !o);
     window.addEventListener("kash:toggle-sidebar", toggle);
     return () => window.removeEventListener("kash:toggle-sidebar", toggle);
   }, []);
+
+  const handleToggleCollapse = () => {
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("kash_admin_sidebar_collapsed", String(next));
+      } catch {}
+      return next;
+    });
+  };
 
   // If on login / 2FA routes, render standalone view without sidebar
   const isAuthRoute =
@@ -29,9 +48,18 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     <ToastProvider>
       <CommandPalette />
       <div className="min-h-screen bg-[#FFF9F4] text-[#0B0B0F] flex flex-col font-sans">
-        <AdminSidebar mobileOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <AdminSidebar
+          mobileOpen={mobileSidebarOpen}
+          onClose={() => setMobileSidebarOpen(false)}
+          collapsed={sidebarCollapsed}
+          onToggleCollapse={handleToggleCollapse}
+        />
 
-        <div className="lg:pl-64 flex-1 flex flex-col min-w-0">
+        <div
+          className={`flex-1 flex flex-col min-w-0 transition-all duration-200 ease-in-out ${
+            sidebarCollapsed ? "lg:pl-16" : "lg:pl-64"
+          }`}
+        >
           <main className="flex-1 flex flex-col min-w-0">{children}</main>
         </div>
       </div>

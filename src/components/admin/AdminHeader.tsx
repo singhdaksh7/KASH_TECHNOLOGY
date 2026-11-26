@@ -21,98 +21,120 @@ export function AdminHeader({
   actions,
 }: AdminHeaderProps) {
   const [unread, setUnread] = useState(0);
+
   useEffect(() => {
     let alive = true;
-    const load = () => adminClient.getUnreadNotificationCount().then((n) => alive && setUnread(n)).catch(() => undefined);
+    const load = () =>
+      adminClient
+        .getUnreadNotificationCount()
+        .then((n) => alive && setUnread(n))
+        .catch(() => undefined);
     load();
     const t = setInterval(load, 60_000);
     window.addEventListener("kash:notifications-changed", load);
-    return () => { alive = false; clearInterval(t); window.removeEventListener("kash:notifications-changed", load); };
+    return () => {
+      alive = false;
+      clearInterval(t);
+      window.removeEventListener("kash:notifications-changed", load);
+    };
   }, []);
-  const toggle = onToggleSidebar ?? (() => window.dispatchEvent(new Event("kash:toggle-sidebar")));
+
+  const toggle =
+    onToggleSidebar ??
+    (() => window.dispatchEvent(new Event("kash:toggle-sidebar")));
+
+  const openSearch = () => {
+    window.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "k", metaKey: true, bubbles: true })
+    );
+  };
+
   return (
-    <header className="sticky top-0 z-30 bg-[#FFF9F4]/90 backdrop-blur-md border-b border-[#E8E5E2] px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
+    <header className="sticky top-0 z-30 bg-[#FFF9F4]/90 backdrop-blur-md border-b border-stone-200/80 px-4 sm:px-6 py-2.5 flex items-center justify-between gap-4">
       {/* Left: Mobile Toggle & Page Title / Breadcrumbs */}
       <div className="flex items-center gap-3 min-w-0">
-        {(
-          <button
-            onClick={toggle}
-            aria-label="Toggle Navigation"
-            className="p-1.5 rounded-lg border border-[#E8E5E2] bg-white text-[#0B0B0F] hover:border-[#FF5A00] lg:hidden"
-          >
-            <Menu className="w-5 h-5" />
-          </button>
-        )}
+        <button
+          onClick={toggle}
+          aria-label="Toggle Navigation"
+          className="p-1.5 rounded-lg border border-stone-200 bg-white text-[#0B0B0F] hover:border-stone-400 lg:hidden cursor-pointer"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
 
         <div className="min-w-0">
           {breadcrumbs && breadcrumbs.length > 0 && (
-            <div className="flex items-center gap-1.5 text-[11px] text-[#4B5563] mb-0.5">
+            <div className="flex items-center gap-1.5 text-xs text-stone-500 mb-0.5">
               {breadcrumbs.map((b, i) => (
                 <span key={b.label} className="flex items-center gap-1.5">
                   {b.href ? (
-                    <Link href={b.href} className="hover:text-[#FF5A00]">
+                    <Link
+                      href={b.href}
+                      className="hover:text-stone-900 transition-colors"
+                    >
                       {b.label}
                     </Link>
                   ) : (
-                    <span className="text-[#0B0B0F] font-semibold">{b.label}</span>
+                    <span className="text-stone-700 font-medium">{b.label}</span>
                   )}
-                  {i < breadcrumbs.length - 1 && <span>/</span>}
+                  {i < breadcrumbs.length - 1 && <span className="text-stone-300">/</span>}
                 </span>
               ))}
             </div>
           )}
           {title && (
-            <h1 className="text-base sm:text-lg font-extrabold text-[#0B0B0F] tracking-tight truncate">
+            <h1 className="text-base sm:text-lg font-semibold text-[#0B0B0F] tracking-tight truncate">
               {title}
             </h1>
           )}
           {subtitle && (
-            <p className="text-[11px] text-[#4B5563] truncate hidden sm:block">
+            <p className="text-xs text-stone-500 truncate hidden sm:block">
               {subtitle}
             </p>
           )}
         </div>
       </div>
 
-      {/* Right: Actions, Global Search & Shortcuts */}
-      <div className="flex items-center gap-2.5 shrink-0">
+      {/* Right: Actions, Global Search & Quick Links */}
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
         {actions}
 
-        {/* Global Quick Search / Command Palette shortcut trigger */}
+        {/* Global Quick Search Button */}
         <button
-          onClick={() => {
-            window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }));
-          }}
-          className="hidden sm:flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-[#E8E5E2] bg-white text-xs text-stone-500 hover:border-[#FF5A00] hover:text-[#0B0B0F] transition-colors"
-          title="Command Palette (Cmd+K)"
+          onClick={openSearch}
+          aria-label="Search or run command"
+          className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-white border border-stone-200/80 text-stone-500 hover:text-stone-900 hover:border-stone-300 transition-all text-xs cursor-pointer shadow-2xs"
         >
-          <Search className="w-3.5 h-3.5 text-stone-400" />
-          <span className="text-[11px]">Search...</span>
-          <kbd className="px-1.5 py-0.2 rounded bg-stone-100 text-[10px] font-mono text-stone-400 border">
+          <Search className="w-3.5 h-3.5" />
+          <span className="hidden md:inline text-stone-400">Search…</span>
+          <kbd className="hidden md:inline-flex items-center gap-0.5 text-[10px] text-stone-400 font-mono bg-stone-100 px-1.5 py-0.5 rounded">
             ⌘K
           </kbd>
         </button>
 
-        {/* Notifications Icon Button */}
+        {/* Notifications Icon Link */}
         <Link
           href="/admin/notifications"
-          className="relative p-2 rounded-lg border border-[#E8E5E2] bg-white text-stone-600 hover:text-[#FF5A00] hover:border-[#FF5A00] transition-colors"
-          title="Notification Center"
+          aria-label="Notifications"
+          className="relative p-2 rounded-lg bg-white border border-stone-200/80 text-stone-600 hover:text-stone-900 hover:border-stone-300 transition-colors shadow-2xs"
         >
           <Bell className="w-4 h-4" />
           {unread > 0 && (
-            <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-[#FF5A00] text-white text-[10px] font-bold leading-4 text-center" aria-label={`${unread} unread notifications`}>{unread > 99 ? "99+" : unread}</span>
+            <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-[#FF5A00] text-white text-[10px] font-bold flex items-center justify-center leading-none">
+              {unread > 99 ? "99+" : unread}
+            </span>
           )}
         </Link>
 
-        <Link
+        {/* View Public Website */}
+        <a
           href="/"
           target="_blank"
-          className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#E8E5E2] bg-white text-xs font-semibold text-[#0B0B0F] hover:border-[#FF5A00] hover:text-[#FF5A00] transition-colors"
+          rel="noreferrer"
+          title="View public website"
+          className="p-2 rounded-lg bg-white border border-stone-200/80 text-stone-600 hover:text-stone-900 hover:border-stone-300 transition-colors shadow-2xs hidden sm:flex items-center"
         >
-          <span>Preview Site</span>
-          <ExternalLink className="w-3.5 h-3.5 text-[#4B5563]" />
-        </Link>
+          <ExternalLink className="w-4 h-4" />
+        </a>
       </div>
     </header>
   );

@@ -10,57 +10,68 @@ export interface NavItemConfig {
 export interface NavGroupConfig {
   title: string;
   items: NavItemConfig[];
+  collapsible?: boolean;
 }
 
+/**
+ * Clean, consolidated primary admin navigation structure.
+ * Follows the 5 primary pillars:
+ * 1. HOME (Dashboard)
+ * 2. CONTENT (Pages, Portfolio, Insights, Media)
+ * 3. MARKETING (Leads, Forms, SEO)
+ * 4. WEBSITE (Navigation, Global Blocks, Appearance)
+ * 5. WORK (Tasks, Notifications)
+ * + SETTINGS (Unified Settings Hub)
+ */
 export const ADMIN_NAVIGATION: NavGroupConfig[] = [
   {
-    title: "CONTENT",
+    title: "HOME",
+    collapsible: false,
     items: [
-      { label: "Pages", permission: "pages.view", href: "/admin/pages", iconName: "FileText" },
-      { label: "Page Templates", permission: "templates.view", href: "/admin/templates/pages", iconName: "Layers" },
-      { label: "Portfolio", permission: "portfolio.view", href: "/admin/portfolio", iconName: "Briefcase" },
-      { label: "Portfolio Templates", permission: "portfolio.view", href: "/admin/portfolio/templates", iconName: "Layers" },
-      { label: "Insights", permission: "articles.view", href: "/admin/insights", iconName: "BookOpen" },
-      { label: "Media Library", permission: "media.view", href: "/admin/media", iconName: "ImageIcon" },
+      { label: "Dashboard", href: "/admin", iconName: "LayoutDashboard" },
     ],
   },
   {
-    title: "DESIGN & THEME",
+    title: "CONTENT",
+    collapsible: true,
     items: [
-      { label: "Navigation Editor", permission: "settings.view", href: "/admin/design/navigation", iconName: "Compass" },
-      { label: "Header Editor", permission: "settings.view", href: "/admin/design/header", iconName: "PanelTop" },
-      { label: "Footer Editor", permission: "settings.view", href: "/admin/design/footer", iconName: "PanelBottom" },
-      { label: "Global Blocks", permission: "global_blocks.view", href: "/admin/design/global-blocks", iconName: "Layers" },
-      { label: "Theme Settings", permission: "settings.view", href: "/admin/design/theme", iconName: "Palette" },
+      { label: "Pages", permission: "pages.view", href: "/admin/pages", iconName: "FileText" },
+      { label: "Portfolio", permission: "portfolio.view", href: "/admin/portfolio", iconName: "Briefcase" },
+      { label: "Insights", permission: "articles.view", href: "/admin/insights", iconName: "BookOpen" },
+      { label: "Media", permission: "media.view", href: "/admin/media", iconName: "ImageIcon" },
     ],
   },
   {
     title: "MARKETING",
+    collapsible: true,
     items: [
-      { label: "SEO Dashboard", permission: "seo.view", href: "/admin/seo", iconName: "Search" },
-      { label: "Forms", permission: "forms.view", href: "/admin/forms", iconName: "CheckSquare" },
-      { label: "Form Templates", permission: "forms.view", href: "/admin/forms/templates", iconName: "CheckSquare" },
       { label: "Leads", permission: "leads.view", href: "/admin/leads", iconName: "Users" },
-      { label: "Redirects", permission: "seo.view", href: "/admin/redirects", iconName: "CornerUpRight" },
+      { label: "Forms", permission: "forms.view", href: "/admin/forms", iconName: "CheckSquare" },
+      { label: "SEO", permission: "seo.view", href: "/admin/seo", iconName: "Search" },
     ],
   },
   {
-    title: "OPERATIONS & SYSTEM",
+    title: "WEBSITE",
+    collapsible: true,
+    items: [
+      { label: "Navigation", permission: "settings.view", href: "/admin/design/navigation", iconName: "Compass" },
+      { label: "Global Blocks", permission: "global_blocks.view", href: "/admin/design/global-blocks", iconName: "Layers" },
+      { label: "Appearance", permission: "settings.view", href: "/admin/design/theme", iconName: "Palette" },
+    ],
+  },
+  {
+    title: "WORK",
+    collapsible: true,
     items: [
       { label: "Tasks", permission: "tasks.view", href: "/admin/tasks", iconName: "CheckSquare" },
       { label: "Notifications", permission: "notifications.view", href: "/admin/notifications", iconName: "Bell" },
-      { label: "Email & Resend", permission: "email_settings.view", href: "/admin/settings/email", iconName: "Mail" },
-      { label: "Email Logs", permission: "email_logs.view", href: "/admin/settings/email/logs", iconName: "History" },
-      { label: "Email Templates", permission: "email_templates.view", href: "/admin/settings/email-templates", iconName: "FileText" },
-      { label: "Integrations", permission: "settings.view", href: "/admin/integrations", iconName: "Cable" },
-      { label: "System Health", permission: "settings.view", href: "/admin/system/health", iconName: "Activity" },
-      { label: "Backups", permission: "settings.view", href: "/admin/system/backups", iconName: "Database" },
-      { label: "Business Profile", permission: "settings.view", href: "/admin/settings/business", iconName: "Building2" },
-      { label: "Import / Export", permission: "import_export.use", href: "/admin/tools/import-export", iconName: "CornerUpRight" },
-      { label: "Team", permission: "users.view", href: "/admin/team", iconName: "UserCheck" },
-      { label: "Roles & Permissions", permission: "users.view", href: "/admin/roles", iconName: "ShieldAlert" },
-      { label: "Audit Log", permission: "audit.view", href: "/admin/audit-log", iconName: "History" },
-      { label: "Account Settings", href: "/admin/settings", iconName: "Settings" },
+    ],
+  },
+  {
+    title: "SETTINGS",
+    collapsible: false,
+    items: [
+      { label: "Settings", permission: "settings.view", href: "/admin/settings", iconName: "Settings" },
     ],
   },
 ];

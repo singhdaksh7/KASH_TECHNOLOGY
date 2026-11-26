@@ -2,17 +2,20 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { AdminHeader } from "@/components/admin/AdminHeader";
-import { adminClient, errorMessage } from "@/lib/admin-client";
-import {
-  CheckCircle2,
-  AlertTriangle,
-  XCircle,
+import { 
+  ShieldCheck, 
   ExternalLink,
-  Shield,
-  Clock,
-  Layers,
 } from "lucide-react";
+import { adminClient, errorMessage } from "@/lib/admin-client";
+import { 
+  AdminPage, 
+  PageHeader, 
+  Card, 
+  StatusBadge, 
+  Button, 
+  Drawer,
+  Skeleton 
+} from "@/components/admin/ui";
 
 interface IntegrationItem {
   id: string;
@@ -31,6 +34,7 @@ export default function IntegrationsCenterPage() {
   const [items, setItems] = useState<IntegrationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedItem, setSelectedItem] = useState<IntegrationItem | null>(null);
 
   useEffect(() => {
     adminClient
@@ -40,133 +44,187 @@ export default function IntegrationsCenterPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const categories = Array.from(new Set(items.map((i) => i.category)));
-
   return (
-    <div className="space-y-6">
-      <AdminHeader
-        title="Integrations Center"
-        subtitle="Manage configured external providers: Resend email, Google Analytics, Search Console, Storage and Cloudflare."
-        breadcrumbs={[{ label: "System" }, { label: "Integrations" }]}
+    <AdminPage maxWidth="default">
+      <PageHeader
+        title="Connected Services"
+        description="Manage connected external services including transactional email, analytics, security, and storage."
+        breadcrumbs={[{ label: "Settings", href: "/admin/settings" }, { label: "Integrations" }]}
       />
 
-      <div className="px-4 sm:px-6 space-y-4 max-w-7xl">
-        {/* Security Note Alert */}
-        <div className="bg-[#FFF9F4] border border-[#FF5A00]/20 rounded-xl p-4 flex items-start gap-3">
-          <Shield className="w-5 h-5 text-[#FF5A00] shrink-0 mt-0.5" />
-          <div className="text-xs space-y-1">
-            <span className="font-bold text-[#0B0B0F]">Zero-Secret Storage Policy</span>
-            <p className="text-[#4B5563]">
-              API keys, webhook tokens, and credentials are read strictly from secure environment variables.
-              Non-secret telemetry and health status are displayed below without exposing secrets.
-            </p>
-          </div>
+      {/* Security Note Alert */}
+      <div className="bg-white border border-stone-200/80 rounded-xl p-4 flex items-start gap-3 shadow-2xs">
+        <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+        <div className="text-xs space-y-1">
+          <span className="font-semibold text-stone-900">Credential Secrecy</span>
+          <p className="text-stone-500 leading-relaxed">
+            Sensitive credentials are encrypted or stored securely and are never shown in full in the Admin interface.
+            Only operational health and non-secret configuration are displayed.
+          </p>
         </div>
+      </div>
 
-        {error && <p className="text-xs text-red-600">{error}</p>}
-        {loading && <p className="text-xs text-stone-400">Loading integrations…</p>}
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-40 w-full rounded-xl" />
+          ))}
+        </div>
+      ) : error ? (
+        <div className="p-4 rounded-xl border border-red-200 bg-red-50 text-xs text-red-700">
+          {error}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+          {items.map((item) => {
+            const isConnected = item.status === "HEALTHY";
+            const isWarning = item.status === "WARNING";
 
-        <div className="space-y-8 pt-2">
-          {categories.map((cat) => {
-            const catItems = items.filter((i) => i.category === cat);
             return (
-              <div key={cat} className="space-y-3">
-                <div className="flex items-center gap-2 border-b border-[#E8E5E2] pb-2">
-                  <Layers className="w-4 h-4 text-stone-400" />
-                  <h3 className="font-bold text-xs uppercase tracking-wider text-[#0B0B0F]">
-                    {cat}
-                  </h3>
+              <Card
+                key={item.id}
+                className="p-5 flex flex-col justify-between hover:border-stone-300 transition-all"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-stone-50 border border-stone-200/60 flex items-center justify-center text-stone-700 font-bold text-xs">
+                      {item.name[0]}
+                    </div>
+                    <StatusBadge
+                      variant={
+                        isConnected
+                          ? "success"
+                          : isWarning
+                          ? "warning"
+                          : "neutral"
+                      }
+                      size="sm"
+                    >
+                      {isConnected
+                        ? "Connected"
+                        : isWarning
+                        ? "Needs Review"
+                        : "Not Configured"}
+                    </StatusBadge>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-semibold text-stone-900">
+                      {item.name}
+                    </h3>
+                    <p className="text-xs text-stone-500 mt-1 line-clamp-2 leading-relaxed">
+                      {item.description}
+                    </p>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {catItems.map((item) => {
-                    const isHealthy = item.status === "HEALTHY";
-                    const isWarning = item.status === "WARNING";
-                    const isSoon = item.status === "COMING_SOON";
-                    return (
-                      <div
-                        key={item.id}
-                        className="bg-white rounded-2xl border border-[#E8E5E2] p-5 shadow-xs flex flex-col justify-between space-y-4 hover:border-stone-300 transition-colors"
+                <div className="pt-4 border-t border-stone-100 flex items-center justify-between text-xs mt-4">
+                  <span className="text-[11px] text-stone-400 font-mono">
+                    {item.category}
+                  </span>
+
+                  <div className="flex items-center gap-2">
+                    {item.id === "resend" ? (
+                      <Link href="/admin/settings/email">
+                        <Button variant="outline" size="sm">
+                          Manage
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSelectedItem(item)}
                       >
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <h4 className="font-bold text-sm text-[#0B0B0F]">{item.name}</h4>
-                            {isHealthy && (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                <CheckCircle2 className="w-3 h-3" /> Connected
-                              </span>
-                            )}
-                            {isWarning && (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
-                                <AlertTriangle className="w-3 h-3" /> Warning
-                              </span>
-                            )}
-                            {!isHealthy && !isWarning && !isSoon && (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-stone-100 text-stone-500">
-                                <XCircle className="w-3 h-3" /> Not Configured
-                              </span>
-                            )}
-                            {isSoon && (
-                              <span className="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">
-                                Optional / Planned
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-xs text-[#4B5563] leading-relaxed">{item.description}</p>
-                        </div>
-
-                        {/* Non-secret config summary */}
-                        <div className="bg-[#FAF9F8] rounded-xl p-3 text-[11px] font-mono space-y-1.5 border border-stone-100">
-                          {Object.entries(item.nonSecretConfig).map(([k, v]) => (
-                            <div key={k} className="flex justify-between items-center text-stone-600">
-                              <span className="text-stone-400">{k}:</span>
-                              <span className="font-semibold text-stone-800 truncate max-w-[180px]">
-                                {String(v)}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Activity & links */}
-                        <div className="pt-2 border-t border-[#E8E5E2] flex items-center justify-between text-[11px]">
-                          {item.id === "resend" ? (
-                            <Link
-                              href="/admin/settings/email-templates"
-                              className="text-[#FF5A00] font-semibold hover:underline inline-flex items-center gap-1"
-                            >
-                              <span>Manage Email Templates</span>
-                              <ExternalLink className="w-3 h-3" />
-                            </Link>
-                          ) : item.docsUrl ? (
-                            <a
-                              href={item.docsUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-stone-500 hover:text-stone-800 inline-flex items-center gap-1"
-                            >
-                              <span>Documentation</span>
-                              <ExternalLink className="w-3 h-3" />
-                            </a>
-                          ) : (
-                            <span className="text-stone-400">Integrated</span>
-                          )}
-
-                          {item.lastActivityAt && (
-                            <span className="text-[10px] text-stone-400 flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              {item.lastActivityAt.slice(0, 10)}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
+                        Manage
+                      </Button>
+                    )}
+                  </div>
                 </div>
-              </div>
+              </Card>
             );
           })}
         </div>
-      </div>
-    </div>
+      )}
+
+      {/* Integration Detail Drawer */}
+      {selectedItem && (
+        <Drawer
+          isOpen={!!selectedItem}
+          onClose={() => setSelectedItem(null)}
+          title={selectedItem.name}
+          subtitle={selectedItem.category}
+          actions={
+            selectedItem.docsUrl && (
+              <a
+                href={selectedItem.docsUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs text-stone-500 hover:text-stone-800 flex items-center gap-1"
+              >
+                <span>Docs</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            )
+          }
+        >
+          <div className="space-y-6 text-xs">
+            <div>
+              <h4 className="font-semibold text-stone-900 mb-1">Status</h4>
+              <StatusBadge
+                variant={
+                  selectedItem.status === "HEALTHY"
+                    ? "success"
+                    : selectedItem.status === "WARNING"
+                    ? "warning"
+                    : "neutral"
+                }
+              >
+                {selectedItem.status === "HEALTHY"
+                  ? "Operational"
+                  : selectedItem.status === "WARNING"
+                  ? "Warning / Action Needed"
+                  : "Not Configured"}
+              </StatusBadge>
+            </div>
+
+            <div>
+              <h4 className="font-semibold text-stone-900 mb-1">Description</h4>
+              <p className="text-stone-600 leading-relaxed">
+                {selectedItem.description}
+              </p>
+            </div>
+
+            <div>
+              <h4 className="font-semibold text-stone-900 mb-2">Configuration Telemetry</h4>
+              <div className="bg-stone-50 rounded-xl border border-stone-200 p-4 space-y-2">
+                {Object.entries(selectedItem.nonSecretConfig).map(([k, v]) => (
+                  <div key={k} className="flex justify-between items-center py-1 border-b border-stone-200/50 last:border-0 font-mono text-[11px]">
+                    <span className="text-stone-500">{k}:</span>
+                    <span className="font-medium text-stone-800 break-all">{String(v)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {selectedItem.lastActivityAt && (
+              <div>
+                <h4 className="font-semibold text-stone-900 mb-1">Last Activity</h4>
+                <p className="text-stone-500">
+                  {new Date(selectedItem.lastActivityAt).toLocaleString()}
+                </p>
+              </div>
+            )}
+
+            {selectedItem.lastFailure && (
+              <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-800">
+                <span className="font-semibold block mb-0.5">Last Delivery Error</span>
+                <p>{selectedItem.lastFailure}</p>
+              </div>
+            )}
+          </div>
+        </Drawer>
+      )}
+    </AdminPage>
   );
 }

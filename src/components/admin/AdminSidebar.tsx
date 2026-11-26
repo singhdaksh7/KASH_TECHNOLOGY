@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { adminClient, type SessionInfo } from "@/lib/admin-client";
-import { ADMIN_NAVIGATION, filterNavigation, type NavItemConfig } from "@/lib/rbac/navigation";
+import { ADMIN_NAVIGATION, filterNavigation } from "@/lib/rbac/navigation";
 import { 
   LayoutDashboard, 
   FileText, 
@@ -31,10 +31,18 @@ import {
   Cable,
   Building2,
   Mail,
+  ChevronDown,
+  ChevronRight,
+  ExternalLink,
+  Shield,
+  KeyRound,
+  PanelLeftClose,
+  PanelLeft,
   type LucideIcon,
 } from "lucide-react";
 
 const ICON_MAP: Record<string, LucideIcon> = {
+  LayoutDashboard,
   FileText,
   Briefcase,
   BookOpen,
@@ -60,14 +68,56 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Mail,
 };
 
-export function AdminSidebar({ mobileOpen, onClose }: { mobileOpen?: boolean; onClose?: () => void }) {
+export function AdminSidebar({
+  mobileOpen,
+  onClose,
+  collapsed = false,
+  onToggleCollapse,
+}: {
+  mobileOpen?: boolean;
+  onClose?: () => void;
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const [session, setSession] = useState<SessionInfo | null>(null);
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>(() => {
+    if (typeof window === "undefined") return {};
+    try {
+      const stored = localStorage.getItem("kash_admin_nav_groups");
+      return stored ? JSON.parse(stored) : {};
+    } catch {
+      return {};
+    }
+  });
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     adminClient.getSession().then(setSession).catch(() => undefined);
   }, []);
+
+  // Close user menu on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const toggleGroup = (title: string) => {
+    setCollapsedGroups((prev) => {
+      const next = { ...prev, [title]: !prev[title] };
+      try {
+        localStorage.setItem("kash_admin_nav_groups", JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
 
   const can = (perm?: string) =>
     !perm ||
@@ -75,157 +125,257 @@ export function AdminSidebar({ mobileOpen, onClose }: { mobileOpen?: boolean; on
     session.user.roles.includes("SUPER_ADMIN") ||
     session.user.permissions.includes(perm);
 
-  const name = session?.user.name || session?.user.email || "…";
+  const groups = filterNavigation(ADMIN_NAVIGATION, can);
+
+  const handleLogout = async () => {
+    try {
+      await adminClient.logout();
+      router.push("/admin/login");
+    } catch {
+      router.push("/admin/login");
+    }
+  };
+
+  const name = session?.user.name || session?.user.email || "Administrator";
   const initials =
     name
-      .split(/[\s@.]+/)
+      .split(/[\s@._]+/)
       .filter(Boolean)
       .slice(0, 2)
       .map((p) => p[0]?.toUpperCase())
-      .join("") || "?";
+      .join("") || "AD";
 
-  const logout = async () => {
-    await adminClient.logout().catch(() => undefined);
-    router.push("/admin/login");
-  };
-
-  const visibleGroups = filterNavigation(ADMIN_NAVIGATION, can);
+  const isSuperAdmin = session?.user.roles.includes("SUPER_ADMIN");
 
   return (
-    <aside
-      className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-[#E8E5E2] flex flex-col
-        transition-transform duration-200 ease-in-out lg:static lg:translate-x-0
-        ${mobileOpen ? "translate-x-0" : "-translate-x-0 max-lg:-translate-x-full"}
-      `}
-    >
-      {/* Brand Header */}
-      <div className="h-16 px-6 border-b border-[#E8E5E2] flex items-center justify-between">
-        <Link href="/admin" className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-[#FF5A00] flex items-center justify-center text-white font-extrabold text-sm tracking-wider">
-            K
-          </div>
-          <div className="flex flex-col">
-            <span className="font-extrabold text-sm text-[#0B0B0F] tracking-tight">KASH</span>
-            <span className="text-[10px] uppercase font-bold tracking-wider text-[#FF5A00] -mt-1">
-              Admin Platform
-            </span>
-          </div>
-        </Link>
-        {onClose && (
-          <button
-            onClick={onClose}
-            className="lg:hidden text-stone-400 hover:text-stone-700 p-1"
-            aria-label="Close menu"
-          >
-            ✕
-          </button>
-        )}
-      </div>
+    <>
+      {/* Mobile Backdrop */}
+      {mobileOpen && (
+        <div
+          onClick={onClose}
+          className="fixed inset-0 bg-black/40 backdrop-blur-xs z-40 lg:hidden"
+        />
+      )}
 
-      {/* Nav List */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6">
-        <div>
+      {/* Sidebar Container */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 bg-white border-r border-stone-200/80 flex flex-col transition-all duration-200 ease-in-out ${
+          collapsed ? "w-16" : "w-64"
+        } ${
+          mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        }`}
+      >
+        {/* Brand / Workspace Header */}
+        <div className="h-14 border-b border-stone-100 flex items-center justify-between px-4 shrink-0">
           <Link
             href="/admin"
-            onClick={onClose}
-            className={`
-              flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors
-              ${
-                pathname === "/admin"
-                  ? "bg-[#FFF3E9] text-[#FF5A00]"
-                  : "text-[#4B5563] hover:bg-[#FFF9F4] hover:text-[#0B0B0F]"
-              }
-            `}
+            className="flex items-center gap-2.5 min-w-0 group"
           >
-            <LayoutDashboard className="w-4 h-4 shrink-0" />
-            <span>Dashboard</span>
+            <div className="w-8 h-8 rounded-lg bg-[#0B0B0F] flex items-center justify-center text-white font-bold text-xs shrink-0 tracking-tighter group-hover:bg-[#FF5A00] transition-colors">
+              K
+            </div>
+            {!collapsed && (
+              <div className="truncate">
+                <span className="font-semibold text-sm text-[#0B0B0F] tracking-tight block truncate">
+                  KASH Technology
+                </span>
+                <span className="text-[10px] text-stone-400 block -mt-0.5 tracking-wider font-mono uppercase">
+                  CMS Admin
+                </span>
+              </div>
+            )}
           </Link>
+
+          {/* Desktop Collapse Toggle */}
+          {onToggleCollapse && !mobileOpen && (
+            <button
+              onClick={onToggleCollapse}
+              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              className={`p-1.5 rounded-md text-stone-400 hover:text-stone-700 hover:bg-stone-50 transition-colors hidden lg:block ${
+                collapsed ? "mx-auto" : ""
+              }`}
+            >
+              {collapsed ? (
+                <PanelLeft className="w-4 h-4" />
+              ) : (
+                <PanelLeftClose className="w-4 h-4" />
+              )}
+            </button>
+          )}
         </div>
 
-        {visibleGroups.map((group) => (
-          <div key={group.title} className="space-y-1">
-            <div className="px-3 text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">
-              {group.title}
-            </div>
-            {group.items.map((item: NavItemConfig) => {
-              const Icon = ICON_MAP[item.iconName] || FileText;
-              const active = pathname === item.href || (item.href !== "/admin/settings" && pathname.startsWith(item.href + "/"));
-              return (
-                <div key={item.href} className="space-y-0.5">
-                  <Link
-                    href={item.href}
-                    onClick={onClose}
-                    className={`
-                      flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-medium transition-colors
-                      ${
-                        active
-                          ? "bg-[#FFF3E9] text-[#FF5A00] font-semibold"
-                          : "text-[#4B5563] hover:bg-[#FFF9F4] hover:text-[#0B0B0F]"
-                      }
-                    `}
+        {/* Navigation Content */}
+        <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
+          {groups.map((group) => {
+            const isGroupActive = group.items.some((it) =>
+              it.href === "/admin"
+                ? pathname === "/admin"
+                : pathname.startsWith(it.href)
+            );
+            // If current route is in this group, do not collapse it
+            const isCollapsed = !isGroupActive && !!collapsedGroups[group.title];
+
+            return (
+              <div key={group.title} className="space-y-1">
+                {/* Group Title (hidden if collapsed or no title) */}
+                {!collapsed && group.title !== "HOME" && group.title !== "SETTINGS" && (
+                  <div
+                    onClick={() => group.collapsible && toggleGroup(group.title)}
+                    className={`flex items-center justify-between px-2 py-1 text-[11px] font-semibold text-stone-400 uppercase tracking-wider select-none ${
+                      group.collapsible ? "cursor-pointer hover:text-stone-600" : ""
+                    }`}
                   >
-                    <div className="flex items-center gap-2.5">
-                      <Icon className="w-4 h-4 shrink-0" />
-                      <span>{item.label}</span>
-                    </div>
-                    {item.badge && (
-                      <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-stone-100 text-stone-600">
-                        {item.badge}
+                    <span>{group.title}</span>
+                    {group.collapsible && (
+                      <span className="text-stone-400">
+                        {isCollapsed ? (
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        ) : (
+                          <ChevronDown className="w-3.5 h-3.5" />
+                        )}
                       </span>
                     )}
-                  </Link>
-                  {item.children?.map((sub) => {
-                    const SubIcon = ICON_MAP[sub.iconName] || FileText;
-                    const subActive = pathname === sub.href;
-                    return (
-                      <Link
-                        key={sub.href}
-                        href={sub.href}
-                        onClick={onClose}
-                        className={`
-                          flex items-center gap-2 pl-9 pr-3 py-1 rounded-lg text-xs font-medium transition-colors
-                          ${
-                            subActive
-                              ? "text-[#FF5A00] font-semibold"
-                              : "text-stone-500 hover:text-stone-900"
-                          }
-                        `}
-                      >
-                        <SubIcon className="w-3.5 h-3.5 shrink-0" />
-                        <span>{sub.label}</span>
-                      </Link>
-                    );
-                  })}
-                </div>
-              );
-            })}
-          </div>
-        ))}
-      </div>
+                  </div>
+                )}
 
-      {/* Footer User Info & Logout */}
-      <div className="p-4 border-t border-[#E8E5E2] flex items-center justify-between">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-8 h-8 rounded-full bg-[#0B0B0F] text-white flex items-center justify-center font-bold text-xs shrink-0">
-            {initials}
-          </div>
-          <div className="flex flex-col min-w-0">
-            <span className="text-xs font-semibold text-[#0B0B0F] truncate">{name}</span>
-            <span className="text-[10px] text-[#4B5563] truncate">
-              {session?.user.roles.map((r) => r.replace(/_/g, " ")).join(", ") || "…"}
-            </span>
-          </div>
+                {/* Items */}
+                {(!isCollapsed || collapsed) && (
+                  <div className="space-y-0.5">
+                    {group.items.map((item) => {
+                      const Icon = ICON_MAP[item.iconName] || FileText;
+                      const active =
+                        item.href === "/admin"
+                          ? pathname === "/admin"
+                          : pathname.startsWith(item.href);
+
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => onClose && onClose()}
+                          title={collapsed ? item.label : undefined}
+                          className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium transition-colors relative group ${
+                            active
+                              ? "bg-[#FF5A00]/10 text-[#FF5A00] font-semibold"
+                              : "text-stone-600 hover:text-[#0B0B0F] hover:bg-stone-50"
+                          } ${collapsed ? "justify-center px-0" : ""}`}
+                        >
+                          <Icon
+                            className={`w-4 h-4 shrink-0 transition-colors ${
+                              active
+                                ? "text-[#FF5A00]"
+                                : "text-stone-400 group-hover:text-stone-700"
+                            }`}
+                          />
+                          {!collapsed && (
+                            <span className="truncate flex-1">{item.label}</span>
+                          )}
+                          {!collapsed && item.badge && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-stone-100 text-stone-600 font-mono">
+                              {item.badge}
+                            </span>
+                          )}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
-        <button
-          onClick={logout}
-          className="p-1.5 text-stone-400 hover:text-red-600 transition-colors rounded-lg hover:bg-stone-50"
-          title="Sign out"
-          aria-label="Sign out"
-        >
-          <LogOut className="w-4 h-4" />
-        </button>
-      </div>
-    </aside>
+
+        {/* User Account / Profile Footer */}
+        <div className="p-3 border-t border-stone-100 relative" ref={userMenuRef}>
+          {/* User Menu Dropdown */}
+          {userMenuOpen && (
+            <div className="absolute bottom-full left-3 right-3 mb-2 bg-white rounded-xl border border-stone-200 shadow-xl overflow-hidden py-1.5 z-50 animate-in fade-in slide-in-from-bottom-2 duration-150">
+              <div className="px-3.5 py-2.5 border-b border-stone-100">
+                <p className="text-xs font-semibold text-[#0B0B0F] truncate">{name}</p>
+                <p className="text-[11px] text-stone-500 truncate">{session?.user.email}</p>
+                <span className="inline-block mt-1 text-[10px] font-mono px-1.5 py-0.2 rounded bg-stone-100 text-stone-700 font-medium">
+                  {isSuperAdmin ? "SUPER ADMIN" : session?.user.roles[0] || "ADMIN"}
+                </span>
+              </div>
+
+              <div className="py-1 text-xs">
+                <Link
+                  href="/admin/settings"
+                  onClick={() => setUserMenuOpen(false)}
+                  className="flex items-center gap-2 px-3.5 py-2 text-stone-700 hover:bg-stone-50 hover:text-stone-900 transition-colors"
+                >
+                  <Settings className="w-3.5 h-3.5 text-stone-400" />
+                  <span>Account &amp; Settings</span>
+                </Link>
+
+                <Link
+                  href="/admin/change-password"
+                  onClick={() => setUserMenuOpen(false)}
+                  className="flex items-center gap-2 px-3.5 py-2 text-stone-700 hover:bg-stone-50 hover:text-stone-900 transition-colors"
+                >
+                  <KeyRound className="w-3.5 h-3.5 text-stone-400" />
+                  <span>Change Password</span>
+                </Link>
+
+                <Link
+                  href="/admin/setup-2fa"
+                  onClick={() => setUserMenuOpen(false)}
+                  className="flex items-center gap-2 px-3.5 py-2 text-stone-700 hover:bg-stone-50 hover:text-stone-900 transition-colors"
+                >
+                  <Shield className="w-3.5 h-3.5 text-stone-400" />
+                  <span>Two-Factor Security</span>
+                </Link>
+
+                <a
+                  href="/"
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => setUserMenuOpen(false)}
+                  className="flex items-center justify-between px-3.5 py-2 text-stone-700 hover:bg-stone-50 hover:text-stone-900 transition-colors border-t border-stone-100 mt-1 pt-1"
+                >
+                  <span className="flex items-center gap-2">
+                    <ExternalLink className="w-3.5 h-3.5 text-stone-400" />
+                    <span>View Public Website</span>
+                  </span>
+                </a>
+              </div>
+
+              <div className="border-t border-stone-100 pt-1">
+                <button
+                  onClick={handleLogout}
+                  className="w-full text-left flex items-center gap-2 px-3.5 py-2 text-xs text-red-600 hover:bg-red-50 transition-colors"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* User Button */}
+          <button
+            onClick={() => setUserMenuOpen(!userMenuOpen)}
+            className={`w-full flex items-center gap-2.5 p-2 rounded-lg hover:bg-stone-50 text-left transition-colors cursor-pointer ${
+              collapsed ? "justify-center p-1" : ""
+            }`}
+          >
+            <div className="w-7 h-7 rounded-full bg-stone-100 border border-stone-200 text-[#0B0B0F] flex items-center justify-center text-xs font-semibold shrink-0">
+              {initials}
+            </div>
+            {!collapsed && (
+              <div className="truncate flex-1 min-w-0">
+                <p className="text-xs font-medium text-[#0B0B0F] truncate">{name}</p>
+                <p className="text-[10px] text-stone-400 truncate">
+                  {isSuperAdmin ? "Super Admin" : "Team Member"}
+                </p>
+              </div>
+            )}
+            {!collapsed && (
+              <ChevronDown className="w-3.5 h-3.5 text-stone-400 shrink-0" />
+            )}
+          </button>
+        </div>
+      </aside>
+    </>
   );
 }

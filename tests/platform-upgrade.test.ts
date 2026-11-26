@@ -18,11 +18,9 @@ test("permission navigation: hides restricted routes for viewer", () => {
   assert.ok(!contentGroup.items.some((i) => i.href === "/admin/insights"));
   assert.ok(!contentGroup.items.some((i) => i.href === "/admin/media"));
 
-  // System should not contain Team (users.view) or Audit Log (audit.view)
-  const systemGroup = filtered.find((g) => g.title === "OPERATIONS & SYSTEM");
-  assert.ok(systemGroup, "System group exists");
-  assert.ok(!systemGroup.items.some((i) => i.href === "/admin/team"));
-  assert.ok(!systemGroup.items.some((i) => i.href === "/admin/audit-log"));
+  // Settings should not be visible to viewer without settings.view
+  const settingsGroup = filtered.find((g) => g.title === "SETTINGS");
+  assert.ok(!settingsGroup, "Settings group should not exist for viewer");
 });
 
 test("permission navigation: super admin has unrestricted access to all groups", () => {
@@ -80,23 +78,11 @@ test("business profile: defaults fallback to SITE_CONFIG correctly", () => {
 test("permission navigation: preserves newer production routes (Email & Logs)", () => {
   const superCan = () => true;
   const filtered = filterNavigation(ADMIN_NAVIGATION, superCan);
-  const opsGroup = filtered.find((g) => g.title === "OPERATIONS & SYSTEM");
-  assert.ok(opsGroup, "Operations & System group exists");
+  const settingsGroup = filtered.find((g) => g.title === "SETTINGS");
+  assert.ok(settingsGroup, "Settings group exists");
   assert.ok(
-    opsGroup.items.some((i) => i.href === "/admin/settings/email"),
-    "Email & Resend link present"
-  );
-  assert.ok(
-    opsGroup.items.some((i) => i.href === "/admin/settings/email/logs"),
-    "Email Logs link present"
-  );
-  assert.ok(
-    opsGroup.items.some((i) => i.href === "/admin/settings/business"),
-    "Business Profile link present"
-  );
-  assert.ok(
-    opsGroup.items.some((i) => i.href === "/admin/integrations"),
-    "Integrations Center link present"
+    settingsGroup.items.some((i) => i.href === "/admin/settings"),
+    "Settings hub link present"
   );
 });
 
