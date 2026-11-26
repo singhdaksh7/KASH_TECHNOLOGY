@@ -88,11 +88,28 @@ export default function LeadsPage() {
   const overdue = (l: LeadItem) => !!l.nextFollowUp && new Date(l.nextFollowUp) < new Date() && l.status !== "WON" && l.status !== "LOST";
 
   const Card = ({ l }: { l: LeadItem }) => (
-    <button onClick={() => void openLead(l.id)} className={`w-full text-left p-3 rounded-lg border bg-white hover:border-[#FF5A00] ${open?.id === l.id ? "border-[#FF5A00]" : "border-[#E8E5E2]"}`}>
-      <div className="flex items-start justify-between gap-2"><span className="font-bold text-xs text-[#0B0B0F]">{l.name}</span><span className={`px-1.5 py-0.5 rounded text-[10px] ${PRIO_CLS[l.priority ?? "MEDIUM"]}`}>{l.priority ?? "MEDIUM"}</span></div>
-      {l.company && <p className="text-[11px] text-stone-500">{l.company}</p>}
-      <p className="mt-1 text-[11px] text-stone-500 truncate">{l.service || l.source}</p>
-      <div className="mt-2 flex items-center justify-between text-[10px] text-stone-400"><span>{l.assignedTo ?? "Unassigned"}</span>{overdue(l) ? <span className="text-red-600 font-bold">Follow-up overdue</span> : <span>{l.date.slice(0, 10)}</span>}</div>
+    <button
+      onClick={() => void openLead(l.id)}
+      className={`w-full text-left p-3.5 rounded-lg border bg-white shadow-xs hover:border-[#FF5A00] transition-all relative ${
+        open?.id === l.id ? "border-[#FF5A00] ring-1 ring-[#FF5A00]" : "border-stone-200"
+      }`}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <span className="font-bold text-xs text-[#0B0B0F] line-clamp-1">{l.name}</span>
+        <span className={`px-1.5 py-0.5 rounded text-[10px] shrink-0 ${PRIO_CLS[l.priority ?? "MEDIUM"]}`}>
+          {l.priority ?? "MEDIUM"}
+        </span>
+      </div>
+      {l.company && <p className="text-[11px] text-stone-500 truncate mt-0.5">{l.company}</p>}
+      <p className="mt-1 text-[11px] text-stone-600 truncate">{l.service || l.source}</p>
+      <div className="mt-2.5 pt-2 border-t border-stone-100 flex items-center justify-between text-[10px] text-stone-400">
+        <span className="truncate max-w-[120px]">{l.assignedTo ?? "Unassigned"}</span>
+        {overdue(l) ? (
+          <span className="text-red-600 font-bold shrink-0">Follow-up overdue</span>
+        ) : (
+          <span className="shrink-0">{l.date.slice(0, 10)}</span>
+        )}
+      </div>
     </button>
   );
 
@@ -127,18 +144,20 @@ export default function LeadsPage() {
         <div className="flex-1 min-w-0">
           {loading ? <p className="py-16 text-center text-stone-400 text-xs">Loading leads…</p> : !shown.length ? <p className="py-16 text-center text-stone-400 text-xs bg-white rounded-xl border border-[#E8E5E2]">{leads.length ? "No leads match these filters." : "No leads yet. They appear here as soon as someone submits a form."}</p>
             : view === "board" ? (
-              <div className="grid grid-flow-col auto-cols-[300px] gap-4 overflow-x-auto pb-4 items-start">
+              <div className="grid grid-flow-col auto-cols-[300px] gap-4 overflow-x-auto pb-6 items-start">
                 {COLUMNS.map((c) => {
                   const col = shown.filter((l) => l.status === c);
                   return (
-                    <div key={c} className="space-y-2.5 bg-stone-100/60 p-2.5 rounded-xl border border-stone-200/80">
-                      <div className={`px-3 py-1.5 rounded-lg border text-xs font-bold flex justify-between shadow-xs ${STATUS_CLS[c]}`}>
+                    <div key={c} className="h-auto min-h-[160px] bg-stone-100/70 p-3 rounded-xl border border-stone-200/80 flex flex-col">
+                      {/* Sticky column header within natural document flow */}
+                      <div className={`sticky top-0 z-10 px-3 py-2 rounded-lg border text-xs font-bold flex justify-between items-center shadow-xs mb-3 ${STATUS_CLS[c]}`}>
                         <span>{c}</span>
-                        <span className="font-mono">{col.length}</span>
+                        <span className="font-mono bg-white/60 px-1.5 py-0.5 rounded text-[11px]">{col.length}</span>
                       </div>
-                      <div className="space-y-2 max-h-[calc(100vh-220px)] overflow-y-auto pr-0.5">
+                      {/* Cards container: natural flow, no vertical scrollbar, page expands */}
+                      <div className="space-y-3 flex-1">
                         {col.length === 0 ? (
-                          <div className="py-8 text-center text-stone-400 text-[11px] border border-dashed border-stone-200 rounded-lg">
+                          <div className="py-10 text-center text-stone-400 text-xs border border-dashed border-stone-200 rounded-lg">
                             No {c.toLowerCase()} leads
                           </div>
                         ) : (
