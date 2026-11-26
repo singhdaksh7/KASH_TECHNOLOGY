@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db/prisma";
 import { admin } from "@/lib/server/api";
 import { ok } from "@/lib/server/http";
+import { getEmailConfig } from "@/lib/email/provider";
 
 export interface IntegrationStatus {
   id: string;
@@ -16,39 +17,41 @@ export interface IntegrationStatus {
 }
 
 export const GET = admin("settings.view", async () => {
-  // 1. Resend
-  const resendConfigured = !!(
-    process.env.RESEND_API_KEY &&
-    process.env.RESEND_FROM_EMAIL &&
-    process.env.CONTACT_RECEIVER_EMAIL
-  );
-
-  const [lastEmailFailed, lastFormSubmission] = await Promise.all([
-    prisma.formSubmission.findFirst({
-      where: { emailStatus: "FAILED" },
-      orderBy: { createdAt: "desc" },
-      select: { createdAt: true, emailError: true },
+  // 1. Resend (Reads real production DB-backed EmailSettings + env fallback)
+  const emailCfg = await getEmailConfig().catch(() => null);
+  const [lastEmailSuccess, lastEmailFailure] = await Promise.all([
+    prisma.emailDelivery.findFirst({
+      where: { status: "SENT" },
+      orderBy: { sentAt: "desc" },
+      select: { sentAt: true },
     }),
-    prisma.formSubmission.findFirst({
-      where: { emailStatus: "SENT" },
+    prisma.emailDelivery.findFirst({
+      where: { status: "FAILED" },
       orderBy: { createdAt: "desc" },
-      select: { createdAt: true },
+      select: { createdAt: true, errorMessage: true },
     }),
   ]);
+
+  const resendConfigured = !!emailCfg?.configured;
+  const resendHealthy = resendConfigured && emailCfg.enabled && !lastEmailFailure;
 
   const resendStatus: IntegrationStatus = {
     id: "resend",
     name: "Resend",
     category: "Email & Messaging",
-    description: "Transactional email delivery for lead notifications and auto-replies.",
+    description: "Transactional email delivery for customer enquiries, notifications, and auto-replies.",
     configured: resendConfigured,
-    status: !resendConfigured ? "NOT_CONFIGURED" : lastEmailFailed ? "WARNING" : "HEALTHY",
+    status: !resendConfigured ? "NOT_CONFIGURED" : resendHealthy ? "HEALTHY" : "WARNING",
     nonSecretConfig: {
-      fromDomain: process.env.RESEND_FROM_EMAIL?.split("@")[1] || "not configured",
-      receiverEmail: process.env.CONTACT_RECEIVER_EMAIL || "not configured",
+      status: !resendConfigured ? "Not configured" : emailCfg.enabled ? "Active" : "Disabled in Settings",
+      keySource: emailCfg?.apiKeySource ?? "none",
+      keyLast4: emailCfg?.apiKeyLast4 ? `••••${emailCfg.apiKeyLast4}` : "none",
+      from: emailCfg?.fromEmail ?? "not configured",
+      fromName: emailCfg?.fromName ?? "KASH Technology",
+      internalRecipient: emailCfg?.internalRecipient ?? "not configured",
     },
-    lastActivityAt: lastFormSubmission?.createdAt.toISOString() ?? null,
-    lastFailure: lastEmailFailed?.emailError ?? null,
+    lastActivityAt: lastEmailSuccess?.sentAt?.toISOString() ?? null,
+    lastFailure: lastEmailFailure?.errorMessage ?? null,
     docsUrl: "https://resend.com/docs",
   };
 

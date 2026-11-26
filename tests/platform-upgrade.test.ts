@@ -76,3 +76,45 @@ test("business profile: defaults fallback to SITE_CONFIG correctly", () => {
   assert.ok(profile.primaryEmail.includes("@"));
   assert.ok(profile.organizationSchema.knowsAbout?.includes("Software Engineering"));
 });
+
+test("permission navigation: preserves newer production routes (Email & Logs)", () => {
+  const superCan = () => true;
+  const filtered = filterNavigation(ADMIN_NAVIGATION, superCan);
+  const opsGroup = filtered.find((g) => g.title === "OPERATIONS & SYSTEM");
+  assert.ok(opsGroup, "Operations & System group exists");
+  assert.ok(
+    opsGroup.items.some((i) => i.href === "/admin/settings/email"),
+    "Email & Resend link present"
+  );
+  assert.ok(
+    opsGroup.items.some((i) => i.href === "/admin/settings/email/logs"),
+    "Email Logs link present"
+  );
+  assert.ok(
+    opsGroup.items.some((i) => i.href === "/admin/settings/business"),
+    "Business Profile link present"
+  );
+  assert.ok(
+    opsGroup.items.some((i) => i.href === "/admin/integrations"),
+    "Integrations Center link present"
+  );
+});
+
+test("audit scrubbing: handles encrypted keys, token hashes, and recovery codes", () => {
+  const input = {
+    encryptedApiKey: "aes256:abcd1234efgh5678",
+    tokenHash: "sha256:hashval",
+    recoveryCodes: ["CODE1", "CODE2"],
+    user: {
+      isSuperAdmin: true,
+      role: "SUPER_ADMIN",
+    },
+  };
+  const result = scrub(input) as Record<string, unknown>;
+  assert.equal(result.encryptedApiKey, "[redacted]");
+  assert.equal(result.tokenHash, "[redacted]");
+  assert.equal(result.recoveryCodes, "[redacted]");
+  const user = result.user as Record<string, unknown>;
+  assert.equal(user.isSuperAdmin, true);
+  assert.equal(user.role, "SUPER_ADMIN");
+});

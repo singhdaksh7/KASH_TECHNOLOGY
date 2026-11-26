@@ -5,11 +5,11 @@ export const GET = admin("settings.view", async () => {
   return ok({
     configured: true,
     policy: {
-      strategy: "pg_dump with TOC count verification (>50 items)",
+      strategy: "pg_dump -Fc with table of contents count verification (>50 items)",
       schedule: "Nightly at 03:00 UTC",
       retentionDays: 14,
       format: "Custom compressed PostgreSQL dump (.dump)",
-      sidecar: "SHA-256 integrity hash",
+      integrityCheck: "docker exec pg_restore --list entry validation",
     },
     status: "HEALTHY",
     lastSuccessfulBackup: {
@@ -19,7 +19,7 @@ export const GET = admin("settings.view", async () => {
     },
     mediaBackupStatus: {
       strategy: "Persistent Docker Volume (/opt/kash/uploads)",
-      automatedArchive: "Configured via host volume snapshot",
+      automatedArchive: "Preserved independently of web container lifecycle",
     },
   });
 });

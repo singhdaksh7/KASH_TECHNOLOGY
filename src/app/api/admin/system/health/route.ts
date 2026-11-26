@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db/prisma";
 import { admin } from "@/lib/server/api";
 import { ok } from "@/lib/server/http";
+import { getEmailConfig } from "@/lib/email/provider";
 
 export interface ComponentHealth {
   name: string;
@@ -37,23 +38,20 @@ export const GET = admin("settings.view", async () => {
     },
   };
 
-  // 2. Email Provider (Resend)
-  const resendConfigured = !!(
-    process.env.RESEND_API_KEY &&
-    process.env.RESEND_FROM_EMAIL &&
-    process.env.CONTACT_RECEIVER_EMAIL
-  );
+  // 2. Email Provider (Resend via EmailSettings or ENV fallback)
+  const emailCfg = await getEmailConfig().catch(() => null);
+  const resendConfigured = !!emailCfg?.configured;
 
   const [lastEmailSuccess, lastEmailFailure] = await Promise.all([
-    prisma.formSubmission.findFirst({
-      where: { emailStatus: "SENT" },
-      orderBy: { createdAt: "desc" },
-      select: { createdAt: true },
+    prisma.emailDelivery.findFirst({
+      where: { status: "SENT" },
+      orderBy: { sentAt: "desc" },
+      select: { sentAt: true },
     }),
-    prisma.formSubmission.findFirst({
-      where: { emailStatus: "FAILED" },
+    prisma.emailDelivery.findFirst({
+      where: { status: "FAILED" },
       orderBy: { createdAt: "desc" },
-      select: { createdAt: true, emailError: true },
+      select: { createdAt: true, errorMessage: true },
     }),
   ]);
 
@@ -61,14 +59,18 @@ export const GET = admin("settings.view", async () => {
     name: "Email Provider",
     status: !resendConfigured ? "NOT_CONFIGURED" : lastEmailFailure ? "WARNING" : "HEALTHY",
     message: !resendConfigured
-      ? "Resend credentials not set in environment"
+      ? "Resend credentials not configured in Email Settings or environment"
       : lastEmailFailure
-      ? `Recent email delivery error: ${lastEmailFailure.emailError?.slice(0, 50)}…`
-      : "Resend outbound operational",
+      ? `Recent email delivery error: ${lastEmailFailure.errorMessage?.slice(0, 50)}…`
+      : emailCfg.enabled
+      ? "Resend outbound operational (database configuration active)"
+      : "Resend configured but sending disabled in Email Settings",
     lastCheckedAt: now,
     details: {
       provider: "Resend",
-      lastSuccessfulEmail: lastEmailSuccess?.createdAt.toISOString() ?? null,
+      keySource: emailCfg?.apiKeySource ?? "none",
+      fromEmail: emailCfg?.fromEmail ?? null,
+      lastSuccessfulEmail: lastEmailSuccess?.sentAt?.toISOString() ?? null,
       lastFailedEmail: lastEmailFailure?.createdAt.toISOString() ?? null,
     },
   };

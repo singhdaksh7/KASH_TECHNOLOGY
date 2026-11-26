@@ -12,7 +12,7 @@ interface BackupPolicyData {
     schedule: string;
     retentionDays: number;
     format: string;
-    sidecar: string;
+    integrityCheck?: string;
   };
   status: string;
   lastSuccessfulBackup: {
