@@ -1,49 +1,44 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface KashLogoProps {
   className?: string;
-  variant?: "header" | "footer";
+  variant?: "header" | "footer" | "dark" | "admin";
+  height?: number;
 }
 
-export function KashLogo({ className = "" }: KashLogoProps) {
-  return (
-    <Link href="/" className={`inline-flex items-center gap-2.5 select-none ${className}`}>
-      {/* Precision Modern Orange Hex / Geometric Ribbon Icon */}
-      <div className="relative w-8 h-8 shrink-0 flex items-center justify-center">
-        <svg
-          viewBox="0 0 36 36"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-8 h-8"
-        >
-          {/* Black left bracket/polygon */}
-          <path
-            d="M6 5L15 5L9 31L0 31L6 5Z"
-            fill="#0B0B0F"
-          />
-          {/* Top orange wing */}
-          <path
-            d="M16 5L28 5L20 17L11 17L16 5Z"
-            fill="#FF5A00"
-          />
-          {/* Bottom orange wing */}
-          <path
-            d="M18 19L27 19L36 31L25 31L18 19Z"
-            fill="#FF8A3D"
-          />
-        </svg>
-      </div>
+export function KashLogo({ className = "", variant = "header", height }: KashLogoProps) {
+  // Determine if this is on a dark background
+  const isDarkBackground = variant === "dark";
+  const logoSrc = isDarkBackground
+    ? "/images/logo/kash-logo-white-tagline.webp"
+    : "/images/logo/kash-logo-transparent.webp";
 
-      {/* Brand Text */}
-      <div className="flex flex-col justify-center leading-none text-left">
-        <span className="font-extrabold text-[17px] tracking-tight text-[#0B0B0F] uppercase">
-          KASH
-        </span>
-        <span className="text-[11px] font-semibold text-[#4B5563] tracking-normal -mt-0.5">
-          Technology
-        </span>
-      </div>
+  // Aspect ratio of the original logo is 530 x 110 (approx 4.818 : 1)
+  // Standard rendered height: 38px (width ~183px), footer 42px (width ~202px)
+  const renderHeight = height || (variant === "footer" ? 42 : variant === "admin" ? 36 : 38);
+  const renderWidth = Math.round(renderHeight * (530 / 110));
+
+  return (
+    <Link
+      href="/"
+      className={`inline-flex items-center shrink-0 select-none group transition-opacity hover:opacity-95 ${className}`}
+      aria-label="KASH Technology - Home"
+    >
+      <Image
+        src={logoSrc}
+        alt="Kash Technology — TAILORED | AFFORDABLE | SCALABLE"
+        width={renderWidth}
+        height={renderHeight}
+        priority={variant === "header"}
+        className="h-auto object-contain"
+        style={{
+          height: `${renderHeight}px`,
+          width: "auto",
+          maxWidth: "100%",
+        }}
+      />
     </Link>
   );
 }

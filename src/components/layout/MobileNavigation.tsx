@@ -52,7 +52,7 @@ export function MobileNavigation({ open, onClose, config = FALLBACK_HEADER }: Mo
           {/* Header */}
           <div>
             <div className="flex items-center justify-between pb-6 border-b border-white/10">
-              <KashLogo variant="header" />
+              <KashLogo variant="dark" />
               <button
                 type="button"
                 onClick={onClose}

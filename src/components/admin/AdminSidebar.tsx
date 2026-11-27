@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import { adminClient, type SessionInfo } from "@/lib/admin-client";
@@ -166,13 +167,19 @@ export function AdminSidebar({
         }`}
       >
         {/* Brand / Workspace Header */}
-        <div className="h-14 border-b border-stone-100 flex items-center justify-between px-4 shrink-0">
+        <div className="h-14 border-b border-stone-100 flex items-center justify-between px-3 shrink-0">
           <Link
             href="/admin"
             className="flex items-center gap-2.5 min-w-0 group"
           >
-            <div className="w-8 h-8 rounded-lg bg-[#0B0B0F] flex items-center justify-center text-white font-bold text-xs shrink-0 tracking-tighter group-hover:bg-[#FF5A00] transition-colors">
-              K
+            <div className="w-8 h-8 rounded-lg bg-stone-50 border border-stone-200/80 flex items-center justify-center p-1 shrink-0 overflow-hidden group-hover:border-[#FF5A00] transition-colors relative">
+              <Image
+                src="/images/logo/kash-emblem-transparent.png"
+                alt="KASH"
+                width={28}
+                height={28}
+                className="w-full h-full object-contain"
+              />
             </div>
             {!collapsed && (
               <div className="truncate">

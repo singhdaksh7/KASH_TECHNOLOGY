@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Lock, Mail, ShieldCheck } from "lucide-react";
+import Image from "next/image";
 import { adminClient, errorMessage } from "@/lib/admin-client";
 
 const field = "w-full px-3.5 py-2.5 bg-[#090A0D] border border-white/10 rounded-xl text-xs text-white placeholder:text-white/30 focus:outline-none focus:border-[#FF5A00] transition-colors";
@@ -33,9 +34,18 @@ export default function AdminLoginPage() {
       <div className="absolute bottom-10 -left-20 w-96 h-96 rounded-full bg-[#FF8A3D]/10 blur-3xl pointer-events-none" />
 
       <div className="w-full max-w-md bg-[#12141A] rounded-3xl border border-white/10 p-6 sm:p-8 shadow-2xl relative z-10 space-y-6">
-        <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#FF5A00] to-[#FF8A3D] text-white font-extrabold text-xl flex items-center justify-center mx-auto shadow-lg shadow-[#FF5A00]/30">K</div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-white pt-2">KASH Technology CMS</h1>
+        <div className="text-center space-y-3">
+          <div className="flex justify-center pb-1">
+            <Image
+              src="/images/logo/kash-logo-white-tagline.webp"
+              alt="KASH Technology"
+              width={192}
+              height={40}
+              className="h-10 w-auto object-contain"
+              priority
+            />
+          </div>
+          <h1 className="text-xl font-bold tracking-tight text-white">CMS Administration</h1>
           <p className="text-xs text-white/60">Sign in to access your administrative workspace and page builder.</p>
         </div>
 
