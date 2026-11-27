@@ -25,6 +25,8 @@ export const PHASE2_PERMISSIONS: Record<string, string> = {
   "email.retry": "Retry failed transactional emails",
   "import_export.use": "Use CSV/JSON import and export",
   "search.use": "Use admin search",
+  "showcase.view": "View client showcase, reviews and logos",
+  "showcase.manage": "Manage clients, reviews, logos and showcase settings",
 };
 export const PHASE2_KEYS = Object.keys(PHASE2_PERMISSIONS);
 
@@ -34,10 +36,10 @@ export const PHASE2_ROLE_GRANTS: Record<string, string[]> = {
   SUPER_ADMIN: everything,
   ADMINISTRATOR: everything,
   SEO_MANAGER: ["templates.view", "global_blocks.view", "content.submit_review", "content.review", "seo.audit", "notifications.view", "tasks.view", "search.use"],
-  CONTENT_EDITOR: ["templates.view", "global_blocks.view", "content.submit_review", "media.folders", "notifications.view", "tasks.view", "search.use"],
+  CONTENT_EDITOR: ["templates.view", "global_blocks.view", "content.submit_review", "media.folders", "notifications.view", "tasks.view", "search.use", "showcase.view", "showcase.manage"],
   MARKETING_MANAGER: [
     "templates.view", "global_blocks.view", "content.submit_review", "content.review", "content.approve", "content.schedule", "media.folders",
-    "leads.assign", "leads.manage_followup", "tasks.view", "tasks.manage", "notifications.view", "email_templates.view", "import_export.use", "search.use",
+    "leads.assign", "leads.manage_followup", "tasks.view", "tasks.manage", "notifications.view", "email_templates.view", "import_export.use", "search.use", "showcase.view", "showcase.manage",
   ],
-  VIEWER: ["templates.view", "global_blocks.view", "notifications.view", "search.use"],
+  VIEWER: ["templates.view", "global_blocks.view", "notifications.view", "search.use", "showcase.view"],
 };

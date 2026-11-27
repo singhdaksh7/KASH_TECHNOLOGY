@@ -141,21 +141,21 @@ export function HeroTypewriter({ onSequenceComplete }: HeroTypewriterProps) {
   const effectiveShowCta = prefersReducedMotion ? true : showCta;
 
   return (
-    <div className="space-y-6 max-w-4xl text-left">
+    <div className="space-y-6 max-w-4xl mx-auto text-center flex flex-col items-center">
       {/* ============================================================== */}
       {/* 1. MAIN HEADLINE (Begins directly with We build digital...)    */}
       {/* ============================================================== */}
       <h1
-        className="text-3xl sm:text-5xl md:text-6xl lg:text-[76px] font-extrabold tracking-tight leading-[1.12] sm:leading-[1.08] text-[#0B0B0F]"
+        className="text-4xl sm:text-6xl md:text-7xl lg:text-[78px] font-extrabold tracking-tight leading-[1.12] sm:leading-[1.08] text-[#0B0B0F] max-w-4xl mx-auto text-center"
         aria-label="We build digital products that move businesses forward."
       >
-        <span className="block" aria-hidden="true">
+        <span className="block text-center" aria-hidden="true">
           {/* Line 1: We build digital products */}
-          <span className="relative block text-[#FF5A00]">
+          <span className="relative block text-[#0B0B0F]">
             {/* Space reservation */}
             <span className="invisible opacity-0 select-none">{STEP1_LINE1}</span>
             {/* Typing overlay */}
-            <span className="absolute left-0 top-0 whitespace-normal">
+            <span className="absolute inset-x-0 top-0 text-center whitespace-normal">
               {STEP1_LINE1.slice(0, effectiveLine1Count)}
               {cursorVisible && activeCursorTarget === "line1" && (
                 <span className="inline-block ml-1 w-[3px] h-[0.88em] align-middle bg-[#FF5A00] animate-pulse" />
@@ -164,11 +164,11 @@ export function HeroTypewriter({ onSequenceComplete }: HeroTypewriterProps) {
           </span>
 
           {/* Line 2: that move businesses forward. */}
-          <span className="relative block text-[#0B0B0F]">
+          <span className="relative block text-[#FF5A00]">
             {/* Space reservation */}
             <span className="invisible opacity-0 select-none">{STEP1_LINE2}</span>
             {/* Typing overlay */}
-            <span className="absolute left-0 top-0 whitespace-normal">
+            <span className="absolute inset-x-0 top-0 text-center whitespace-normal">
               {STEP1_LINE2.slice(0, effectiveLine2Count)}
               {cursorVisible && activeCursorTarget === "line2" && (
                 <span className="inline-block ml-1 w-[3px] h-[0.88em] align-middle bg-[#FF5A00] animate-pulse" />
@@ -182,7 +182,7 @@ export function HeroTypewriter({ onSequenceComplete }: HeroTypewriterProps) {
       {/* 2. SUPPORTING PARAGRAPH (Word-by-word smooth reveal)           */}
       {/* ============================================================== */}
       <p
-        className="text-lg sm:text-xl text-[#4B5563] max-w-2xl leading-relaxed font-normal relative"
+        className="text-lg sm:text-xl text-[#4B5563] max-w-2xl mx-auto text-center leading-relaxed font-normal relative"
         aria-label={STEP2_TEXT}
       >
         {/* Space reservation */}
@@ -191,7 +191,7 @@ export function HeroTypewriter({ onSequenceComplete }: HeroTypewriterProps) {
         </span>
 
         {/* Word-by-word visual overlay */}
-        <span className="absolute left-0 top-0 block" aria-hidden="true">
+        <span className="absolute inset-x-0 top-0 block text-center" aria-hidden="true">
           {STEP2_WORDS.map((word, idx) => {
             const isVisible = idx < effectiveParaCount;
             return (
@@ -214,7 +214,7 @@ export function HeroTypewriter({ onSequenceComplete }: HeroTypewriterProps) {
       {/* 3. HERO CTA BUTTONS (Fade-in directly as headline completes)   */}
       {/* ============================================================== */}
       <div
-        className={`flex flex-wrap items-center gap-4 pt-2 transition-all duration-500 transform ${
+        className={`flex flex-wrap items-center justify-center gap-4 pt-2 transition-all duration-500 transform ${
           effectiveShowCta
             ? "opacity-100 translate-y-0"
             : "opacity-0 translate-y-2 pointer-events-none"

@@ -9,6 +9,7 @@ import { Container } from "@/components/ui/Container";
 import { SectionHeading, StudioButton, CaseStudyRow } from "@/components/public-ui";
 import { HeroTypewriter } from "./HeroTypewriter";
 import { ReviewTicker } from "./ReviewTicker";
+import { ClientLogoMarquee } from "./ClientLogoMarquee";
 import { HeroProductComposition } from "./HeroProductComposition";
 import { CapabilityShowcaseInteractive } from "./CapabilityShowcaseInteractive";
 import { TechnologyStack } from "./TechnologyStack";
@@ -107,19 +108,30 @@ export function HomePage() {
       <ReviewTicker />
 
       {/* ============================================================== */}
-      {/* 3. CINEMATIC ANIMATED HERO                                     */}
+      {/* 3. CINEMATIC ANIMATED HERO (CENTER-ALIGNED)                    */}
       {/* ============================================================== */}
-      <section className="relative pt-12 pb-20 lg:pt-20 lg:pb-28 overflow-hidden">
+      <section className="relative pt-16 pb-12 lg:pt-24 lg:pb-16 overflow-hidden">
         {/* Stripe-inspired subtle animated warm background mesh */}
         <div 
-          className="absolute top-0 right-0 w-[55%] h-full bg-gradient-to-bl from-[#FF5A00]/8 via-[#FF8A3D]/4 to-transparent pointer-events-none rounded-bl-[120px]" 
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full bg-gradient-to-b from-[#FF5A00]/8 via-[#FF8A3D]/4 to-transparent pointer-events-none rounded-b-[120px]" 
           aria-hidden="true" 
         />
         
-        <Container className="relative z-10">
+        <Container className="relative z-10 flex flex-col items-center">
           <HeroTypewriter />
+        </Container>
+      </section>
 
-          {/* 4. INTERACTIVE PRODUCT COMPOSITION (Replaces generic laptop) */}
+      {/* ============================================================== */}
+      {/* 4. CLIENT LOGO MARQUEE (BUSINESS CREDIBILITY)                  */}
+      {/* ============================================================== */}
+      <ClientLogoMarquee />
+
+      {/* ============================================================== */}
+      {/* 5. INTERACTIVE PRODUCT COMPOSITION (LIVE ENGINE DEMO)          */}
+      {/* ============================================================== */}
+      <section className="py-12 lg:py-20 bg-[#FFF9F4] overflow-hidden">
+        <Container className="relative z-10">
           <HeroProductComposition />
         </Container>
       </section>

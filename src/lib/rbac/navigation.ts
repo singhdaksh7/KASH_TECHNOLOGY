@@ -37,6 +37,7 @@ export const ADMIN_NAVIGATION: NavGroupConfig[] = [
     items: [
       { label: "Pages", permission: "pages.view", href: "/admin/pages", iconName: "FileText" },
       { label: "Portfolio", permission: "portfolio.view", href: "/admin/portfolio", iconName: "Briefcase" },
+      { label: "Client Showcase", permission: "showcase.view", href: "/admin/showcase", iconName: "Building2" },
       { label: "Insights", permission: "articles.view", href: "/admin/insights", iconName: "BookOpen" },
       { label: "Media", permission: "media.view", href: "/admin/media", iconName: "ImageIcon" },
     ],

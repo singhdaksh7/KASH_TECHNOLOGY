@@ -32,6 +32,8 @@ export const PERMISSION_GROUPS: PermissionGroup[] = [
       { key: "articles.view", description: "View insights and articles" },
       { key: "articles.edit", description: "Edit insights and articles" },
       { key: "articles.publish", description: "Publish insights and articles" },
+      { key: "showcase.view", description: "View client showcase, reviews and logos" },
+      { key: "showcase.manage", description: "Manage clients, reviews, logos and showcase settings" },
     ],
   },
   {

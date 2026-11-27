@@ -738,3 +738,74 @@ model EmailDelivery {
   @@index([status, createdAt])
   @@index([createdAt])
 }
+
+/// Client records for public credibility showcase, client logo marquee, and review attributions.
+model Client {
+  id              String         @id @default(cuid())
+  name            String         // Company or client name
+  contactName     String?        // Client contact person
+  logoUrl         String?        // Company logo image URL
+  photoUrl        String?        // Contact person profile photo URL
+  country         String         @default("India")
+  countryCode     String         @default("IN") // IN, US, UK, AE, etc.
+  websiteUrl      String?
+  showInMarquee   Boolean        @default(true)
+  showInTicker    Boolean        @default(true)
+  isApproved      Boolean        @default(true)
+  isArchived      Boolean        @default(false)
+  displayOrder    Int            @default(0)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  reviews         ClientReview[]
+
+  @@index([showInMarquee, isApproved, isArchived])
+  @@index([showInTicker, isApproved, isArchived])
+  @@index([displayOrder])
+}
+
+/// Reviews and testimonials linked to verified clients.
+model ClientReview {
+  id              String    @id @default(cuid())
+  clientId        String?
+  client          Client?   @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  clientName      String    // Snapshot or standalone client name
+  companyName     String?   // Snapshot or standalone company name
+  location        String?   // e.g. "Meerut", "Delhi NCR"
+  country         String    @default("India")
+  countryCode     String    @default("IN")
+  photoUrl        String?   // Profile photo or avatar
+  fullReview      String    // Complete testimonial text
+  shortReview     String?   // Compact excerpt (6-12 words) for fast-moving ticker
+  rating          Int?      @default(5) // 1 to 5 stars
+  source          String    @default("Verified Delivery") // e.g. "Direct Client Engagement", "Verified Delivery", "Google Review"
+  reviewDate      DateTime? @default(now())
+  isApproved      Boolean   @default(true)
+  isPublished     Boolean   @default(true)
+  showInTicker    Boolean   @default(true)
+  displayOrder    Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([isPublished, isApproved, showInTicker])
+  @@index([displayOrder])
+  @@index([clientId])
+}
+
+/// Global configuration for Client Showcase: Ticker & Logo Marquee settings.
+model ShowcaseSettings {
+  id               String   @id @default("default")
+  tickerEnabled    Boolean  @default(true)
+  tickerSpeed      Int      @default(30) // pixels per second
+  tickerDirection  String   @default("rtl")
+  tickerPauseHover Boolean  @default(true)
+  showCountryFlags Boolean  @default(true)
+  showStarRatings  Boolean  @default(true)
+  showPhotographs  Boolean  @default(true)
+  marqueeEnabled   Boolean  @default(true)
+  marqueeSpeed     Int      @default(25) // pixels per second
+  marqueeHeading   String   @default("Trusted by businesses we work with.")
+  marqueeGrayscale Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+

@@ -1,13 +1,43 @@
 "use client";
 
-import React, { useState, useSyncExternalStore } from "react";
+import React, { useState, useEffect, useSyncExternalStore } from "react";
 import Image from "next/image";
-import { Star, Pause, Play } from "lucide-react";
-import { VERIFIED_REVIEWS, type ClientReview } from "@/data/testimonials";
+import { Star, Pause, Play, X, Quote } from "lucide-react";
+import { VERIFIED_REVIEWS } from "@/data/testimonials";
+
+interface RawReview {
+  id?: string;
+  name?: string;
+  clientName?: string;
+  company?: string | null;
+  companyName?: string | null;
+  location?: string | null;
+  country?: string;
+  countryCode?: string;
+  photoUrl?: string | null;
+  fullReview?: string;
+  quote?: string;
+  shortReview?: string | null;
+  rating?: number | null;
+  source?: string;
+  reviewDate?: string | Date | null;
+}
 
 interface ReviewTickerProps {
-  reviews?: ClientReview[];
   className?: string;
+}
+
+interface ReviewModalData {
+  name: string;
+  company?: string | null;
+  location?: string | null;
+  country: string;
+  countryCode: string;
+  photoUrl?: string | null;
+  fullReview: string;
+  rating?: number | null;
+  source?: string;
+  date?: string | null;
 }
 
 function subscribeReducedMotion(callback: () => void) {
@@ -26,13 +56,10 @@ function getReducedMotionServerSnapshot() {
   return false;
 }
 
-/**
- * High-quality SVG country flags
- */
 function CountryFlag({ code }: { code: string }) {
   if (code === "IN") {
     return (
-      <svg className="w-4 h-3 rounded-[2px] shadow-xs shrink-0 inline-block" viewBox="0 0 640 480" aria-label="India flag">
+      <svg className="w-3.5 h-2.5 rounded-[2px] shadow-2xs shrink-0 inline-block" viewBox="0 0 640 480" aria-label="India flag">
         <path fill="#f93" d="M0 0h640v160H0z"/>
         <path fill="#fff" d="M0 160h640v160H0z"/>
         <path fill="#128807" d="M0 320h640v160H0z"/>
@@ -42,7 +69,7 @@ function CountryFlag({ code }: { code: string }) {
   }
   if (code === "US") {
     return (
-      <svg className="w-4 h-3 rounded-[2px] shadow-xs shrink-0 inline-block" viewBox="0 0 640 480" aria-label="United States flag">
+      <svg className="w-3.5 h-2.5 rounded-[2px] shadow-2xs shrink-0 inline-block" viewBox="0 0 640 480" aria-label="United States flag">
         <path fill="#bd3d44" d="M0 0h640v480H0z"/>
         <path stroke="#fff" strokeWidth="37" d="M0 55h640M0 129h640M0 203h640M0 277h640M0 351h640M0 425h640"/>
         <path fill="#192f5d" d="M0 0h260v260H0z"/>
@@ -51,7 +78,7 @@ function CountryFlag({ code }: { code: string }) {
   }
   if (code === "UK" || code === "GB") {
     return (
-      <svg className="w-4 h-3 rounded-[2px] shadow-xs shrink-0 inline-block" viewBox="0 0 640 480" aria-label="United Kingdom flag">
+      <svg className="w-3.5 h-2.5 rounded-[2px] shadow-2xs shrink-0 inline-block" viewBox="0 0 640 480" aria-label="United Kingdom flag">
         <path fill="#012169" d="M0 0h640v480H0z"/>
         <path stroke="#fff" strokeWidth="60" d="m0 0 640 480M640 0 0 480"/>
         <path stroke="#c8102e" strokeWidth="40" d="m0 0 640 480M640 0 0 480"/>
@@ -60,22 +87,28 @@ function CountryFlag({ code }: { code: string }) {
       </svg>
     );
   }
+  if (code === "AE") {
+    return (
+      <svg className="w-3.5 h-2.5 rounded-[2px] shadow-2xs shrink-0 inline-block" viewBox="0 0 640 480" aria-label="UAE flag">
+        <path fill="#00732f" d="M0 0h640v160H0z"/>
+        <path fill="#fff" d="M0 160h640v160H0z"/>
+        <path fill="#000" d="M0 320h640v160H0z"/>
+        <path fill="#f00" d="M0 0h213v480H0z"/>
+      </svg>
+    );
+  }
   return null;
 }
 
-/**
- * Generate clean deterministic initials avatar
- */
-function ClientAvatar({ name, photoUrl }: { name: string; photoUrl?: string }) {
+function ClientAvatar({ name, photoUrl }: { name: string; photoUrl?: string | null }) {
   if (photoUrl) {
     return (
-      <div className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden border border-[#FF5A00]/40 shrink-0 shadow-sm">
+      <div className="relative w-7 h-7 rounded-full overflow-hidden border border-[#FF5A00]/40 shrink-0">
         <Image src={photoUrl} alt={name} fill className="object-cover" />
       </div>
     );
   }
 
-  // Initials
   const initials = name
     .replace(/^Dr\.\s*/i, "")
     .split(" ")
@@ -86,141 +119,227 @@ function ClientAvatar({ name, photoUrl }: { name: string; photoUrl?: string }) {
     .toUpperCase();
 
   return (
-    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-tr from-[#1E1E2A] to-[#12121A] border border-[#FF5A00]/40 flex items-center justify-center shrink-0 shadow-sm">
-      <span className="text-[11px] sm:text-xs font-mono font-bold text-[#FF8A3D]">{initials}</span>
+    <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#1E1E2A] to-[#14141F] border border-[#FF5A00]/40 flex items-center justify-center shrink-0">
+      <span className="text-[10px] font-mono font-bold text-[#FF8A3D]">{initials}</span>
     </div>
   );
 }
 
-export function ReviewTicker({
-  reviews = VERIFIED_REVIEWS,
-  className = "",
-}: ReviewTickerProps) {
+export function ReviewTicker({ className = "" }: ReviewTickerProps) {
+  const [reviews, setReviews] = useState<RawReview[]>(VERIFIED_REVIEWS);
+  const [settings, setSettings] = useState<{
+    enabled: boolean;
+    speed: number;
+    pauseOnHover: boolean;
+    showFlags: boolean;
+    showRatings: boolean;
+  }>({
+    enabled: true,
+    speed: 30,
+    pauseOnHover: true,
+    showFlags: true,
+    showRatings: true,
+  });
+  const [isPaused, setIsPaused] = useState(false);
+  const [selectedReview, setSelectedReview] = useState<ReviewModalData | null>(null);
+
   const prefersReducedMotion = useSyncExternalStore(
     subscribeReducedMotion,
     getReducedMotionSnapshot,
     getReducedMotionServerSnapshot
   );
 
-  const [isManuallyPaused, setIsManuallyPaused] = useState(false);
+  useEffect(() => {
+    fetch("/api/public/showcase")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.reviews && data.reviews.length > 0) {
+          setReviews(data.reviews);
+        }
+        if (data.settings) {
+          setSettings({
+            enabled: data.settings.tickerEnabled ?? true,
+            speed: data.settings.tickerSpeed ?? 30,
+            pauseOnHover: data.settings.tickerPauseHover ?? true,
+            showFlags: data.settings.showCountryFlags ?? true,
+            showRatings: data.settings.showStarRatings ?? true,
+          });
+        }
+      })
+      .catch(() => undefined);
+  }, []);
 
-  // Requirement: Use only approved, authentic testimonials. If empty, hide ticker.
-  if (!reviews || reviews.length === 0) {
-    return null;
-  }
+  if (!settings.enabled || reviews.length === 0) return null;
 
-  // Render a single review item
-  const renderReviewItem = (item: ClientReview, index: number, isDuplicate = false) => {
-    const ratingCount = item.rating && item.rating > 0 && item.rating <= 5 ? item.rating : 5;
-    
-    return (
-      <div
-        key={`${isDuplicate ? "dup-" : "item-"}${item.id || index}`}
-        className="inline-flex items-center gap-3 px-5 sm:px-7 shrink-0 whitespace-nowrap group/item"
-      >
-        {/* Client Profile Photo / Initials Avatar */}
-        <ClientAvatar name={item.name} photoUrl={item.photoUrl} />
+  // We repeat items 4 times to guarantee continuous loop filling wide monitors
+  const repeatedReviews = [...reviews, ...reviews, ...reviews, ...reviews];
 
-        {/* Client Name */}
-        <div className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-white">
-          <span>{item.name}</span>
-        </div>
+  // Calculate dynamic animation duration so speed remains constant in px/second
+  // Average compact item with separator is ~340px
+  const totalWidth = repeatedReviews.length * 340;
+  const loopDuration = Math.max(18, Math.round(totalWidth / (settings.speed * 2)));
 
-        {/* Country Flag & Name */}
-        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-[11px] font-mono text-stone-300">
-          <CountryFlag code={item.countryCode} />
-          <span>{item.location ? `${item.location}, ${item.country}` : item.country}</span>
-        </div>
-
-        {/* Rating Stars */}
-        <div className="flex items-center gap-0.5 text-[#FF5A00]" aria-label={`${ratingCount} out of 5 stars`}>
-          {Array.from({ length: ratingCount }).map((_, i) => (
-            <Star key={i} className="w-3.5 h-3.5 fill-current" />
-          ))}
-        </div>
-
-        <span className="text-stone-500">—</span>
-
-        {/* Authentic Review Quote */}
-        <p className="text-xs sm:text-sm text-stone-200 font-normal italic">
-          &ldquo;{item.quote}&rdquo;
-        </p>
-
-        {/* Separator Dot */}
-        <span className="text-[#FF5A00] font-bold text-base sm:text-lg ml-4 select-none" aria-hidden="true">
-          &bull;
-        </span>
-      </div>
-    );
+  const handleOpenReview = (r: RawReview) => {
+    setSelectedReview({
+      name: r.clientName || r.name || "Client",
+      company: r.companyName || r.company,
+      location: r.location,
+      country: r.country || "India",
+      countryCode: r.countryCode || "IN",
+      photoUrl: r.photoUrl,
+      fullReview: r.fullReview || r.quote || "",
+      rating: r.rating ?? 5,
+      source: r.source || "Verified Delivery",
+      date: r.reviewDate ? new Date(r.reviewDate).toLocaleDateString() : null,
+    });
   };
 
   return (
-    <section
-      aria-label="Verified Client Feedback"
-      className={`relative w-full bg-[#0B0B0F] border-b border-[#FF5A00]/25 py-2.5 sm:py-3 overflow-hidden select-none sm:select-text z-30 ${className}`}
-    >
-      <div className="relative w-full flex items-center">
-        
-        {/* Left Edge Static Label & Accessible Pause Control */}
-        <div className="flex items-center gap-2 pl-4 sm:pl-6 pr-3 sm:pr-4 shrink-0 border-r border-white/10 z-20 bg-[#0B0B0F]">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#FF5A00] animate-pulse" />
-          <span className="text-[10px] sm:text-[11px] font-mono font-bold tracking-widest text-[#FF5A00] uppercase whitespace-nowrap">
-            CLIENT FEEDBACK
-          </span>
+    <>
+      <aside
+        aria-label="Client testimonials ticker"
+        className={`relative w-full bg-[#0B0B0F] text-white border-y border-white/10 overflow-hidden select-none z-20 ${className}`}
+      >
+        <div className="relative flex items-center h-12 sm:h-13">
+          {/* Edge Blur Mask Gradient */}
+          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-12 sm:w-20 bg-gradient-to-r from-[#0B0B0F] to-transparent z-10" />
+          <div className="pointer-events-none absolute right-12 sm:right-16 top-0 bottom-0 w-12 sm:w-20 bg-gradient-to-l from-[#0B0B0F] to-transparent z-10" />
 
-          {/* Accessible Pause/Play Button */}
-          {!prefersReducedMotion && (
+          {/* Continuous Moving Track */}
+          <div
+            className={`flex items-center shrink-0 ${
+              !prefersReducedMotion ? "animate-ticker-marquee" : ""
+            } ${settings.pauseOnHover ? "hover:[animation-play-state:paused]" : ""} ${
+              isPaused || selectedReview !== null ? "[animation-play-state:paused!important]" : ""
+            }`}
+            style={{
+              animationDuration: `${loopDuration}s`,
+              animationTimingFunction: "linear",
+              animationIterationCount: "infinite",
+            }}
+          >
+            {repeatedReviews.map((r, idx) => {
+              const name = r.clientName || r.name || "Client";
+              const excerpt = r.shortReview || r.quote || r.fullReview || "";
+              const code = r.countryCode || "IN";
+              const rating = r.rating ?? 5;
+
+              return (
+                <button
+                  type="button"
+                  key={`${r.id || name}-${idx}`}
+                  onClick={() => handleOpenReview(r)}
+                  className="flex items-center gap-2.5 px-4 text-xs tracking-normal shrink-0 text-left cursor-pointer hover:bg-white/5 py-1.5 rounded-lg transition-colors group"
+                  title="Click to read complete verified review"
+                >
+                  <ClientAvatar name={name} photoUrl={r.photoUrl} />
+
+                  <span className="font-bold text-white whitespace-nowrap text-xs group-hover:text-[#FF8A3D] transition-colors">
+                    {name}
+                  </span>
+
+                  {settings.showFlags && <CountryFlag code={code} />}
+
+                  {settings.showRatings && (
+                    <span className="flex items-center text-[#FF5A00] shrink-0" aria-label={`${rating} stars`}>
+                      {Array.from({ length: Math.min(rating, 5) }).map((_, i) => (
+                        <Star key={i} className="w-3 h-3 fill-current" />
+                      ))}
+                    </span>
+                  )}
+
+                  <span className="text-stone-300 font-normal italic whitespace-nowrap text-xs max-w-[260px] sm:max-w-[340px] truncate">
+                    &ldquo;{excerpt}&rdquo;
+                  </span>
+
+                  <span className="text-[#FF5A00] font-bold ml-1 text-xs opacity-70 group-hover:opacity-100">
+                    &rarr;
+                  </span>
+
+                  <span className="text-stone-600 px-3 select-none text-xs">&bull;</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Accessible Play/Pause Toggle Control */}
+          <div className="absolute right-0 top-0 bottom-0 flex items-center pr-3 pl-2 bg-[#0B0B0F] z-20 border-l border-white/10">
             <button
               type="button"
-              onClick={() => setIsManuallyPaused((prev) => !prev)}
-              aria-label={isManuallyPaused ? "Resume reviews animation" : "Pause reviews animation"}
-              className="ml-1.5 p-1 rounded hover:bg-white/10 text-stone-400 hover:text-white transition-colors focus:outline-hidden focus:ring-1 focus:ring-[#FF5A00]"
-              title={isManuallyPaused ? "Resume ticker" : "Pause ticker"}
+              onClick={() => setIsPaused(!isPaused)}
+              aria-label={isPaused ? "Resume reviews animation" : "Pause reviews animation"}
+              className="p-1.5 rounded-md text-stone-400 hover:text-white hover:bg-white/10 transition-colors"
             >
-              {isManuallyPaused ? (
-                <Play className="w-3 h-3 text-[#FF5A00]" />
-              ) : (
-                <Pause className="w-3 h-3" />
-              )}
+              {isPaused ? <Play className="w-3.5 h-3.5" /> : <Pause className="w-3.5 h-3.5" />}
             </button>
-          )}
-        </div>
-
-        {/* Edge Gradient Masks for Soft Fade */}
-        <div className="absolute left-0 top-0 bottom-0 w-8 sm:w-16 md:w-24 bg-gradient-to-r from-[#0B0B0F] to-transparent pointer-events-none z-10" />
-        <div className="absolute right-0 top-0 bottom-0 w-8 sm:w-16 md:w-24 bg-gradient-to-l from-[#0B0B0F] to-transparent pointer-events-none z-10" />
-
-        {/* Ticker Container */}
-        {prefersReducedMotion ? (
-          /* Reduced Motion fallback: clean static/scrollable row without motion loops */
-          <div className="w-full flex items-center overflow-x-auto py-1 px-4 scrollbar-none">
-            {reviews.map((r, idx) => renderReviewItem(r, idx, false))}
           </div>
-        ) : (
-          /* Marquee track with hover-to-pause and button pause interaction */
-          <div className="relative w-full overflow-hidden group">
-            <div
-              className={`flex items-center w-max motion-safe:animate-ticker group-hover:[animation-play-state:paused] ${
-                isManuallyPaused ? "[animation-play-state:paused!important]" : ""
-              }`}
-              style={{
-                willChange: "transform",
-              }}
-            >
-              {/* Primary Semantic Track (Read by Screen Readers) */}
-              <div className="flex items-center shrink-0">
-                {reviews.map((r, idx) => renderReviewItem(r, idx, false))}
-              </div>
+        </div>
+      </aside>
 
-              {/* Duplicate Visual Track for Seamless Marquee (Hidden from Screen Readers) */}
-              <div className="flex items-center shrink-0" aria-hidden="true">
-                {reviews.map((r, idx) => renderReviewItem(r, idx, true))}
+      {/* FULL TESTIMONIAL MODAL POPUP */}
+      {selectedReview && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4"
+          onClick={() => setSelectedReview(null)}
+        >
+          <div
+            className="bg-[#101018] border border-white/15 rounded-3xl p-6 sm:p-8 max-w-lg w-full text-white shadow-2xl relative space-y-6 animate-fadeIn"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setSelectedReview(null)}
+              className="absolute top-5 right-5 p-2 rounded-xl text-stone-400 hover:text-white hover:bg-white/10 transition-colors"
+              aria-label="Close review"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Reviewer Header */}
+            <div className="flex items-center gap-4">
+              <ClientAvatar name={selectedReview.name} photoUrl={selectedReview.photoUrl} />
+              <div>
+                <h4 className="text-lg font-bold text-white flex items-center gap-2">
+                  <span>{selectedReview.name}</span>
+                  <CountryFlag code={selectedReview.countryCode} />
+                </h4>
+                <div className="text-xs text-stone-400 flex items-center gap-1.5 mt-0.5 font-mono">
+                  {selectedReview.company && <span>{selectedReview.company}</span>}
+                  {selectedReview.location && <span>&bull; {selectedReview.location}</span>}
+                  <span>&bull; {selectedReview.country}</span>
+                </div>
               </div>
             </div>
-          </div>
-        )}
 
-      </div>
-    </section>
+            {/* Star Rating */}
+            {selectedReview.rating && (
+              <div className="flex items-center gap-1 text-[#FF5A00]">
+                {Array.from({ length: selectedReview.rating }).map((_, i) => (
+                  <Star key={i} className="w-4 h-4 fill-current" />
+                ))}
+                <span className="text-xs font-mono text-stone-400 ml-2">
+                  {selectedReview.rating}.0 Verified Rating
+                </span>
+              </div>
+            )}
+
+            {/* Complete Testimonial Quote */}
+            <div className="relative pl-6 border-l-2 border-[#FF5A00]/50 space-y-2">
+              <Quote className="w-6 h-6 text-[#FF5A00]/30 absolute -top-1 -left-3 fill-current" />
+              <p className="text-stone-200 text-sm sm:text-base leading-relaxed font-normal italic">
+                &ldquo;{selectedReview.fullReview}&rdquo;
+              </p>
+            </div>
+
+            {/* Footer Verification Meta */}
+            <div className="pt-4 border-t border-white/10 flex items-center justify-between text-xs font-mono text-stone-500">
+              <span>Origin: {selectedReview.source}</span>
+              {selectedReview.date && <span>Delivered: {selectedReview.date}</span>}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
