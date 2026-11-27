@@ -107,24 +107,28 @@ export function HomePage() {
       <ReviewTicker />
 
       {/* ============================================================== */}
-      {/* 3. CINEMATIC ANIMATED HERO (CENTER-ALIGNED)                    */}
+      {/* 3. UNIFIED HERO & CLIENT LOGO OPENING (SHARED CONTINUOUS MESH) */}
       {/* ============================================================== */}
-      <section className="relative pt-16 pb-12 lg:pt-24 lg:pb-16 overflow-hidden">
-        {/* Stripe-inspired subtle animated warm background mesh */}
+      <section className="relative pt-16 pb-6 lg:pt-24 lg:pb-8 overflow-hidden bg-[#FFF9F4]">
+        {/* Stripe-inspired subtle continuous animated warm background mesh */}
         <div 
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full bg-gradient-to-b from-[#FF5A00]/8 via-[#FF8A3D]/4 to-transparent pointer-events-none rounded-b-[120px]" 
+          className="absolute inset-0 w-full h-full bg-gradient-to-b from-[#FF5A00]/10 via-[#FF8A3D]/5 to-transparent pointer-events-none" 
           aria-hidden="true" 
         />
         
-        <Container className="relative z-10 flex flex-col items-center">
+        {/* Radial warm lighting layer centered across the whole opening section */}
+        <div 
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#FF5A00]/8 via-transparent to-transparent pointer-events-none"
+          aria-hidden="true"
+        />
+
+        <Container className="relative z-10 flex flex-col items-center pb-12 lg:pb-16">
           <HeroTypewriter />
         </Container>
-      </section>
 
-      {/* ============================================================== */}
-      {/* 4. CLIENT LOGO MARQUEE (BUSINESS CREDIBILITY)                  */}
-      {/* ============================================================== */}
-      <ClientLogoMarquee />
+        {/* 4. CLIENT LOGO MARQUEE (SEAMLESSLY SHARES THE SAME BACKGROUND) */}
+        <ClientLogoMarquee />
+      </section>
 
       {/* ============================================================== */}
       {/* 5. INTERACTIVE BUILD / CREATE / GROW CAPABILITY SHOWCASE       */}

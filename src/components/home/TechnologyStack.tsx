@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useState, useSyncExternalStore } from "react";
-import { useScroll, useMotionValueEvent, motion } from "framer-motion";
+import { useScroll, useMotionValueEvent } from "framer-motion";
 import { Container } from "@/components/ui/Container";
 import { 
   Code2, 

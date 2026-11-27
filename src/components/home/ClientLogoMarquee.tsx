@@ -78,9 +78,9 @@ export function ClientLogoMarquee() {
   const loopDuration = Math.max(16, Math.round(totalWidth / (settings.speed * 2)));
 
   return (
-    <section 
+    <div 
       aria-label="Client company logos"
-      className="py-12 sm:py-16 bg-[#FFF9F4] border-t border-stone-200/60 overflow-hidden select-none"
+      className="pt-4 pb-14 sm:pb-20 bg-transparent overflow-hidden select-none relative z-10"
     >
       <Container className="mb-8">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
@@ -95,12 +95,14 @@ export function ClientLogoMarquee() {
         </div>
       </Container>
 
-      {/* Marquee Track Container */}
-      <div className="relative w-full overflow-hidden flex items-center">
-        {/* Edge Gradient Masks for Soft Vignette */}
-        <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-16 sm:w-28 bg-gradient-to-r from-[#FFF9F4] to-transparent z-10" />
-        <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-16 sm:w-28 bg-gradient-to-l from-[#FFF9F4] to-transparent z-10" />
-
+      {/* Marquee Track Container with pure CSS mask-image for left/right fade (no white rectangles) */}
+      <div 
+        className="relative w-full overflow-hidden flex items-center"
+        style={{
+          maskImage: "linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)",
+          WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)",
+        }}
+      >
         <div
           className={`flex items-center gap-8 sm:gap-14 shrink-0 ${
             !prefersReducedMotion ? "animate-ticker-marquee" : ""
@@ -134,7 +136,7 @@ export function ClientLogoMarquee() {
                   />
                 </div>
               ) : (
-                <div className="px-5 py-2 rounded-xl bg-white/70 border border-stone-200/80 shadow-2xs group-hover:border-[#FF5A00]/40 group-hover:bg-white transition-all flex items-center gap-2">
+                <div className="px-5 py-2.5 rounded-xl bg-white/60 backdrop-blur-xs border border-stone-200/60 shadow-2xs group-hover:border-[#FF5A00]/40 group-hover:bg-white/90 transition-all flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#FF5A00]" />
                   <span className="text-xs sm:text-sm font-extrabold text-[#0B0B0F] tracking-tight whitespace-nowrap group-hover:text-[#FF5A00] transition-colors font-mono">
                     {client.name}
@@ -145,6 +147,6 @@ export function ClientLogoMarquee() {
           ))}
         </div>
       </div>
-    </section>
+    </div>
   );
 }
