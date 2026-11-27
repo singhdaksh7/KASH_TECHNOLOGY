@@ -23,7 +23,7 @@ export function SignalPath({ pathConfig, packet, active }: SignalPathProps) {
         d={pathConfig.path}
         id={pathId}
         fill="none"
-        stroke="rgba(255, 255, 255, 0.08)"
+        stroke="rgba(255, 255, 255, 0.12)"
         strokeWidth="2.5"
         strokeLinecap="round"
       />
@@ -33,17 +33,17 @@ export function SignalPath({ pathConfig, packet, active }: SignalPathProps) {
         d={pathConfig.path}
         fill="none"
         stroke={packetColor}
-        strokeWidth="1.5"
-        strokeOpacity={active ? 0.35 : 0.05}
+        strokeWidth="2"
+        strokeOpacity={active ? 0.45 : 0.08}
         strokeLinecap="round"
-        className="transition-all duration-700"
+        className="transition-all duration-500"
       />
 
-      {/* Moving Signal Packet with Core and Glow Trail */}
+      {/* Moving Signal Packet with Core and Visible Glow Trail */}
       {active && (
         <g>
-          {/* Outer Soft Light Glow */}
-          <circle r="9" fill={packetColor} opacity="0.4" filter="url(#node-blur)">
+          {/* Outer Soft Light Glow with bloom filter */}
+          <circle r="14" fill={packetColor} opacity="0.45" filter="url(#node-blur)">
             <animateMotion
               dur={`${duration}s`}
               repeatCount="indefinite"
@@ -55,7 +55,7 @@ export function SignalPath({ pathConfig, packet, active }: SignalPathProps) {
           </circle>
 
           {/* Medium Aura Glow */}
-          <circle r="5" fill={packetColor} opacity="0.8">
+          <circle r="7.5" fill={packetColor} opacity="0.85" filter="url(#signal-bloom)">
             <animateMotion
               dur={`${duration}s`}
               repeatCount="indefinite"
@@ -67,7 +67,7 @@ export function SignalPath({ pathConfig, packet, active }: SignalPathProps) {
           </circle>
 
           {/* Sharp High-Intensity Core */}
-          <circle r="2.5" fill={coreColor}>
+          <circle r="3.5" fill={coreColor}>
             <animateMotion
               dur={`${duration}s`}
               repeatCount="indefinite"

@@ -10,7 +10,6 @@ import { SectionHeading, StudioButton, CaseStudyRow } from "@/components/public-
 import { HeroTypewriter } from "./HeroTypewriter";
 import { ReviewTicker } from "./ReviewTicker";
 import { ClientLogoMarquee } from "./ClientLogoMarquee";
-import { HeroProductComposition } from "./HeroProductComposition";
 import { CapabilityShowcaseInteractive } from "./CapabilityShowcaseInteractive";
 import { TechnologyStack } from "./TechnologyStack";
 import { ConnectedDigitalEcosystem } from "./ConnectedDigitalEcosystem";
@@ -126,15 +125,6 @@ export function HomePage() {
       {/* 4. CLIENT LOGO MARQUEE (BUSINESS CREDIBILITY)                  */}
       {/* ============================================================== */}
       <ClientLogoMarquee />
-
-      {/* ============================================================== */}
-      {/* 5. INTERACTIVE PRODUCT COMPOSITION (LIVE ENGINE DEMO)          */}
-      {/* ============================================================== */}
-      <section className="py-12 lg:py-20 bg-[#FFF9F4] overflow-hidden">
-        <Container className="relative z-10">
-          <HeroProductComposition />
-        </Container>
-      </section>
 
       {/* ============================================================== */}
       {/* 5. INTERACTIVE BUILD / CREATE / GROW CAPABILITY SHOWCASE       */}

@@ -20,47 +20,47 @@ export function NodeGlow({ node, active, isAmbientGlow }: NodeGlowProps) {
         <circle
           cx={node.cx}
           cy={node.cy}
-          r={nodeRadius * 1.8}
+          r={nodeRadius * 2.2}
           fill={nodeColor}
-          opacity="0.15"
+          opacity="0.25"
           filter="url(#node-blur)"
           className={isAmbientGlow ? "animate-pulse" : ""}
         >
           <animate
             attributeName="r"
-            values={`${nodeRadius * 1.2};${nodeRadius * 2.2};${nodeRadius * 1.2}`}
-            dur="3.2s"
+            values={`${nodeRadius * 1.4};${nodeRadius * 2.6};${nodeRadius * 1.4}`}
+            dur="2.8s"
             repeatCount="indefinite"
           />
           <animate
             attributeName="opacity"
-            values="0.25;0.05;0.25"
-            dur="3.2s"
+            values="0.35;0.08;0.35"
+            dur="2.8s"
             repeatCount="indefinite"
           />
         </circle>
       )}
 
-      {/* Synchronized Node Ring Anchor */}
+      {/* Synchronized Node Ring Anchor - Brighter illumination */}
       <circle
         cx={node.cx}
         cy={node.cy}
         r={nodeRadius}
         fill="none"
         stroke={nodeColor}
-        strokeWidth="1.5"
-        strokeOpacity={active ? 0.7 : 0.2}
-        className="transition-all duration-700"
+        strokeWidth="2"
+        strokeOpacity={active ? 0.9 : 0.25}
+        className="transition-all duration-500"
       />
 
-      {/* Internal Anchor Dot */}
+      {/* Internal Anchor Dot - High intensity beacon */}
       <circle
         cx={node.cx}
         cy={node.cy}
-        r={nodeRadius * 0.45}
+        r={nodeRadius * 0.5}
         fill={nodeColor}
-        fillOpacity={active ? 0.85 : 0.25}
-        className="transition-all duration-700"
+        fillOpacity={active ? 0.95 : 0.3}
+        className="transition-all duration-500"
       />
     </g>
   );
