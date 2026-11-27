@@ -99,7 +99,7 @@ export function HomePage() {
   ];
 
   return (
-    <div className="bg-[#FFF9F4] text-[#0B0B0F] pt-16">
+    <div className="bg-[#FFF9F4] text-[#0B0B0F] pt-[73px]">
       
       {/* ============================================================== */}
       {/* 2. CLIENT REVIEW TICKER (DIRECTLY BELOW UPPER NAV & ABOVE HERO) */}

@@ -212,7 +212,7 @@ export function HeroTypewriter({ onSequenceComplete }: HeroTypewriterProps) {
       {/* 2. MAIN HEADLINE (Step 2 & Step 3)                             */}
       {/* ============================================================== */}
       <h1
-        className="text-5xl sm:text-6xl lg:text-[76px] font-extrabold tracking-tight leading-[1.08] text-[#0B0B0F]"
+        className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-[76px] font-extrabold tracking-tight leading-[1.12] sm:leading-[1.08] text-[#0B0B0F]"
         aria-label="BUILD. CREATE. GROW. We build digital products that move businesses forward."
       >
         {/* STEP 2: BUILD. CREATE. GROW. (Word-by-word confident reveal) */}

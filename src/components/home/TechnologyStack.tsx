@@ -288,7 +288,7 @@ export function TechnologyStack() {
                       if (!containerRef.current) return;
                       const rect = containerRef.current.getBoundingClientRect();
                       const scrollTop = window.scrollY || document.documentElement.scrollTop;
-                      const targetY = scrollTop + rect.top + (rect.height / 5) * idx + 20;
+                      const targetY = scrollTop + rect.top + (rect.height / 5) * idx - 30;
                       window.scrollTo({ top: targetY, behavior: "smooth" });
                     }}
                     aria-label={`Jump to stage ${idx + 1}: ${st.title}`}

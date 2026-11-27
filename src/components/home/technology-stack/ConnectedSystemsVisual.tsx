@@ -21,8 +21,8 @@ export function ConnectedSystemsVisual({ active }: VisualProps) {
   const nodes = [
     { id: "web", name: "High-Speed Website", icon: Globe, color: "text-[#FF5A00]", pos: "top-4 left-6" },
     { id: "crm", name: "Enterprise CRM", icon: Users, color: "text-blue-400", pos: "top-4 right-6" },
-    { id: "erp", name: "Operations & ERP", icon: Boxes, color: "text-amber-400", pos: "bottom-6 left-6" },
-    { id: "mobile", name: "Mobile App (iOS/Android)", icon: Smartphone, color: "text-emerald-400", pos: "bottom-6 right-6" },
+    { id: "erp", name: "Operations & ERP", icon: Boxes, color: "text-amber-400", pos: "bottom-12 left-6" },
+    { id: "mobile", name: "Mobile App (iOS/Android)", icon: Smartphone, color: "text-emerald-400", pos: "bottom-12 right-6" },
   ];
 
   return (
