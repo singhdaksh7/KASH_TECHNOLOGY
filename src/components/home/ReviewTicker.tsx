@@ -248,7 +248,7 @@ export function ReviewTicker({ className = "" }: ReviewTickerProps) {
                     </span>
                   )}
 
-                  <span className="text-stone-300 font-normal italic whitespace-nowrap text-xs max-w-[260px] sm:max-w-[340px] truncate">
+                  <span className="text-stone-300 font-normal italic whitespace-nowrap text-xs max-w-[140px] xs:max-w-[180px] sm:max-w-[280px] truncate">
                     &ldquo;{excerpt}&rdquo;
                   </span>
 

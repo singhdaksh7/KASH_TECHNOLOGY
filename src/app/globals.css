@@ -124,7 +124,7 @@ body {
   background: #FF5A00;
 }
 
-/* Review Ticker Smooth Continuous Marquee */
+/* Review Ticker & Client Logo Smooth Continuous Marquee */
 @keyframes ticker {
   0% {
     transform: translate3d(0, 0, 0);
@@ -135,7 +135,15 @@ body {
 }
 
 .animate-ticker {
-  animation: ticker 38s linear infinite;
+  animation-name: ticker;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.animate-ticker-marquee {
+  animation-name: ticker;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
