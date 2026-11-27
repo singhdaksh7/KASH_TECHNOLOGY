@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useSyncExternalStore } from "react";
-import { Star } from "lucide-react";
+import React, { useState, useSyncExternalStore } from "react";
+import { Star, Pause, Play } from "lucide-react";
 import { VERIFIED_REVIEWS, type ClientReview } from "@/data/testimonials";
 
 interface ReviewTickerProps {
@@ -35,6 +35,9 @@ export function ReviewTicker({
     getReducedMotionServerSnapshot
   );
 
+  const [isManuallyPaused, setIsManuallyPaused] = useState(false);
+
+  // Requirement: Use only approved, authentic testimonials. If empty, hide ticker.
   if (!reviews || reviews.length === 0) {
     return null;
   }
@@ -82,16 +85,33 @@ export function ReviewTicker({
   return (
     <section
       aria-label="Verified Client Feedback"
-      className={`relative w-full bg-[#0B0B0F] border-y border-[#FF5A00]/20 py-4 sm:py-5 overflow-hidden select-none sm:select-text ${className}`}
+      className={`relative w-full bg-[#0B0B0F] border-b border-[#FF5A00]/25 py-3 sm:py-3.5 overflow-hidden select-none sm:select-text z-30 ${className}`}
     >
       <div className="relative w-full flex items-center">
         
-        {/* Left Edge Static Label */}
-        <div className="hidden md:flex items-center gap-2 pl-6 pr-4 shrink-0 border-r border-white/10 z-20 bg-[#0B0B0F]">
+        {/* Left Edge Static Label & Accessible Pause Control */}
+        <div className="flex items-center gap-2 pl-4 sm:pl-6 pr-3 sm:pr-4 shrink-0 border-r border-white/10 z-20 bg-[#0B0B0F]">
           <span className="w-1.5 h-1.5 rounded-full bg-[#FF5A00] animate-pulse" />
-          <span className="text-[11px] font-mono font-bold tracking-widest text-[#FF5A00] uppercase whitespace-nowrap">
+          <span className="text-[10px] sm:text-[11px] font-mono font-bold tracking-widest text-[#FF5A00] uppercase whitespace-nowrap">
             CLIENT FEEDBACK
           </span>
+
+          {/* Accessible Pause/Play Button */}
+          {!prefersReducedMotion && (
+            <button
+              type="button"
+              onClick={() => setIsManuallyPaused((prev) => !prev)}
+              aria-label={isManuallyPaused ? "Resume reviews animation" : "Pause reviews animation"}
+              className="ml-1.5 p-1 rounded hover:bg-white/10 text-stone-400 hover:text-white transition-colors focus:outline-hidden focus:ring-1 focus:ring-[#FF5A00]"
+              title={isManuallyPaused ? "Resume ticker" : "Pause ticker"}
+            >
+              {isManuallyPaused ? (
+                <Play className="w-3 h-3 text-[#FF5A00]" />
+              ) : (
+                <Pause className="w-3 h-3" />
+              )}
+            </button>
+          )}
         </div>
 
         {/* Edge Gradient Masks for Soft Fade */}
@@ -105,10 +125,12 @@ export function ReviewTicker({
             {reviews.map((r, idx) => renderReviewItem(r, idx, false))}
           </div>
         ) : (
-          /* Marquee track with hover-to-pause desktop interaction */
+          /* Marquee track with hover-to-pause and button pause interaction */
           <div className="relative w-full overflow-hidden group">
             <div
-              className="flex items-center w-max motion-safe:animate-ticker group-hover:[animation-play-state:paused]"
+              className={`flex items-center w-max motion-safe:animate-ticker group-hover:[animation-play-state:paused] ${
+                isManuallyPaused ? "[animation-play-state:paused!important]" : ""
+              }`}
               style={{
                 willChange: "transform",
               }}

@@ -324,10 +324,10 @@ export function HeroTypewriter({ onSequenceComplete }: HeroTypewriterProps) {
         }`}
       >
         <StudioButton href="/contact" size="lg" variant="primary">
-          Start a Project
+          Start Your Project
         </StudioButton>
         <StudioButton href="/portfolio" size="lg" variant="secondary">
-          View Our Work
+          Explore Our Work
         </StudioButton>
       </div>
 
