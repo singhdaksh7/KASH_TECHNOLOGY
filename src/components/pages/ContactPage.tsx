@@ -1,21 +1,17 @@
 "use client";
 
 import React, { useState } from "react";
-import Image from "next/image";
 import { 
   Phone, 
   Mail, 
   MessageSquare, 
-  MapPin, 
-  ArrowRight, 
-  Clock, 
-  Users, 
-  ShieldCheck, 
   Send, 
-  CheckCircle2
+  CheckCircle2,
+  Clock,
+  ShieldCheck
 } from "lucide-react";
-import { SocialIcon } from "@/components/ui/SocialIcon";
 import { Container } from "@/components/ui/Container";
+import { StudioButton } from "@/components/public-ui";
 import { SITE_CONFIG } from "@/lib/constants";
 
 export function ContactPage() {
@@ -23,7 +19,7 @@ export function ContactPage() {
     fullName: "",
     email: "",
     phone: "",
-    service: "",
+    serviceInterested: "Website Development",
     message: "",
   });
   const [loading, setLoading] = useState(false);
@@ -40,413 +36,228 @@ export function ContactPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: formData.fullName,
+          fullName: formData.fullName,
           email: formData.email,
           phone: formData.phone,
-          service: formData.service,
+          serviceInterested: formData.serviceInterested,
           message: formData.message,
           source: "contact_page",
         }),
       });
 
       if (!res.ok) {
-        throw new Error("Failed to send inquiry. Please try again.");
+        throw new Error("Unable to submit. Please contact us directly via WhatsApp or Phone.");
       }
 
       setSubmitted(true);
-      setFormData({
-        fullName: "",
-        email: "",
-        phone: "",
-        service: "",
-        message: "",
-      });
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        setErrorMsg(err.message);
-      } else {
-        setErrorMsg("Something went wrong. Please reach out via WhatsApp or phone.");
-      }
+      setErrorMsg(err instanceof Error ? err.message : "Something went wrong. Please reach out directly.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="bg-[#FFF9F4] text-[#0B0B0F] overflow-hidden pt-16">
+    <div className="bg-[#FFF9F4] text-[#0B0B0F] overflow-hidden pt-20">
       
       {/* ============================================================== */}
-      {/* 1. CONTACT HERO                                                */}
+      {/* 1. CONTACT HERO & DIRECT CONVERSION CHANNELS                   */}
       {/* ============================================================== */}
-      <section className="relative pt-10 pb-12 lg:pt-14 lg:pb-16 overflow-hidden">
-        {/* Diagonal orange background on the right */}
-        <div className="hidden lg:block hero-diagonal-bg" />
-        <div className="hidden lg:block hero-diagonal-soft" />
-
-        <Container className="relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-            
-            {/* Left Content (7 cols) */}
-            <div className="lg:col-span-7 space-y-5">
-              <div className="inline-block text-[11px] font-bold uppercase tracking-wider text-[#FF5A00] bg-[#FFF3E9] px-3.5 py-1.5 rounded-md">
-                Let&apos;s Work Together
-              </div>
-
-              <h1 className="text-4xl sm:text-5xl lg:text-[52px] font-extrabold tracking-tight leading-[1.12] text-[#0B0B0F]">
-                Get in Touch with<br />
-                <span className="text-[#FF5A00]">KASH Technology</span>
-              </h1>
-
-              <p className="text-sm sm:text-base text-[#4B5563] max-w-xl leading-relaxed">
-                Have a project, idea or business goal in mind? Tell us about it — our team will get back to you quickly.
-              </p>
-
-              {/* 3 Value Propositions */}
-              <div className="grid grid-cols-3 gap-3 max-w-xl pt-2">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#0B0B0F]">
-                    <Clock className="w-4 h-4 text-[#FF5A00]" />
-                    <span>Prompt Response</span>
-                  </div>
-                  <p className="text-[10px] text-[#4B5563]">As soon as possible</p>
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#0B0B0F]">
-                    <Users className="w-4 h-4 text-[#FF5A00]" />
-                    <span>Expert Consultation</span>
-                  </div>
-                  <p className="text-[10px] text-[#4B5563]">Understand · Plan · Execute</p>
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#0B0B0F]">
-                    <ShieldCheck className="w-4 h-4 text-[#FF5A00]" />
-                    <span>End-to-End Support</span>
-                  </div>
-                  <p className="text-[10px] text-[#4B5563]">From idea to growth</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Reception Office Image (5 cols) */}
-            <div className="lg:col-span-5 relative flex items-center justify-center">
-              <div className="relative w-full max-w-[480px] aspect-4/3 rounded-2xl overflow-hidden shadow-2xl border border-white/40">
-                <Image
-                  src="/images/about/contact-hero-office.png"
-                  alt="KASH Technology Headquarters"
-                  fill
-                  className="object-cover"
-                  priority
-                />
-              </div>
-            </div>
-
-          </div>
-        </Container>
-      </section>
-
-      {/* ============================================================== */}
-      {/* 2. MAIN CONTACT DETAILS & INQUIRY FORM                         */}
-      {/* ============================================================== */}
-      <section className="py-12 bg-white border-t border-[#E8E5E2]">
+      <section className="py-14 lg:py-24 bg-white border-b border-[#E8E5E2]">
         <Container>
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
             
-            {/* Left Column: Contact Channels & Location (5 cols) */}
+            {/* Left Column: Direct Info & Alternate Channels (5 cols) */}
             <div className="lg:col-span-5 space-y-8">
-              
-              {/* Contact Information Cards */}
               <div className="space-y-4">
-                <h2 className="text-xl font-extrabold text-[#0B0B0F]">
-                  Contact Information
-                </h2>
-                <p className="text-xs text-[#4B5563] leading-relaxed">
-                  Reach out to us through any of the following channels. We&apos;re here to help you build, create and grow.
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FFF3E9] text-[#FF5A00] text-xs font-mono font-bold uppercase tracking-wider">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#FF5A00]" />
+                  <span>Start a Conversation</span>
+                </div>
+
+                <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-[1.1] text-[#0B0B0F]">
+                  Let&apos;s talk about your next project.
+                </h1>
+
+                <p className="text-base text-[#4B5563] leading-relaxed">
+                  Have a specific technical requirement or seeking long-term creative and growth support? Fill out the brief or connect directly through our founders desk.
                 </p>
+              </div>
 
-                <div className="space-y-3 pt-2">
-                  
-                  {/* Phone */}
-                  <a
-                    href={`tel:${SITE_CONFIG.contactPhonePrimary.replace(/\s+/g, "")}`}
-                    className="flex items-center gap-4 p-4 rounded-2xl bg-[#FFF9F4] border border-[#E8E5E2] hover:border-[#FF5A00] transition-colors"
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#FF5A00] shrink-0 shadow-2xs">
-                      <Phone className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-[#0B0B0F]">{SITE_CONFIG.contactPhonePrimary}</div>
-                      <div className="text-[11px] text-[#4B5563]">Mon – Sat, 10:00 AM – 7:00 PM</div>
-                    </div>
-                  </a>
+              {/* Direct Channels */}
+              <div className="space-y-4 pt-2">
+                <a
+                  href={`tel:${SITE_CONFIG.contactPhonePrimary.replace(/[^\d+]/g, "")}`}
+                  className="flex items-center gap-4 p-4 rounded-2xl bg-[#FFF9F4] border border-[#E8E5E2] hover:border-[#FF5A00] transition-colors group"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-white border border-[#E8E5E2] flex items-center justify-center text-[#FF5A00] group-hover:scale-105 transition-transform">
+                    <Phone className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-stone-400 block">Phone</span>
+                    <span className="text-sm font-bold text-[#0B0B0F] group-hover:text-[#FF5A00] transition-colors">
+                      {SITE_CONFIG.contactPhonePrimary}
+                    </span>
+                  </div>
+                </a>
 
-                  {/* Email */}
-                  <a
-                    href={`mailto:${SITE_CONFIG.contactEmail}`}
-                    className="flex items-center gap-4 p-4 rounded-2xl bg-[#FFF9F4] border border-[#E8E5E2] hover:border-[#FF5A00] transition-colors"
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#FF5A00] shrink-0 shadow-2xs">
-                      <Mail className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-[#0B0B0F]">{SITE_CONFIG.contactEmail}</div>
-                      <div className="text-[11px] text-[#4B5563]">We&apos;ll get back to you as soon as possible</div>
-                    </div>
-                  </a>
+                <a
+                  href={`mailto:${SITE_CONFIG.contactEmail}`}
+                  className="flex items-center gap-4 p-4 rounded-2xl bg-[#FFF9F4] border border-[#E8E5E2] hover:border-[#FF5A00] transition-colors group"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-white border border-[#E8E5E2] flex items-center justify-center text-[#FF5A00] group-hover:scale-105 transition-transform">
+                    <Mail className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-stone-400 block">Email</span>
+                    <span className="text-sm font-bold text-[#0B0B0F] group-hover:text-[#FF5A00] transition-colors">
+                      {SITE_CONFIG.contactEmail}
+                    </span>
+                  </div>
+                </a>
 
-                  {/* WhatsApp */}
+                {SITE_CONFIG.whatsappUrl && (
                   <a
                     href={SITE_CONFIG.whatsappUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between p-4 rounded-2xl bg-[#FFF9F4] border border-[#E8E5E2] hover:border-[#FF5A00] transition-colors"
+                    className="flex items-center gap-4 p-4 rounded-2xl bg-[#FFF9F4] border border-[#E8E5E2] hover:border-emerald-500 transition-colors group"
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[#FF5A00] shrink-0 shadow-2xs">
-                        <MessageSquare className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <div className="text-xs font-bold text-[#0B0B0F]">Chat on WhatsApp</div>
-                        <div className="text-[11px] text-[#4B5563]">Quick queries & project discussions</div>
-                      </div>
+                    <div className="w-10 h-10 rounded-xl bg-white border border-[#E8E5E2] flex items-center justify-center text-emerald-600 group-hover:scale-105 transition-transform">
+                      <MessageSquare className="w-5 h-5" />
                     </div>
-                    <ArrowRight className="w-4 h-4 text-[#FF5A00]" />
+                    <div>
+                      <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-stone-400 block">WhatsApp</span>
+                      <span className="text-sm font-bold text-[#0B0B0F] group-hover:text-emerald-600 transition-colors">
+                        Instant WhatsApp Chat &rarr;
+                      </span>
+                    </div>
                   </a>
-
-                </div>
+                )}
               </div>
 
-              {/* Follow Us */}
-              {(SITE_CONFIG.social.linkedin || SITE_CONFIG.social.github || SITE_CONFIG.social.instagram || SITE_CONFIG.social.youtube) && (
-                <div className="space-y-3">
-                  <h3 className="text-sm font-bold text-[#0B0B0F]">Follow Us</h3>
-                  <p className="text-xs text-[#4B5563]">
-                    Stay connected for the latest work, updates and digital tips.
-                  </p>
-                  <div className="flex items-center gap-2.5">
-                    {SITE_CONFIG.social.linkedin && (
-                      <a
-                        href={SITE_CONFIG.social.linkedin}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="LinkedIn"
-                        className="w-9 h-9 rounded-full bg-[#FFF9F4] border border-[#E8E5E2] flex items-center justify-center text-[#4B5563] hover:text-[#FF5A00] hover:border-[#FF5A00] transition-colors"
-                      >
-                        <SocialIcon name="linkedin" className="w-4 h-4" />
-                      </a>
-                    )}
-                    {SITE_CONFIG.social.github && (
-                      <a
-                        href={SITE_CONFIG.social.github}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="GitHub"
-                        className="w-9 h-9 rounded-full bg-[#FFF9F4] border border-[#E8E5E2] flex items-center justify-center text-[#4B5563] hover:text-[#FF5A00] hover:border-[#FF5A00] transition-colors"
-                      >
-                        <SocialIcon name="github" className="w-4 h-4" />
-                      </a>
-                    )}
-                    {SITE_CONFIG.social.instagram && (
-                      <a
-                        href={SITE_CONFIG.social.instagram}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="Instagram"
-                        className="w-9 h-9 rounded-full bg-[#FFF9F4] border border-[#E8E5E2] flex items-center justify-center text-[#4B5563] hover:text-[#FF5A00] hover:border-[#FF5A00] transition-colors"
-                      >
-                        <SocialIcon name="instagram" className="w-4 h-4" />
-                      </a>
-                    )}
-                    {SITE_CONFIG.social.youtube && (
-                      <a
-                        href={SITE_CONFIG.social.youtube}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="YouTube"
-                        className="w-9 h-9 rounded-full bg-[#FFF9F4] border border-[#E8E5E2] flex items-center justify-center text-[#4B5563] hover:text-[#FF5A00] hover:border-[#FF5A00] transition-colors"
-                      >
-                        <SocialIcon name="youtube" className="w-4 h-4" />
-                      </a>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Areas We Serve */}
-              <div className="rounded-2xl border border-[#E8E5E2] bg-[#FFF9F4] p-5 space-y-3">
+              {/* Assurances */}
+              <div className="pt-4 border-t border-[#E8E5E2] space-y-2.5 text-xs text-[#4B5563]">
                 <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-[#FF5A00]" />
-                  <span className="text-xs font-bold text-[#0B0B0F]">Areas We Serve</span>
+                  <Clock className="w-4 h-4 text-[#FF5A00]" />
+                  <span>Responses within 24 business hours guaranteed.</span>
                 </div>
-                <p className="text-xs text-[#4B5563]">
-                  Serving businesses across Delhi NCR &amp; Western Uttar Pradesh, as well as remote clients internationally:
-                </p>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
-                  {[
-                    { name: "Delhi NCR", href: "/delhi-ncr" },
-                    { name: "Noida", href: "/noida" },
-                    { name: "Greater Noida", href: "/greater-noida" },
-                    { name: "Ghaziabad", href: "/ghaziabad" },
-                    { name: "Meerut", href: "/meerut" },
-                    { name: "Baghpat", href: "/baghpat" },
-                    { name: "Baraut", href: "/baraut" },
-                    { name: "Western UP", href: "/western-up" },
-                  ].map((area) => (
-                    <a
-                      key={area.name}
-                      href={area.href}
-                      className="px-2.5 py-1.5 rounded-lg bg-white border border-[#E8E5E2] text-[11px] font-semibold text-[#0B0B0F] hover:border-[#FF5A00] hover:text-[#FF5A00] transition-colors text-center"
-                    >
-                      {area.name}
-                    </a>
-                  ))}
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-[#FF5A00]" />
+                  <span>Strict NDA and data privacy protection.</span>
                 </div>
               </div>
-
             </div>
 
-            {/* Right Column: Tell Us About Your Project Form (7 cols) */}
-            <div className="lg:col-span-7 bg-[#FFF9F4] rounded-3xl border border-[#E8E5E2] p-6 sm:p-8 space-y-6">
-              
-              <div className="space-y-1">
-                <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#FF5A00]">
-                  <Send className="w-3.5 h-3.5" />
-                  <span>Send an Inquiry</span>
-                </div>
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0B0B0F]">
-                  Tell Us About <span className="text-[#FF5A00]">Your Project</span>
-                </h2>
-                <p className="text-xs text-[#4B5563]">
-                  Fill out the form below and our team will get in touch with you shortly.
-                </p>
-              </div>
-
+            {/* Right Column: Clean, Low-Friction Form (7 cols) */}
+            <div className="lg:col-span-7 bg-[#FFF9F4] p-8 sm:p-10 rounded-3xl border border-[#E8E5E2]">
               {submitted ? (
-                <div className="p-8 rounded-2xl bg-white border border-[#E8E5E2] text-center space-y-3">
-                  <CheckCircle2 className="w-12 h-12 text-[#FF5A00] mx-auto" />
-                  <h3 className="text-lg font-bold text-[#0B0B0F]">Thank You for Reaching Out!</h3>
-                  <p className="text-xs text-[#4B5563] max-w-md mx-auto">
-                    We&apos;ve received your project details. One of our specialists will review it and get back to you as soon as possible.
+                <div className="py-16 text-center space-y-4">
+                  <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
+                    <CheckCircle2 className="w-8 h-8" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-[#0B0B0F]">Inquiry Received</h3>
+                  <p className="text-sm text-[#4B5563] max-w-md mx-auto">
+                    Thank you. We have logged your project brief into our CRM and our technical team will review your requirements within 24 hours.
                   </p>
-                  <button
-                    onClick={() => setSubmitted(false)}
-                    className="px-5 py-2 rounded-lg bg-[#FF5A00] text-white text-xs font-semibold hover:bg-[#FF8A3D] transition-colors"
-                  >
-                    Send Another Message
-                  </button>
+                  <div className="pt-4">
+                    <StudioButton href="/" variant="secondary" size="md">
+                      Return to Homepage
+                    </StudioButton>
+                  </div>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  <div className="pb-2 border-b border-[#E8E5E2]">
+                    <h3 className="text-xl font-bold text-[#0B0B0F]">Project Brief</h3>
+                    <p className="text-xs text-[#4B5563] mt-0.5">Please share your contact details and a short description of what you need.</p>
+                  </div>
+
                   {errorMsg && (
-                    <div className="p-3 rounded-lg bg-red-50 text-red-600 text-xs border border-red-200">
+                    <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700">
                       {errorMsg}
                     </div>
                   )}
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {/* Full Name */}
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-[#0B0B0F]">
-                        Full Name <span className="text-[#FF5A00]">*</span>
-                      </label>
+                    <div>
+                      <label className="block text-xs font-bold text-[#0B0B0F] mb-1.5">Your Name *</label>
                       <input
                         type="text"
                         required
+                        placeholder="e.g. Rahul Sharma"
                         value={formData.fullName}
                         onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                        placeholder="Enter your name"
-                        className="w-full px-3.5 py-2.5 text-xs bg-white border border-[#E8E5E2] rounded-xl text-[#0B0B0F] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#FF5A00]"
+                        className="w-full px-4 py-3 rounded-xl bg-white border border-[#E8E5E2] text-sm focus:outline-none focus:border-[#FF5A00]"
                       />
                     </div>
-
-                    {/* Email Address */}
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-[#0B0B0F]">
-                        Email Address <span className="text-[#FF5A00]">*</span>
-                      </label>
+                    <div>
+                      <label className="block text-xs font-bold text-[#0B0B0F] mb-1.5">Email Address *</label>
                       <input
                         type="email"
                         required
+                        placeholder="e.g. rahul@company.com"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        placeholder="Enter your email"
-                        className="w-full px-3.5 py-2.5 text-xs bg-white border border-[#E8E5E2] rounded-xl text-[#0B0B0F] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#FF5A00]"
+                        className="w-full px-4 py-3 rounded-xl bg-white border border-[#E8E5E2] text-sm focus:outline-none focus:border-[#FF5A00]"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {/* Phone Number */}
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-[#0B0B0F]">
-                        Phone Number <span className="text-[#FF5A00]">*</span>
-                      </label>
+                    <div>
+                      <label className="block text-xs font-bold text-[#0B0B0F] mb-1.5">Phone / WhatsApp</label>
                       <input
                         type="tel"
-                        required
+                        placeholder="+91 98765 43210"
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        placeholder="Enter your phone number"
-                        className="w-full px-3.5 py-2.5 text-xs bg-white border border-[#E8E5E2] rounded-xl text-[#0B0B0F] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#FF5A00]"
+                        className="w-full px-4 py-3 rounded-xl bg-white border border-[#E8E5E2] text-sm focus:outline-none focus:border-[#FF5A00]"
                       />
                     </div>
-
-                    {/* Service Interested In */}
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-[#0B0B0F]">
-                        Service Interested In <span className="text-[#FF5A00]">*</span>
-                      </label>
+                    <div>
+                      <label className="block text-xs font-bold text-[#0B0B0F] mb-1.5">Primary Service</label>
                       <select
-                        required
-                        value={formData.service}
-                        onChange={(e) => setFormData({ ...formData, service: e.target.value })}
-                        className="w-full px-3.5 py-2.5 text-xs bg-white border border-[#E8E5E2] rounded-xl text-[#0B0B0F] focus:outline-none focus:border-[#FF5A00]"
+                        value={formData.serviceInterested}
+                        onChange={(e) => setFormData({ ...formData, serviceInterested: e.target.value })}
+                        className="w-full px-4 py-3 rounded-xl bg-white border border-[#E8E5E2] text-sm focus:outline-none focus:border-[#FF5A00]"
                       >
-                        <option value="">Select a service</option>
-                        <option value="Website Development">Website Development</option>
+                        <option value="Website Development">Website Development (Next.js)</option>
+                        <option value="Custom Software & CRM">Custom Software & CRM Systems</option>
                         <option value="Mobile App Development">Mobile App Development</option>
-                        <option value="Software & CRM / ERP">Software & CRM / ERP</option>
-                        <option value="Branding & Design">Branding & Design</option>
-                        <option value="Content & Video Editing">Content & Video Editing</option>
-                        <option value="Digital Marketing & SEO">Digital Marketing & SEO</option>
-                        <option value="Free Digital Audit">Free Digital Audit</option>
+                        <option value="ERP / CRM Systems">ERP / Operations Software</option>
+                        <option value="SaaS Development">SaaS Platform Development</option>
+                        <option value="AI & Automation">AI Automation & Custom Agents</option>
+                        <option value="Content & Video">Content Creation & Video Studio</option>
+                        <option value="Digital Marketing & SEO">Digital Marketing & SEO Growth</option>
                       </select>
                     </div>
                   </div>
 
-                  {/* Project Details */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-[#0B0B0F]">
-                      Project Details <span className="text-[#FF5A00]">*</span>
-                    </label>
+                  <div>
+                    <label className="block text-xs font-bold text-[#0B0B0F] mb-1.5">Project Overview & Goals *</label>
                     <textarea
-                      rows={4}
                       required
+                      rows={4}
+                      placeholder="Briefly describe what you want to build or improve, timeline expectations, or links to current platforms..."
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      placeholder="Tell us about your project, goals and any specific requirements..."
-                      className="w-full px-3.5 py-2.5 text-xs bg-white border border-[#E8E5E2] rounded-xl text-[#0B0B0F] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#FF5A00]"
+                      className="w-full px-4 py-3 rounded-xl bg-white border border-[#E8E5E2] text-sm focus:outline-none focus:border-[#FF5A00] leading-relaxed"
                     />
                   </div>
 
-                  {/* Submit Button & Trust */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
+                  <div className="pt-2">
                     <button
                       type="submit"
                       disabled={loading}
-                      className="px-7 py-3 rounded-xl bg-gradient-to-r from-[#FF5A00] to-[#FF8A3D] text-white text-xs font-bold hover:brightness-105 transition-all shadow-md shadow-[#FF5A00]/25 disabled:opacity-50 inline-flex items-center justify-center gap-2"
+                      className="w-full py-4 rounded-xl bg-gradient-to-r from-[#FF5A00] to-[#FF8A3D] text-white font-bold text-sm shadow-md hover:brightness-105 disabled:opacity-50 transition-all flex items-center justify-center gap-2 cursor-pointer"
                     >
-                      <span>{loading ? "Sending..." : "Send Inquiry"}</span>
-                      <ArrowRight className="w-4 h-4" />
+                      <Send className="w-4 h-4" />
+                      <span>{loading ? "Transmitting Brief…" : "Send Project Inquiry"}</span>
                     </button>
-
-                    <div className="flex items-center gap-2 text-[11px] text-[#4B5563]">
-                      <ShieldCheck className="w-4 h-4 text-[#FF5A00]" />
-                      <span>Your information is safe with us. We never share it with anyone.</span>
-                    </div>
                   </div>
                 </form>
               )}
-
             </div>
 
           </div>

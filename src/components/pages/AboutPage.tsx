@@ -4,287 +4,208 @@ import Image from "next/image";
 import Link from "next/link";
 import { 
   ArrowRight, 
-  Play, 
-  Award, 
-  Users, 
-  Target, 
-  Eye, 
-  ShieldCheck, 
-  MapPin, 
-  Briefcase
+  Terminal, 
+  Palette, 
+  TrendingUp
 } from "lucide-react";
 import { SocialIcon } from "@/components/ui/SocialIcon";
 import { Container } from "@/components/ui/Container";
+import { SectionHeading, StudioButton } from "@/components/public-ui";
 import { SITE_CONFIG } from "@/lib/constants";
 
-const TEAM_CAPABILITIES = [
+const LEADERSHIP_AND_CAPABILITIES = [
   {
     name: "Daksh Singh",
-    role: "Founder & Tech Lead",
-    badge: "Verified Lead",
+    role: "Founder & Lead Systems Architect",
+    badge: "FOUNDER",
     image: "/images/team/daksh-singh.png",
     hasSocial: true,
     linkedin: SITE_CONFIG.social.linkedin,
-    description: "Architecting scalable web platforms, custom ERP systems, and cloud infrastructure.",
+    description: "Full-stack systems engineering, distributed architecture, mission-critical databases, and modern Next.js/Docker deployments.",
   },
   {
-    name: "Technology & Engineering",
-    role: "Full-Stack & Systems",
-    badge: "Capability Group",
+    name: "Engineering & Architecture",
+    role: "Full-Stack, API & Systems",
+    badge: "BUILD",
     image: "/images/team/product-lead.png",
     hasSocial: false,
-    description: "Next.js, React, Node.js, Python, PostgreSQL, and high-performance APIs.",
+    description: "Next.js, React, Node.js, Python, PostgreSQL, Redis, multi-tenant databases, and enterprise data models.",
   },
   {
-    name: "Creative & Content",
-    role: "Video & Visual Identity",
-    badge: "Capability Group",
+    name: "Creative & Visual Media",
+    role: "Brand Identity, Motion & Video",
+    badge: "CREATE",
     image: "/images/team/creative-lead.png",
     hasSocial: false,
-    description: "Brand design, typography, video editing, motion graphics, and content production.",
+    description: "Editorial brand systems, typography curation, commercial video editing, motion design, and high-conversion assets.",
   },
   {
     name: "Product & Solutions",
-    role: "Architecture & UX",
-    badge: "Capability Group",
+    role: "UX Architecture & Systems Scoping",
+    badge: "ARCHITECT",
     image: "/images/team/business-lead.png",
     hasSocial: false,
-    description: "Business workflow scoping, technical specification, and iterative MVP deployment.",
+    description: "Translating ambiguous business challenges into deterministic software specifications, workflows, and actionable roadmaps.",
   },
   {
-    name: "Marketing & Growth",
-    role: "SEO & Performance Ads",
-    badge: "Capability Group",
+    name: "Performance & Market Growth",
+    role: "Technical SEO & Performance Growth",
+    badge: "GROW",
     image: "/images/team/marketing-lead.png",
     hasSocial: false,
-    description: "Search engine optimization, targeted Meta & Google ad funnels, and analytics.",
+    description: "Search engine dominance, search visibility, high-intent lead funnels, and data-backed conversion rate optimization.",
   },
 ];
 
 export function AboutPage() {
   return (
-    <div className="bg-[#FFF9F4] text-[#0B0B0F] overflow-hidden pt-16">
+    <div className="bg-[#FFF9F4] text-[#0B0B0F] overflow-hidden pt-20">
       
-      {/* ============================================================== */}
-      {/* 1. ABOUT HERO                                                  */}
-      {/* ============================================================== */}
-      <section className="relative pt-10 pb-16 lg:pt-14 lg:pb-20 overflow-hidden">
-        {/* Diagonal orange background on the right */}
-        <div className="hidden lg:block hero-diagonal-bg" />
-        <div className="hidden lg:block hero-diagonal-soft" />
-
-        <Container className="relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-            
-            {/* Left Content (7 cols) */}
-            <div className="lg:col-span-7 space-y-6">
-              <div className="inline-block text-[11px] font-bold uppercase tracking-wider text-[#FF5A00] bg-[#FFF3E9] px-3.5 py-1.5 rounded-md">
-                About KASH Technology
-              </div>
-
-              <h1 className="text-4xl sm:text-5xl lg:text-[52px] font-extrabold tracking-tight leading-[1.12] text-[#0B0B0F]">
-                The Team Behind<br />
-                <span className="text-[#FF5A00]">KASH Technology</span>
-              </h1>
-
-              <p className="text-sm sm:text-base text-[#4B5563] max-w-xl leading-relaxed">
-                A digital and technology agency helping businesses build, create and grow with the right mix of technology, creativity and marketing — all under one roof.
-              </p>
-
-              {/* CTAs */}
-              <div className="flex flex-wrap items-center gap-3 pt-2">
-                <Link
-                  href="/services"
-                  className="px-6 py-3 rounded-lg bg-[#FF5A00] text-white text-xs sm:text-sm font-bold shadow-md shadow-[#FF5A00]/25 hover:bg-[#FF8A3D] transition-all"
-                >
-                  Our Services &rarr;
-                </Link>
-                <Link
-                  href="/contact"
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-white border border-[#E8E5E2] text-xs sm:text-sm font-bold text-[#0B0B0F] hover:border-[#FF5A00] hover:text-[#FF5A00] transition-colors"
-                >
-                  <span>Get in Touch</span>
-                  <Play className="w-3.5 h-3.5 fill-current text-[#4B5563]" />
-                </Link>
-              </div>
-            </div>
-
-            {/* Right Reception Office Image (5 cols) */}
-            <div className="lg:col-span-5 relative flex items-center justify-center">
-              <div className="relative w-full max-w-[480px] aspect-4/3 rounded-2xl overflow-hidden shadow-2xl border border-white/40">
-                <Image
-                  src="/images/about/about-hero-reception.png"
-                  alt="KASH Technology Reception & Studio"
-                  fill
-                  className="object-cover"
-                  priority
-                />
-              </div>
-            </div>
-
-          </div>
-        </Container>
-      </section>
-
-      {/* ============================================================== */}
-      {/* 2. VALUE PROPOSITIONS STRIP                                    */}
-      {/* ============================================================== */}
-      <section className="border-y border-[#E8E5E2] bg-white py-4">
+      {/* 1. EDITORIAL HERO */}
+      <section className="relative pt-12 pb-20 lg:pt-20 lg:pb-28">
         <Container>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-[#FFF3E9] flex items-center justify-center text-[#FF5A00]">
-                <Briefcase className="w-4 h-4" />
-              </div>
-              <div>
-                <div className="text-xs font-bold text-[#0B0B0F]">End-to-End</div>
-                <div className="text-[11px] text-[#4B5563]">Custom Solutions</div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-[#FFF3E9] flex items-center justify-center text-[#FF5A00]">
-                <Users className="w-4 h-4" />
-              </div>
-              <div>
-                <div className="text-xs font-bold text-[#0B0B0F]">Direct Support</div>
-                <div className="text-[11px] text-[#4B5563]">Long-Term Partner</div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-[#FFF3E9] flex items-center justify-center text-[#FF5A00]">
-                <Award className="w-4 h-4" />
-              </div>
-              <div>
-                <div className="text-xs font-bold text-[#0B0B0F]">Unified Strategy</div>
-                <div className="text-[11px] text-[#4B5563]">Technology &amp; Creative</div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-[#FFF3E9] flex items-center justify-center text-[#FF5A00]">
-                <MapPin className="w-4 h-4" />
-              </div>
-              <div>
-                <div className="text-xs font-bold text-[#0B0B0F]">Delhi NCR &amp; Western UP</div>
-                <div className="text-[11px] text-[#4B5563]">Primary Service Focus</div>
-              </div>
+          <div className="max-w-4xl space-y-6">
+            <span className="font-mono text-xs uppercase tracking-widest text-[#FF5A00] font-semibold">
+              ABOUT KASH TECHNOLOGY // STUDIO &amp; SYSTEMS
+            </span>
+            <h1 className="text-4xl sm:text-6xl lg:text-[68px] font-extrabold tracking-tight text-[#0B0B0F] leading-[1.08]">
+              Where engineering discipline meets <span className="text-[#FF5A00]">creative storytelling.</span>
+            </h1>
+            <p className="text-lg sm:text-xl text-[#4B5563] leading-relaxed max-w-2xl font-normal">
+              KASH Technology operates as a hybrid software development studio and creative agency. We build bespoke digital products, enterprise web systems, and high-impact brand identities under one unified roof.
+            </p>
+            <div className="flex flex-wrap items-center gap-4 pt-4">
+              <StudioButton href="/services" variant="primary">
+                Explore Capabilities
+              </StudioButton>
+              <StudioButton href="/contact" variant="outline">
+                Start a Conversation
+              </StudioButton>
             </div>
           </div>
         </Container>
       </section>
 
-      {/* ============================================================== */}
-      {/* 3. OUR STORY                                                   */}
-      {/* ============================================================== */}
-      <section className="py-20 bg-[#FFF9F4]">
+      {/* 2. RECEPTION / STUDIO VISUAL HERO */}
+      <section className="border-y border-[#E8E5E2] bg-white py-12">
         <Container>
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            
-            {/* Left Office Image (6 cols) */}
-            <div className="lg:col-span-6 relative aspect-16/10 rounded-2xl overflow-hidden border border-[#E8E5E2] shadow-xl">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-7 relative aspect-16/10 rounded-2xl overflow-hidden border border-[#E8E5E2] shadow-xl">
               <Image
-                src="/images/about/about-story-office.png"
-                alt="The KASH Story Studio"
+                src="/images/about/about-hero-reception.png"
+                alt="KASH Technology Studio Headquarters"
                 fill
                 className="object-cover"
+                priority
               />
             </div>
-
-            {/* Right Story Copy (6 cols) */}
-            <div className="lg:col-span-6 space-y-5">
-              <div className="inline-block text-[11px] font-bold uppercase tracking-wider text-[#FF5A00] bg-[#FFF3E9] px-3 py-1 rounded-md">
-                Our Story
-              </div>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0B0B0F] tracking-tight">
-                The KASH Story
+            <div className="lg:col-span-5 space-y-6 lg:pl-6">
+              <span className="font-mono text-xs uppercase tracking-wider text-[#FF5A00] font-bold">
+                CORE PHILOSOPHY
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0B0B0F] tracking-tight">
+                No fragmented vendors. Just one dedicated team.
               </h2>
-              <div className="space-y-4 text-xs sm:text-sm text-[#4B5563] leading-relaxed border-l-2 border-[#FF5A00] pl-4">
-                <p>
-                  KASH Technology started with a simple idea — businesses shouldn&apos;t have to manage multiple vendors for their digital needs. We saw local businesses, startups and growing companies struggle with scattered solutions, high costs and lack of long-term support.
-                </p>
-                <p>
-                  So, we built KASH — a single, reliable partner that brings together technology, creativity and growth to help businesses build a strong digital presence, run more efficiently and grow consistently.
-                </p>
+              <p className="text-sm sm:text-base text-[#4B5563] leading-relaxed">
+                Founders and enterprises usually face an expensive dilemma: hire a development house that cannot design, or hire a design boutique that writes unmaintainable code.
+              </p>
+              <p className="text-sm sm:text-base text-[#4B5563] leading-relaxed">
+                KASH Technology bridges this divide. We combine modern software architecture, database design, and cloud engineering with high-touch brand aesthetics, video editing, and customer acquisition.
+              </p>
+              <div className="pt-2 flex items-center gap-6 border-t border-[#E8E5E2]">
+                <div>
+                  <div className="text-2xl font-black text-[#0B0B0F]">100%</div>
+                  <div className="text-xs text-[#4B5563] font-medium">In-House Production</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-black text-[#FF5A00]">Delhi NCR</div>
+                  <div className="text-xs text-[#4B5563] font-medium">Regional Engineering Hub</div>
+                </div>
               </div>
             </div>
-
           </div>
         </Container>
       </section>
 
-      {/* ============================================================== */}
-      {/* 4. MISSION / VISION / VALUES (3 CARDS)                         */}
-      {/* ============================================================== */}
-      <section className="py-14 bg-white border-y border-[#E8E5E2]">
+      {/* 3. THE 3 CORE DISCIPLINES */}
+      <section className="py-24 bg-[#FFF9F4]">
         <Container>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
-            {/* Mission */}
-            <div className="p-6 rounded-2xl bg-[#FFF9F4] border border-[#E8E5E2] space-y-3">
-              <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center text-[#FF5A00] shadow-2xs">
-                <Target className="w-5 h-5" />
+          <div className="max-w-2xl mb-16">
+            <SectionHeading
+              eyebrow="PILLARS OF OPERATION"
+              title="Built for founders who value speed and craft."
+              description="Every client engagement is anchored in our tripartite capability model."
+            />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="p-8 rounded-3xl bg-white border border-[#E8E5E2] space-y-4">
+              <div className="w-12 h-12 rounded-2xl bg-[#FFF3E9] text-[#FF5A00] flex items-center justify-center font-bold">
+                <Terminal className="w-6 h-6" />
               </div>
-              <h3 className="text-base font-bold text-[#0B0B0F]">Our Mission</h3>
-              <p className="text-xs text-[#4B5563] leading-relaxed">
-                To empower businesses with practical, affordable and scalable digital solutions.
+              <h3 className="text-xl font-bold text-[#0B0B0F]">01. BUILD</h3>
+              <p className="text-sm text-[#4B5563] leading-relaxed">
+                Full-lifecycle software engineering. From high-speed Next.js web platforms to multi-tenant ERPs, inventory systems, operational CRMs, and cross-platform mobile apps.
               </p>
+              <div className="text-xs font-mono text-[#0B0B0F]/70 pt-2 border-t border-[#E8E5E2]">
+                Stack: Next.js &bull; TypeScript &bull; PostgreSQL &bull; Docker &bull; Node.js
+              </div>
             </div>
 
-            {/* Vision */}
-            <div className="p-6 rounded-2xl bg-[#FFF9F4] border border-[#E8E5E2] space-y-3">
-              <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center text-[#FF5A00] shadow-2xs">
-                <Eye className="w-5 h-5" />
+            <div className="p-8 rounded-3xl bg-white border border-[#E8E5E2] space-y-4">
+              <div className="w-12 h-12 rounded-2xl bg-[#FFF3E9] text-[#FF5A00] flex items-center justify-center font-bold">
+                <Palette className="w-6 h-6" />
               </div>
-              <h3 className="text-base font-bold text-[#0B0B0F]">Our Vision</h3>
-              <p className="text-xs text-[#4B5563] leading-relaxed">
-                To be the most trusted digital partner for businesses across Delhi NCR and Western Uttar Pradesh.
+              <h3 className="text-xl font-bold text-[#0B0B0F]">02. CREATE</h3>
+              <p className="text-sm text-[#4B5563] leading-relaxed">
+                Distinguished visual identity and multimedia. Editorial design, commercial video post-production, motion graphics, and content that commands premium market perception.
               </p>
+              <div className="text-xs font-mono text-[#0B0B0F]/70 pt-2 border-t border-[#E8E5E2]">
+                Focus: Brand Systems &bull; Video Production &bull; Typography &bull; UI/UX
+              </div>
             </div>
 
-            {/* Values */}
-            <div className="p-6 rounded-2xl bg-[#FFF9F4] border border-[#E8E5E2] space-y-3">
-              <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center text-[#FF5A00] shadow-2xs">
-                <ShieldCheck className="w-5 h-5" />
+            <div className="p-8 rounded-3xl bg-white border border-[#E8E5E2] space-y-4">
+              <div className="w-12 h-12 rounded-2xl bg-[#FFF3E9] text-[#FF5A00] flex items-center justify-center font-bold">
+                <TrendingUp className="w-6 h-6" />
               </div>
-              <h3 className="text-base font-bold text-[#0B0B0F]">Our Values</h3>
-              <p className="text-xs text-[#4B5563] leading-relaxed">
-                Trust, quality, transparency, long-term support and real business impact.
+              <h3 className="text-xl font-bold text-[#0B0B0F]">03. GROW</h3>
+              <p className="text-sm text-[#4B5563] leading-relaxed">
+                Sustainable customer acquisition. Structured technical SEO, search engine ranking dominance, Meta &amp; Google ad campaigns, and automated lead capture pipelines.
               </p>
+              <div className="text-xs font-mono text-[#0B0B0F]/70 pt-2 border-t border-[#E8E5E2]">
+                Focus: Technical SEO &bull; Performance Ads &bull; Conversion Architecture
+              </div>
             </div>
-
           </div>
         </Container>
       </section>
 
-      {/* ============================================================== */}
-      {/* 5. THE PEOPLE & CAPABILITIES BEHIND KASH                       */}
-      {/* ============================================================== */}
-      <section className="py-20 bg-[#FFF9F4]">
+      {/* 4. THE TEAM & LEADERSHIP */}
+      <section className="py-24 bg-white border-y border-[#E8E5E2]">
         <Container>
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
             <div>
-              <div className="inline-block text-[11px] font-bold uppercase tracking-wider text-[#FF5A00] bg-[#FFF3E9] px-3 py-1 rounded-md mb-2">
-                Our Team &amp; Capabilities
-              </div>
-              <h2 className="text-3xl font-extrabold text-[#0B0B0F] tracking-tight">
-                The People &amp; Capabilities Behind <span className="text-[#FF5A00]">KASH</span>
+              <span className="font-mono text-xs uppercase tracking-wider text-[#FF5A00] font-bold">
+                LEADERSHIP &amp; EXPERTISE
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0B0B0F] tracking-tight mt-2">
+                Specialized minds. Transparent delivery.
               </h2>
             </div>
-            <p className="text-xs text-[#4B5563] max-w-sm border-l-2 border-[#FF5A00] pl-3">
-              Led by founder Daksh Singh alongside specialized capability teams in software, creative, marketing and digital growth.
+            <p className="text-sm text-[#4B5563] max-w-md">
+              Led directly by technical founders with active involvement in architecture, code reviews, design critiques, and launch execution.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            {TEAM_CAPABILITIES.map((member) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {LEADERSHIP_AND_CAPABILITIES.map((member) => (
               <div
                 key={member.name}
-                className="bg-white rounded-2xl border border-[#E8E5E2] overflow-hidden p-4 hover:border-[#FF5A00]/40 hover:shadow-md transition-all flex flex-col justify-between"
+                className="bg-[#FFF9F4] rounded-2xl border border-[#E8E5E2] overflow-hidden p-6 hover:border-[#FF5A00]/40 transition-all flex flex-col justify-between"
               >
                 <div>
-                  <div className="relative aspect-square rounded-xl overflow-hidden bg-[#FFF3E9] mb-3">
+                  <div className="relative aspect-square rounded-xl overflow-hidden bg-white mb-5 border border-[#E8E5E2]/60">
                     <Image
                       src={member.image}
                       alt={member.name}
@@ -297,19 +218,19 @@ export function AboutPage() {
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label="LinkedIn"
-                        className="absolute top-2 right-2 w-6 h-6 rounded-full bg-white/90 flex items-center justify-center text-[#FF5A00] hover:bg-[#FF5A00] hover:text-white transition-colors"
+                        className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/95 flex items-center justify-center text-[#0B0B0F] hover:bg-[#FF5A00] hover:text-white transition-colors shadow-sm"
                       >
-                        <SocialIcon name="linkedin" className="w-3.5 h-3.5" />
+                        <SocialIcon name="linkedin" className="w-4 h-4" />
                       </a>
                     )}
                   </div>
-                  <div className="space-y-1 text-center">
-                    <span className="text-[9px] font-mono font-bold text-[#FF5A00] bg-[#FFF3E9] px-1.5 py-0.5 rounded">
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] font-mono font-bold tracking-wider text-[#FF5A00] bg-[#FFF3E9] px-2 py-0.5 rounded">
                       {member.badge}
                     </span>
-                    <h3 className="text-xs font-bold text-[#0B0B0F] pt-1">{member.name}</h3>
-                    <p className="text-[10px] text-[#4B5563] font-medium">{member.role}</p>
-                    <p className="text-[10px] text-[#4B5563]/80 leading-normal pt-1">{member.description}</p>
+                    <h3 className="text-base font-bold text-[#0B0B0F] pt-1">{member.name}</h3>
+                    <p className="text-xs text-[#FF5A00] font-semibold">{member.role}</p>
+                    <p className="text-xs sm:text-sm text-[#4B5563] leading-relaxed pt-2">{member.description}</p>
                   </div>
                 </div>
               </div>
@@ -318,61 +239,70 @@ export function AboutPage() {
         </Container>
       </section>
 
-      {/* ============================================================== */}
-      {/* 6. OUR STUDIO                                                  */}
-      {/* ============================================================== */}
-      <section className="py-16 bg-white border-t border-[#E8E5E2]">
+      {/* 5. STUDIO WORKSPACE ENVIRONMENT */}
+      <section className="py-24 bg-[#FFF9F4]">
         <Container>
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-            
-            {/* Left Studio Image */}
-            <div className="lg:col-span-6 relative aspect-16/10 rounded-2xl overflow-hidden border border-[#E8E5E2] shadow-xl">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            <div className="lg:col-span-6 relative aspect-16/10 rounded-3xl overflow-hidden border border-[#E8E5E2] shadow-xl">
               <Image
                 src="/images/about/about-studio-office.png"
-                alt="KASH Technology Collaborative Studio"
+                alt="KASH Technology Collaborative Production Floor"
                 fill
                 className="object-cover"
               />
             </div>
-
-            {/* Right Copy */}
-            <div className="lg:col-span-6 space-y-4">
-              <div className="inline-block text-[11px] font-bold uppercase tracking-wider text-[#FF5A00] bg-[#FFF3E9] px-3 py-1 rounded-md">
-                Our Studio
-              </div>
-              <h2 className="text-3xl font-extrabold text-[#0B0B0F] tracking-tight">
-                A Space to Build, Create and Collaborate
+            <div className="lg:col-span-6 space-y-6">
+              <span className="font-mono text-xs uppercase tracking-wider text-[#FF5A00] font-bold">
+                PHYSICAL PRESENCE
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0B0B0F] tracking-tight">
+                Rooted in Delhi NCR. Delivering globally.
               </h2>
-              <p className="text-xs sm:text-sm text-[#4B5563] leading-relaxed">
-                Our studio is where ideas turn into real solutions. It&apos;s a collaborative space for product thinking, design, development, content and strategy — all aligned towards one goal: your business growth.
+              <p className="text-sm sm:text-base text-[#4B5563] leading-relaxed">
+                Our studio workspace brings designers, engineers, and strategists into direct physical collaboration. When a software challenge requires an intuitive user flow, or a brand launch requires technical backend synchronization, decisions happen in minutes, not across ticket backlogs.
               </p>
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center gap-3 text-sm text-[#0B0B0F] font-semibold">
+                  <div className="w-2 h-2 rounded-full bg-[#FF5A00]" />
+                  Direct founder access on every primary engagement
+                </div>
+                <div className="flex items-center gap-3 text-sm text-[#0B0B0F] font-semibold">
+                  <div className="w-2 h-2 rounded-full bg-[#FF5A00]" />
+                  NDA-backed intellectual property protections
+                </div>
+                <div className="flex items-center gap-3 text-sm text-[#0B0B0F] font-semibold">
+                  <div className="w-2 h-2 rounded-full bg-[#FF5A00]" />
+                  Live milestone staging with continuous deployment
+                </div>
+              </div>
             </div>
-
           </div>
         </Container>
       </section>
 
-      {/* ============================================================== */}
-      {/* 7. BOTTOM CTA STRIP                                            */}
-      {/* ============================================================== */}
-      <section className="py-12 bg-gradient-to-r from-[#FF8A3D] to-[#FF5A00] text-white">
+      {/* 6. CONVERSION CTA */}
+      <section className="py-20 bg-gradient-to-r from-[#FF5A00] to-[#FF8A3D] text-white">
         <Container>
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
-            <div className="space-y-1 text-center lg:text-left">
-              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-                Let&apos;s Build Something Great Together
-              </h2>
-            </div>
-            <div className="text-xs sm:text-sm text-white/90 max-w-md text-center lg:text-left border-t lg:border-t-0 lg:border-l border-white/30 pt-3 lg:pt-0 lg:pl-6">
-              Have a project, idea or business goal in mind? Let&apos;s discuss how we can help you build, create and grow with the right strategy and technology.
-            </div>
-            <div>
+          <div className="max-w-3xl mx-auto text-center space-y-6">
+            <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight">
+              Ready to build something lasting?
+            </h2>
+            <p className="text-base sm:text-lg text-white/90 leading-relaxed font-normal">
+              Whether you need to modernize legacy systems, launch a new digital venture, or transform your brand presence, our studio is ready.
+            </p>
+            <div className="pt-4 flex flex-wrap justify-center gap-4">
               <Link
                 href="/contact"
-                className="px-6 py-3 rounded-xl bg-[#0B0B0F] text-white font-bold text-xs sm:text-sm hover:bg-black transition-all shadow-md inline-flex items-center gap-2"
+                className="px-8 py-4 rounded-xl bg-[#0B0B0F] text-white font-bold text-sm hover:bg-black transition-all shadow-xl inline-flex items-center gap-2"
               >
-                <span>Get in Touch Now</span>
+                <span>Schedule a Consultation</span>
                 <ArrowRight className="w-4 h-4" />
+              </Link>
+              <Link
+                href="/portfolio"
+                className="px-8 py-4 rounded-xl bg-white text-[#0B0B0F] font-bold text-sm hover:bg-[#FFF3E9] transition-all shadow-md inline-flex items-center gap-2"
+              >
+                <span>View Selected Work</span>
               </Link>
             </div>
           </div>
