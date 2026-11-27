@@ -62,33 +62,6 @@ export function NodeGlow({ node, active, isAmbientGlow }: NodeGlowProps) {
         fillOpacity={active ? 0.85 : 0.25}
         className="transition-all duration-700"
       />
-
-      {/* Node Status Indicator Pill / Tag on Hover/Active */}
-      {active && (
-        <g className="transition-opacity duration-500 opacity-90">
-          <rect
-            x={node.cx - 50}
-            y={node.cy + nodeRadius + 8}
-            width="100"
-            height="18"
-            rx="9"
-            fill="rgba(11, 11, 15, 0.85)"
-            stroke="rgba(255, 255, 255, 0.15)"
-            strokeWidth="0.8"
-          />
-          <text
-            x={node.cx}
-            y={node.cy + nodeRadius + 20}
-            textAnchor="middle"
-            fill="#FFFFFF"
-            fontSize="8.5"
-            fontFamily="monospace"
-            fontWeight="bold"
-          >
-            {node.name.split("/")[0].trim().slice(0, 16)}
-          </text>
-        </g>
-      )}
     </g>
   );
 }

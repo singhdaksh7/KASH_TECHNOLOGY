@@ -234,7 +234,7 @@ export function TechnologyStack() {
                     </div>
                   </div>
 
-                  <div className="lg:col-span-6 rounded-2xl bg-[#07070B] border border-white/10 p-2 min-h-[360px] flex items-center justify-center overflow-hidden">
+                  <div className="lg:col-span-6 rounded-2xl bg-[#07070B] border border-white/10 overflow-hidden flex items-center justify-center shadow-2xl">
                     <AnimatedArchitecture
                       stageIndex={idx}
                       active={true}
@@ -356,17 +356,17 @@ export function TechnologyStack() {
                     <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                   <span className="text-xs text-stone-400 font-mono">
-                    Step {activeStage + 1} of 5 &bull; Scroll to explore
+                    Step {activeStage + 1} {" "}of 5 &bull; Scroll to explore
                   </span>
                 </div>
               </div>
 
               {/* Right Column: Layered Interactive 3D Architecture Visual Presentation */}
-              <div className="col-span-6 relative w-full h-[520px] rounded-3xl bg-gradient-to-b from-[#101018] to-[#09090F] border border-white/10 shadow-2xl overflow-hidden flex items-center justify-center">
+              <div className="col-span-6 relative w-full aspect-[1672/941] rounded-3xl bg-gradient-to-b from-[#101018] to-[#09090F] border border-white/10 shadow-2xl overflow-hidden">
                 {STAGES.map((_, idx) => (
                   <div
                     key={idx}
-                    className={`absolute inset-0 flex items-center justify-center p-3 transition-opacity duration-700 ease-out ${
+                    className={`absolute inset-0 transition-opacity duration-700 ease-out ${
                       activeStage === idx
                         ? "opacity-100 z-10 pointer-events-auto"
                         : "opacity-0 z-0 pointer-events-none"
@@ -439,7 +439,7 @@ export function TechnologyStack() {
             </div>
 
             {/* Mobile Visual Container */}
-            <div className="relative min-h-[300px] rounded-2xl bg-[#07070B] border border-white/10 overflow-hidden flex items-center justify-center p-2">
+            <div className="relative w-full aspect-[1672/941] rounded-2xl bg-[#07070B] border border-white/10 overflow-hidden shadow-xl">
               <AnimatedArchitecture
                 stageIndex={mobileActiveStage}
                 active={true}

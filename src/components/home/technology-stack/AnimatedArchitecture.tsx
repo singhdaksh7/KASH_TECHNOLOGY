@@ -32,7 +32,8 @@ export function AnimatedArchitecture({
     const rect = containerRef.current.getBoundingClientRect();
     const xRatio = (e.clientX - rect.left) / rect.width - 0.5;
     const yRatio = (e.clientY - rect.top) / rect.height - 0.5;
-    setMouseOffset({ x: xRatio * 10, y: yRatio * 10 });
+    // Keep parallax subtle (+- 6px) to avoid exposing edges under scale(1.03)
+    setMouseOffset({ x: xRatio * 6, y: yRatio * 6 });
   };
 
   const handleMouseLeave = () => {
@@ -44,7 +45,7 @@ export function AnimatedArchitecture({
       ref={containerRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className="relative w-full h-full min-h-[460px] lg:min-h-[520px] flex items-center justify-center overflow-hidden rounded-3xl select-none"
+      className="relative w-full aspect-[1672/941] select-none overflow-hidden"
       style={{
         perspective: "1000px",
       }}
@@ -59,13 +60,13 @@ export function AnimatedArchitecture({
 
       {/* Layer 1: Base 3D Architecture Illustration with Restrained Parallax */}
       <div
-        className="relative w-full h-full flex items-center justify-center transition-transform duration-300 ease-out"
+        className="relative w-full h-full transition-transform duration-300 ease-out"
         style={{
-          transform: `translate3d(${mouseOffset.x}px, ${mouseOffset.y}px, 0) scale(${active ? 1.02 : 0.98})`,
+          transform: `translate3d(${mouseOffset.x}px, ${mouseOffset.y}px, 0) scale(1.03)`,
         }}
       >
-        <div className="relative w-full aspect-[1672/941] max-w-[720px] max-h-[500px]">
-          {/* Base WebP/PNG 3D Architecture Image */}
+        <div className="relative w-full h-full aspect-[1672/941]">
+          {/* Base WebP/PNG 3D Architecture Image - Edge to Edge */}
           <picture className="w-full h-full block">
             <source srcSet={config.imageWebp} type="image/webp" />
             <Image
@@ -73,8 +74,8 @@ export function AnimatedArchitecture({
               alt={config.title}
               fill
               priority={stageIndex === 0}
-              sizes="(max-width: 1024px) 100vw, 700px"
-              className="object-contain drop-shadow-2xl pointer-events-none"
+              sizes="(max-width: 1024px) 100vw, (max-width: 1280px) 50vw, 750px"
+              className="object-cover drop-shadow-2xl pointer-events-none block w-full h-full"
             />
           </picture>
 
@@ -83,7 +84,7 @@ export function AnimatedArchitecture({
             <svg
               className="absolute inset-0 w-full h-full pointer-events-none z-10"
               viewBox={`0 0 ${config.width} ${config.height}`}
-              preserveAspectRatio="xMidYMid meet"
+              preserveAspectRatio="xMidYMid slice"
             >
               <defs>
                 {/* Reusable Glow Filters */}
