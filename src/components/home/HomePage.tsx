@@ -5,6 +5,7 @@ import { ArrowRight, ArrowUpRight, Code2, Sparkles, TrendingUp, CheckCircle2, Sh
 import { Container } from "@/components/ui/Container";
 import { SectionHeading, StudioButton, CaseStudyRow } from "@/components/public-ui";
 import { HeroTypewriter } from "./HeroTypewriter";
+import { ReviewTicker } from "./ReviewTicker";
 
 export function HomePage() {
   const PILLARS = [
@@ -164,6 +165,11 @@ export function HomePage() {
           </div>
         </Container>
       </section>
+
+      {/* ============================================================== */}
+      {/* 1.5 CLIENT REVIEW TICKER (DIRECTLY BELOW HERO)                 */}
+      {/* ============================================================== */}
+      <ReviewTicker />
 
       {/* ============================================================== */}
       {/* 2. CAPABILITY ARCHITECTURE: BUILD / CREATE / GROW              */}
