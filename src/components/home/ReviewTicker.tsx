@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useSyncExternalStore } from "react";
+import Image from "next/image";
 import { Star, Pause, Play } from "lucide-react";
 import { VERIFIED_REVIEWS, type ClientReview } from "@/data/testimonials";
 
@@ -23,6 +24,72 @@ function getReducedMotionSnapshot() {
 
 function getReducedMotionServerSnapshot() {
   return false;
+}
+
+/**
+ * High-quality SVG country flags
+ */
+function CountryFlag({ code }: { code: string }) {
+  if (code === "IN") {
+    return (
+      <svg className="w-4 h-3 rounded-[2px] shadow-xs shrink-0 inline-block" viewBox="0 0 640 480" aria-label="India flag">
+        <path fill="#f93" d="M0 0h640v160H0z"/>
+        <path fill="#fff" d="M0 160h640v160H0z"/>
+        <path fill="#128807" d="M0 320h640v160H0z"/>
+        <circle cx="320" cy="240" r="56" fill="none" stroke="#008" strokeWidth="12"/>
+      </svg>
+    );
+  }
+  if (code === "US") {
+    return (
+      <svg className="w-4 h-3 rounded-[2px] shadow-xs shrink-0 inline-block" viewBox="0 0 640 480" aria-label="United States flag">
+        <path fill="#bd3d44" d="M0 0h640v480H0z"/>
+        <path stroke="#fff" strokeWidth="37" d="M0 55h640M0 129h640M0 203h640M0 277h640M0 351h640M0 425h640"/>
+        <path fill="#192f5d" d="M0 0h260v260H0z"/>
+      </svg>
+    );
+  }
+  if (code === "UK" || code === "GB") {
+    return (
+      <svg className="w-4 h-3 rounded-[2px] shadow-xs shrink-0 inline-block" viewBox="0 0 640 480" aria-label="United Kingdom flag">
+        <path fill="#012169" d="M0 0h640v480H0z"/>
+        <path stroke="#fff" strokeWidth="60" d="m0 0 640 480M640 0 0 480"/>
+        <path stroke="#c8102e" strokeWidth="40" d="m0 0 640 480M640 0 0 480"/>
+        <path stroke="#fff" strokeWidth="100" d="M320 0v480M0 240h640"/>
+        <path stroke="#c8102e" strokeWidth="60" d="M320 0v480M0 240h640"/>
+      </svg>
+    );
+  }
+  return null;
+}
+
+/**
+ * Generate clean deterministic initials avatar
+ */
+function ClientAvatar({ name, photoUrl }: { name: string; photoUrl?: string }) {
+  if (photoUrl) {
+    return (
+      <div className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden border border-[#FF5A00]/40 shrink-0 shadow-sm">
+        <Image src={photoUrl} alt={name} fill className="object-cover" />
+      </div>
+    );
+  }
+
+  // Initials
+  const initials = name
+    .replace(/^Dr\.\s*/i, "")
+    .split(" ")
+    .map((n) => n[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+
+  return (
+    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-tr from-[#1E1E2A] to-[#12121A] border border-[#FF5A00]/40 flex items-center justify-center shrink-0 shadow-sm">
+      <span className="text-[11px] sm:text-xs font-mono font-bold text-[#FF8A3D]">{initials}</span>
+    </div>
+  );
 }
 
 export function ReviewTicker({
@@ -49,33 +116,38 @@ export function ReviewTicker({
     return (
       <div
         key={`${isDuplicate ? "dup-" : "item-"}${item.id || index}`}
-        className="inline-flex items-center gap-3 px-4 sm:px-6 shrink-0 whitespace-nowrap group/item"
+        className="inline-flex items-center gap-3 px-5 sm:px-7 shrink-0 whitespace-nowrap group/item"
       >
+        {/* Client Profile Photo / Initials Avatar */}
+        <ClientAvatar name={item.name} photoUrl={item.photoUrl} />
+
+        {/* Client Name */}
+        <div className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-white">
+          <span>{item.name}</span>
+        </div>
+
+        {/* Country Flag & Name */}
+        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-[11px] font-mono text-stone-300">
+          <CountryFlag code={item.countryCode} />
+          <span>{item.location ? `${item.location}, ${item.country}` : item.country}</span>
+        </div>
+
         {/* Rating Stars */}
-        <div className="flex items-center gap-0.5 text-[#FF5A00]" aria-hidden="true">
+        <div className="flex items-center gap-0.5 text-[#FF5A00]" aria-label={`${ratingCount} out of 5 stars`}>
           {Array.from({ length: ratingCount }).map((_, i) => (
             <Star key={i} className="w-3.5 h-3.5 fill-current" />
           ))}
         </div>
 
-        {/* Client Name & Location */}
-        <div className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-white">
-          <span>{item.name}</span>
-          {item.location && (
-            <span className="text-stone-400 font-normal font-mono text-[11px] sm:text-xs">
-              ({item.location})
-            </span>
-          )}
-          <span className="text-stone-500 mx-1">—</span>
-        </div>
+        <span className="text-stone-500">—</span>
 
-        {/* Quote */}
-        <p className="text-xs sm:text-sm text-stone-300 font-normal italic">
+        {/* Authentic Review Quote */}
+        <p className="text-xs sm:text-sm text-stone-200 font-normal italic">
           &ldquo;{item.quote}&rdquo;
         </p>
 
         {/* Separator Dot */}
-        <span className="text-[#FF5A00] font-bold text-base sm:text-lg ml-3 select-none" aria-hidden="true">
+        <span className="text-[#FF5A00] font-bold text-base sm:text-lg ml-4 select-none" aria-hidden="true">
           &bull;
         </span>
       </div>
@@ -85,7 +157,7 @@ export function ReviewTicker({
   return (
     <section
       aria-label="Verified Client Feedback"
-      className={`relative w-full bg-[#0B0B0F] border-b border-[#FF5A00]/25 py-3 sm:py-3.5 overflow-hidden select-none sm:select-text z-30 ${className}`}
+      className={`relative w-full bg-[#0B0B0F] border-b border-[#FF5A00]/25 py-2.5 sm:py-3 overflow-hidden select-none sm:select-text z-30 ${className}`}
     >
       <div className="relative w-full flex items-center">
         

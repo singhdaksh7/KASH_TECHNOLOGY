@@ -13,11 +13,7 @@ import {
   ArrowRight
 } from "lucide-react";
 import Link from "next/link";
-import { EngineeringVisual } from "./technology-stack/EngineeringVisual";
-import { ConnectedSystemsVisual } from "./technology-stack/ConnectedSystemsVisual";
-import { WorkflowVisual } from "./technology-stack/WorkflowVisual";
-import { AIVisual } from "./technology-stack/AIVisual";
-import { InfrastructureVisual } from "./technology-stack/InfrastructureVisual";
+import { AnimatedArchitecture } from "./technology-stack/AnimatedArchitecture";
 
 export interface StageData {
   id: string;
@@ -238,12 +234,12 @@ export function TechnologyStack() {
                     </div>
                   </div>
 
-                  <div className="lg:col-span-6 rounded-2xl bg-[#07070B] border border-white/10 p-4 min-h-[380px] flex items-center justify-center">
-                    {idx === 0 && <EngineeringVisual active={true} />}
-                    {idx === 1 && <ConnectedSystemsVisual active={true} />}
-                    {idx === 2 && <WorkflowVisual active={true} />}
-                    {idx === 3 && <AIVisual active={true} />}
-                    {idx === 4 && <InfrastructureVisual active={true} />}
+                  <div className="lg:col-span-6 rounded-2xl bg-[#07070B] border border-white/10 p-2 min-h-[360px] flex items-center justify-center overflow-hidden">
+                    <AnimatedArchitecture
+                      stageIndex={idx}
+                      active={true}
+                      prefersReducedMotion={true}
+                    />
                   </div>
                 </div>
               ))}
@@ -365,28 +361,24 @@ export function TechnologyStack() {
                 </div>
               </div>
 
-              {/* Right Column: Layered Interactive Visual Presentation */}
+              {/* Right Column: Layered Interactive 3D Architecture Visual Presentation */}
               <div className="col-span-6 relative w-full h-[520px] rounded-3xl bg-gradient-to-b from-[#101018] to-[#09090F] border border-white/10 shadow-2xl overflow-hidden flex items-center justify-center">
-                {/* Visual Stages Layered Cross-fading */}
-                <div className={`absolute inset-0 transition-opacity duration-700 ease-out ${activeStage === 0 ? "opacity-100 z-10 pointer-events-auto" : "opacity-0 z-0 pointer-events-none"}`}>
-                  <EngineeringVisual active={activeStage === 0} />
-                </div>
-
-                <div className={`absolute inset-0 transition-opacity duration-700 ease-out ${activeStage === 1 ? "opacity-100 z-10 pointer-events-auto" : "opacity-0 z-0 pointer-events-none"}`}>
-                  <ConnectedSystemsVisual active={activeStage === 1} />
-                </div>
-
-                <div className={`absolute inset-0 transition-opacity duration-700 ease-out ${activeStage === 2 ? "opacity-100 z-10 pointer-events-auto" : "opacity-0 z-0 pointer-events-none"}`}>
-                  <WorkflowVisual active={activeStage === 2} />
-                </div>
-
-                <div className={`absolute inset-0 transition-opacity duration-700 ease-out ${activeStage === 3 ? "opacity-100 z-10 pointer-events-auto" : "opacity-0 z-0 pointer-events-none"}`}>
-                  <AIVisual active={activeStage === 3} />
-                </div>
-
-                <div className={`absolute inset-0 transition-opacity duration-700 ease-out ${activeStage === 4 ? "opacity-100 z-10 pointer-events-auto" : "opacity-0 z-0 pointer-events-none"}`}>
-                  <InfrastructureVisual active={activeStage === 4} />
-                </div>
+                {STAGES.map((_, idx) => (
+                  <div
+                    key={idx}
+                    className={`absolute inset-0 flex items-center justify-center p-3 transition-opacity duration-700 ease-out ${
+                      activeStage === idx
+                        ? "opacity-100 z-10 pointer-events-auto"
+                        : "opacity-0 z-0 pointer-events-none"
+                    }`}
+                  >
+                    <AnimatedArchitecture
+                      stageIndex={idx}
+                      active={activeStage === idx}
+                      prefersReducedMotion={prefersReducedMotion}
+                    />
+                  </div>
+                ))}
               </div>
 
             </div>
@@ -447,12 +439,12 @@ export function TechnologyStack() {
             </div>
 
             {/* Mobile Visual Container */}
-            <div className="relative min-h-[380px] rounded-2xl bg-[#07070B] border border-white/10 overflow-hidden flex items-center justify-center">
-              {mobileActiveStage === 0 && <EngineeringVisual active={true} />}
-              {mobileActiveStage === 1 && <ConnectedSystemsVisual active={true} />}
-              {mobileActiveStage === 2 && <WorkflowVisual active={true} />}
-              {mobileActiveStage === 3 && <AIVisual active={true} />}
-              {mobileActiveStage === 4 && <InfrastructureVisual active={true} />}
+            <div className="relative min-h-[300px] rounded-2xl bg-[#07070B] border border-white/10 overflow-hidden flex items-center justify-center p-2">
+              <AnimatedArchitecture
+                stageIndex={mobileActiveStage}
+                active={true}
+                prefersReducedMotion={prefersReducedMotion}
+              />
             </div>
 
             {/* Highlights List on Mobile */}
