@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowRight, ArrowUpRight, Code2, Sparkles, TrendingUp, CheckCircle2, ShieldCheck, Cpu, Terminal, Layers } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { SectionHeading, StudioButton, CaseStudyRow } from "@/components/public-ui";
+import { HeroTypewriter } from "./HeroTypewriter";
 
 export function HomePage() {
   const PILLARS = [
@@ -133,30 +134,7 @@ export function HomePage() {
       {/* ============================================================== */}
       <section className="relative pt-12 pb-20 lg:pt-20 lg:pb-32 overflow-hidden">
         <Container className="relative z-10">
-          <div className="max-w-4xl space-y-6">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#FFF3E9] border border-[#FF5A00]/25 text-[#FF5A00] text-xs font-bold font-mono tracking-wider uppercase">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#FF5A00]" />
-              <span>Technology • Creative • Growth Studio</span>
-            </div>
-
-            <h1 className="text-5xl sm:text-6xl lg:text-[76px] font-extrabold tracking-tight leading-[1.08] text-[#0B0B0F]">
-              BUILD. CREATE. GROW.<br />
-              <span className="text-[#FF5A00]">We build digital products</span> that move businesses forward.
-            </h1>
-
-            <p className="text-lg sm:text-xl text-[#4B5563] max-w-2xl leading-relaxed font-normal">
-              KASH Technology is an integrated studio combining custom software engineering, premium creative content, and performance acquisition under one roof.
-            </p>
-
-            <div className="flex flex-wrap items-center gap-4 pt-4">
-              <StudioButton href="/contact" size="lg" variant="primary">
-                Start a Project
-              </StudioButton>
-              <StudioButton href="/portfolio" size="lg" variant="secondary">
-                View Our Work
-              </StudioButton>
-            </div>
-          </div>
+          <HeroTypewriter />
 
           {/* Hero Showcase Composition */}
           <div className="mt-14 lg:mt-20 relative">
