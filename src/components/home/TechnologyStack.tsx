@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useSyncExternalStore } from "react";
 import { useScroll, useMotionValueEvent } from "framer-motion";
 import { Container } from "@/components/ui/Container";
 import { 
@@ -118,10 +118,32 @@ const STAGES: StageData[] = [
   },
 ];
 
+function subscribeReducedMotion(callback: () => void) {
+  if (typeof window === "undefined") return () => {};
+  const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+  mediaQuery.addEventListener("change", callback);
+  return () => mediaQuery.removeEventListener("change", callback);
+}
+
+function getReducedMotionSnapshot() {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function getReducedMotionServerSnapshot() {
+  return false;
+}
+
 export function TechnologyStack() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeStage, setActiveStage] = useState(0);
   const [mobileActiveStage, setMobileActiveStage] = useState(0);
+
+  const prefersReducedMotion = useSyncExternalStore(
+    subscribeReducedMotion,
+    getReducedMotionSnapshot,
+    getReducedMotionServerSnapshot
+  );
 
   // Framer Motion scroll progress across the tall 500vh container
   const { scrollYProgress } = useScroll({
@@ -163,13 +185,81 @@ export function TechnologyStack() {
       </div>
 
       {/* ============================================================== */}
-      {/* DESKTOP LAYOUT: 500vh outer wrapper + 100vh sticky viewport   */}
+      {/* REDUCED MOTION ALTERNATIVE: Clean stacked presentation         */}
       {/* ============================================================== */}
-      <div 
-        ref={containerRef}
-        className="hidden lg:block relative"
-        style={{ height: "450vh" }}
-      >
+      {prefersReducedMotion ? (
+        <div className="py-20">
+          <Container>
+            <div className="max-w-3xl mb-16 space-y-4">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#FF5A00]" />
+                <span className="font-mono text-xs uppercase tracking-widest text-[#FF5A00] font-bold">
+                  THE KASH TECHNOLOGY STACK
+                </span>
+              </div>
+              <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
+                Engineering without limitations.
+              </h2>
+              <p className="text-stone-300 text-base leading-relaxed">
+                Full-stack Next.js 16 architectures, connected business ecosystems, configurable automation workflows, adaptive AI copilot integrations, and hardened cloud infrastructure.
+              </p>
+            </div>
+
+            <div className="space-y-16">
+              {STAGES.map((stage, idx) => (
+                <div 
+                  key={stage.id}
+                  className="p-8 rounded-3xl bg-[#0E0E16] border border-white/10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center"
+                >
+                  <div className="lg:col-span-6 space-y-4">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-xs font-mono font-bold text-[#FF5A00]">
+                      <span>{stage.badge}</span>
+                      <span>&bull;</span>
+                      <span className="text-stone-300 font-normal">{stage.eyebrow}</span>
+                    </div>
+                    <h3 className="text-2xl sm:text-3xl font-extrabold text-white">
+                      {stage.title}
+                    </h3>
+                    <p className="text-sm text-stone-300 leading-relaxed">
+                      {stage.description}
+                    </p>
+                    {stage.subDescription && (
+                      <p className="text-xs text-stone-400 leading-relaxed">
+                        {stage.subDescription}
+                      </p>
+                    )}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
+                      {stage.highlights.map((h) => (
+                        <div key={h} className="flex items-center gap-2 text-xs text-stone-300 font-mono">
+                          <ChevronRight className="w-3.5 h-3.5 text-[#FF5A00] shrink-0" />
+                          <span>{h}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="lg:col-span-6 rounded-2xl bg-[#07070B] border border-white/10 p-4 min-h-[380px] flex items-center justify-center">
+                    {idx === 0 && <EngineeringVisual active={true} />}
+                    {idx === 1 && <ConnectedSystemsVisual active={true} />}
+                    {idx === 2 && <WorkflowVisual active={true} />}
+                    {idx === 3 && <AIVisual active={true} />}
+                    {idx === 4 && <InfrastructureVisual active={true} />}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Container>
+        </div>
+      ) : (
+        <>
+          {/* ============================================================== */}
+          {/* DESKTOP LAYOUT: 450vh outer wrapper + 100vh sticky viewport   */}
+          {/* ============================================================== */}
+          <div 
+            ref={containerRef}
+            className="hidden lg:block relative"
+            style={{ height: "450vh" }}
+          >
         <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col justify-center">
           <Container className="relative z-10 w-full py-8">
             {/* Top Bar / Category Eyebrow */}
@@ -387,6 +477,8 @@ export function TechnologyStack() {
           </div>
         </Container>
       </div>
+        </>
+      )}
     </section>
   );
 }
