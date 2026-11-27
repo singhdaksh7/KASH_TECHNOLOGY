@@ -14,6 +14,15 @@ interface Client {
   showInMarquee: boolean;
 }
 
+// Fallback clients matching the verified showcase database records
+const INITIAL_CLIENTS: Client[] = [
+  { id: "client-ratna-saxena", name: "Dr. Ratna Saxena IVF", country: "India", countryCode: "IN", showInMarquee: true },
+  { id: "client-vikram-chaudhary", name: "Commercial Logistics Partner", country: "India", countryCode: "IN", showInMarquee: true },
+  { id: "client-ankit-sharma", name: "Educational Solutions", country: "India", countryCode: "IN", showInMarquee: true },
+  { id: "client-aman-verma", name: "Retail Operations", country: "India", countryCode: "IN", showInMarquee: true },
+  { id: "client-rohan-gupta", name: "Digital Commerce", country: "India", countryCode: "IN", showInMarquee: true },
+];
+
 function subscribeReducedMotion(callback: () => void) {
   if (typeof window === "undefined") return () => {};
   const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -31,7 +40,7 @@ function getReducedMotionServerSnapshot() {
 }
 
 export function ClientLogoMarquee() {
-  const [clients, setClients] = useState<Client[]>([]);
+  const [clients, setClients] = useState<Client[]>(INITIAL_CLIENTS);
   const [settings, setSettings] = useState<{
     enabled: boolean;
     speed: number;
