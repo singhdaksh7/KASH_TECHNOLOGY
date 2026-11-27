@@ -51,7 +51,7 @@ body {
   background-color: var(--warm-bg);
   color: var(--primary-text);
   font-family: var(--font-geist-sans), Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  overflow-x: hidden;
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
 }
 

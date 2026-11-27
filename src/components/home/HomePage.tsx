@@ -11,6 +11,7 @@ import { HeroTypewriter } from "./HeroTypewriter";
 import { ReviewTicker } from "./ReviewTicker";
 import { HeroProductComposition } from "./HeroProductComposition";
 import { CapabilityShowcaseInteractive } from "./CapabilityShowcaseInteractive";
+import { TechnologyStack } from "./TechnologyStack";
 import { ConnectedDigitalEcosystem } from "./ConnectedDigitalEcosystem";
 import { InteractiveIndustrySolutions } from "./InteractiveIndustrySolutions";
 import { EngineeringInfrastructure } from "./EngineeringInfrastructure";
@@ -98,7 +99,7 @@ export function HomePage() {
   ];
 
   return (
-    <div className="bg-[#FFF9F4] text-[#0B0B0F] overflow-hidden pt-16">
+    <div className="bg-[#FFF9F4] text-[#0B0B0F] pt-16">
       
       {/* ============================================================== */}
       {/* 2. CLIENT REVIEW TICKER (DIRECTLY BELOW UPPER NAV & ABOVE HERO) */}
@@ -129,7 +130,12 @@ export function HomePage() {
       <CapabilityShowcaseInteractive />
 
       {/* ============================================================== */}
-      {/* 6. CONNECTED DIGITAL ECOSYSTEM                                 */}
+      {/* 6. THE KASH TECHNOLOGY STACK (SCROLL-DRIVEN ARCHITECTURE)      */}
+      {/* ============================================================== */}
+      <TechnologyStack />
+
+      {/* ============================================================== */}
+      {/* 7. CONNECTED DIGITAL ECOSYSTEM                                 */}
       {/* ============================================================== */}
       <ConnectedDigitalEcosystem />
 
