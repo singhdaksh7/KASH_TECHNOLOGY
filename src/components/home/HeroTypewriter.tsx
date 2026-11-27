@@ -146,7 +146,7 @@ export function HeroTypewriter({ onSequenceComplete }: HeroTypewriterProps) {
       {/* 1. MAIN HEADLINE (Begins directly with We build digital...)    */}
       {/* ============================================================== */}
       <h1
-        className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-[76px] font-extrabold tracking-tight leading-[1.12] sm:leading-[1.08] text-[#0B0B0F]"
+        className="text-3xl sm:text-5xl md:text-6xl lg:text-[76px] font-extrabold tracking-tight leading-[1.12] sm:leading-[1.08] text-[#0B0B0F]"
         aria-label="We build digital products that move businesses forward."
       >
         <span className="block" aria-hidden="true">
@@ -155,7 +155,7 @@ export function HeroTypewriter({ onSequenceComplete }: HeroTypewriterProps) {
             {/* Space reservation */}
             <span className="invisible opacity-0 select-none">{STEP1_LINE1}</span>
             {/* Typing overlay */}
-            <span className="absolute left-0 top-0 whitespace-nowrap">
+            <span className="absolute left-0 top-0 whitespace-normal">
               {STEP1_LINE1.slice(0, effectiveLine1Count)}
               {cursorVisible && activeCursorTarget === "line1" && (
                 <span className="inline-block ml-1 w-[3px] h-[0.88em] align-middle bg-[#FF5A00] animate-pulse" />
@@ -168,7 +168,7 @@ export function HeroTypewriter({ onSequenceComplete }: HeroTypewriterProps) {
             {/* Space reservation */}
             <span className="invisible opacity-0 select-none">{STEP1_LINE2}</span>
             {/* Typing overlay */}
-            <span className="absolute left-0 top-0 whitespace-nowrap">
+            <span className="absolute left-0 top-0 whitespace-normal">
               {STEP1_LINE2.slice(0, effectiveLine2Count)}
               {cursorVisible && activeCursorTarget === "line2" && (
                 <span className="inline-block ml-1 w-[3px] h-[0.88em] align-middle bg-[#FF5A00] animate-pulse" />

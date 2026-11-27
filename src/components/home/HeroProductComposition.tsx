@@ -35,11 +35,11 @@ export function HeroProductComposition() {
           </div>
 
           {/* Interactive Demo View Tabs */}
-          <div className="flex items-center gap-1.5 p-1 rounded-xl bg-white/5 border border-white/10 text-xs font-mono">
+          <div className="flex items-center gap-1.5 p-1 rounded-xl bg-white/5 border border-white/10 text-xs font-mono max-w-full overflow-x-auto scrollbar-none" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
             <button
               type="button"
               onClick={() => setActiveTab("erp")}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
+              className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition-all ${
                 activeTab === "erp"
                   ? "bg-[#FF5A00] text-white font-bold shadow-xs"
                   : "text-stone-400 hover:text-white"
